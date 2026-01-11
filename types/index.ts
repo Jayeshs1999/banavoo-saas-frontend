@@ -1,35 +1,59 @@
-// Common types for the dormitory project
+// Types for PGWala project
+
+export interface PGAdmin {
+  id: string;
+  pgName: string;
+  ownerName: string;
+  mobile: string;
+  email: string;
+  address: string;
+  password: string;
+}
 
 export interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: 'student' | 'admin' | 'staff';
+  mobile: string;
+  address: string;
+  password: string;
+}
+
+export interface PG {
+  id: string;
+  adminId: string;
+  name: string;
+  photos: string[];
+  structure: Room[];
+  onlinePayment: boolean;
+  location: {
+    subcity: string;
+    city: string;
+    state: string;
+    country: string;
+  };
 }
 
 export interface Room {
   id: string;
-  number: string;
-  capacity: number;
-  occupants: number;
-  floor: number;
-  building: string;
+  name: string;
+  beds: Bed[];
 }
 
-export interface Student {
+export interface Bed {
+  id: string;
+  allocated: boolean;
+  price: number;
+}
+
+export interface BookingRequest {
   id: string;
   userId: string;
-  roomId?: string;
-  enrollmentDate: Date;
-  graduationDate?: Date;
-}
-
-export interface MaintenanceRequest {
-  id: string;
-  studentId: string;
-  roomId: string;
-  description: string;
-  status: 'pending' | 'in-progress' | 'completed';
+  pgId: string;
+  bedId: string;
+  joinDate: Date;
+  stayDays: number;
+  status: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
-  updatedAt: Date;
 }

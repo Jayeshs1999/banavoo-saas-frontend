@@ -1,0 +1,78 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components';
+import { useAuth } from '../../context/AuthContext';
+
+export default function AdminDashboard() {
+  const { currentAdmin, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!currentAdmin) {
+      router.push('/admin/login');
+    }
+  }, [currentAdmin, router]);
+
+  if (!currentAdmin) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Welcome, {currentAdmin.ownerName}</h1>
+        <Button onClick={logout} variant="outline">
+          Logout
+        </Button>
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Create New PG</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Add a new PG with structure and settings.
+            </p>
+            <Link href="/admin/create-pg">
+              <Button>Create PG</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Requests Received</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              View and manage booking requests.
+            </p>
+            <Link href="/admin/requests">
+              <Button>View Requests</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              View and edit your profile information.
+            </p>
+            <Link href="/admin/profile">
+              <Button>View Profile</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
