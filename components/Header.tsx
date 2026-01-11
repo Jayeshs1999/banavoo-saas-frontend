@@ -5,7 +5,7 @@ export default function Header() {
     <header className="bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
-          Dormitory
+          <img alt='logo' src="/logo.jpeg" width="100" height="100" />
         </Link>
         <nav className="space-x-4">
           <Link href="/" className="hover:text-accent">Home</Link>
