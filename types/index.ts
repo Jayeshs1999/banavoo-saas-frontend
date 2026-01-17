@@ -8,6 +8,7 @@ export interface PGAdmin {
   email: string;
   address: string;
   password: string;
+  role: string,
 }
 
 export interface User {
@@ -18,6 +19,7 @@ export interface User {
   mobile: string;
   address: string;
   password: string;
+  role: string;
 }
 
 export interface PG {
@@ -39,6 +41,8 @@ export interface Room {
   id: string;
   name: string;
   beds: Bed[];
+  price: number;
+  pricingPeriod: 'day' | 'month';
 }
 
 export interface Bed {

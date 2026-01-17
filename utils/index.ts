@@ -35,6 +35,7 @@ export const dummyPGAdmins: PGAdmin[] = [
     email: 'rajesh@greenvalley.com',
     address: '123 Main St, Mumbai, Maharashtra',
     password: 'password123',
+    role: 'admin',
   },
 ];
 
@@ -47,6 +48,7 @@ export const dummyUsers: User[] = [
     mobile: '9876543211',
     address: '456 Elm St, Mumbai, Maharashtra',
     password: 'password123',
+    role: 'user',
   },
 ];
 
@@ -64,6 +66,9 @@ export const dummyPGs: PG[] = [
           { id: 'bed1', allocated: false, price: 5000 },
           { id: 'bed2', allocated: true, price: 5000 },
         ],
+        price: 10000,
+        pricingPeriod: 'day',
+
       },
       {
         id: 'room2',
@@ -72,6 +77,8 @@ export const dummyPGs: PG[] = [
           { id: 'bed3', allocated: false, price: 4500 },
           { id: 'bed4', allocated: false, price: 4500 },
         ],
+        price: 10000,
+        pricingPeriod: 'month',
       },
     ],
     onlinePayment: true,
