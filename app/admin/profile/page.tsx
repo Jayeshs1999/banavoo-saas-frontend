@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,6 +20,7 @@ const profileSchema = z.object({
 type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function AdminProfile() {
+  const router = useRouter();
   const { currentAdmin } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -50,7 +52,12 @@ export default function AdminProfile() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">Profile</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Profile</h1>
+        <Button variant="outline" onClick={() => router.back()}>
+          ← Back
+        </Button>
+      </div>
 
       <Card>
         <CardHeader>
