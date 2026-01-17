@@ -30,9 +30,9 @@ export const dummyPGAdmins: PGAdmin[] = [
   {
     id: 'admin1',
     pgName: 'Green Valley PG',
-    ownerName: 'Rajesh Kumar',
+    ownerName: 'Jayesh Sevatkar',
     mobile: '9876543210',
-    email: 'rajesh@greenvalley.com',
+    email: 'jayesh@gmail.com',
     address: '123 Main St, Mumbai, Maharashtra',
     password: 'password123',
     role: 'admin',
