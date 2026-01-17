@@ -49,6 +49,7 @@ export default function AdminRegister() {
         email: data.email,
         address: data.address,
         password: data.password,
+        role: 'admin',
       });
       router.push("/admin/dashboard");
     } catch (err) {

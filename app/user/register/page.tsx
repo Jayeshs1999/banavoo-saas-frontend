@@ -49,6 +49,7 @@ export default function UserRegister() {
         mobile: data.mobile,
         address: data.address,
         password: data.password,
+        role: 'user',
       });
       router.push("/user/dashboard");
     } catch (err) {
