@@ -7,8 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components';
-import { useAuth } from '../../context/AuthContext';
-import { PG, Room, Bed } from '../../../types';
+import { PG, Room } from '../../../types';
 import { generateId } from '../../../utils';
 
 const pgSchema = z.object({
@@ -26,12 +25,11 @@ export default function CreatePG() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [roomError, setRoomError] = useState('');
   const router = useRouter();
-  const { currentAdmin } = useAuth();
 
   const {
     register,
     handleSubmit,
-    watch,
+    // watch,
     formState: { errors },
   } = useForm<PGForm>({
     resolver: zodResolver(pgSchema),
@@ -40,7 +38,7 @@ export default function CreatePG() {
     },
   });
 
-  const onlinePayment = watch('onlinePayment');
+  // const onlinePayment = watch('onlinePayment'); // Unused variable
 
   const addRoom = () => {
     if (currentRoom.trim() && currentRoomPrice.trim()) {
@@ -132,7 +130,7 @@ export default function CreatePG() {
     // In real app, save to backend
     const newPG: PG = {
       id: generateId(),
-      adminId: currentAdmin?.id || '',
+      adminId: 'admin-placeholder', // TODO: Get from admin context/store
       name: data.name,
       photos: photos, // Save uploaded photos
       structure: rooms,
@@ -310,6 +308,7 @@ export default function CreatePG() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {photos.map((photo, index) => (
                     <div key={index} className="relative group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={photo}
                         alt={`PG photo ${index + 1}`}

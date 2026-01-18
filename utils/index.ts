@@ -23,6 +23,11 @@ export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
+
+export const getToken = (): string | null => {
+  return localStorage.getItem("token") || sessionStorage.getItem("token");
+};
+
 // Dummy data
 import { PGAdmin, User, PG, BookingRequest } from '../types';
 
@@ -44,7 +49,7 @@ export const dummyUsers: User[] = [
     id: 'user1',
     firstName: 'Amit',
     lastName: 'Sharma',
-    email: 'amit@gmail.com',
+    email: 'jayesh@gmail.com',
     mobile: '9876543211',
     address: '456 Elm St, Mumbai, Maharashtra',
     password: 'password123',

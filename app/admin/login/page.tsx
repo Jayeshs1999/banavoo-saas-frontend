@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -8,7 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
-import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -18,9 +18,16 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function AdminLogin() {
-  const [error, setError] = useState("");
   const router = useRouter();
-  const { loginAdmin } = useAuth();
+  const { loginAdmin, currentAdmin, currentUser, logout } = useAuth();
+  const [error, setError] = useState("");
+
+  // Auto-logout if user is logged in (not admin)
+  useEffect(() => {
+    if (currentUser) {
+      logout();
+    }
+  }, [currentUser, logout]);
 
   const {
     register,
@@ -31,7 +38,10 @@ export default function AdminLogin() {
   });
 
   const onSubmit = (data: LoginForm) => {
-    if (loginAdmin(data.email, data.password)) {
+    setError("");
+    const success = loginAdmin(data.email, data.password);
+    
+    if (success) {
       router.push("/admin/dashboard");
     } else {
       setError("Invalid email or password");
@@ -89,7 +99,11 @@ export default function AdminLogin() {
                   )}
                 </div>
 
-                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {error && (
+                  <p className="text-red-500 text-sm mt-2 text-center">
+                    {error}
+                  </p>
+                )}
 
                 <Button type="submit" className="w-full">
                   Login

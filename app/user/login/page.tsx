@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/app/context/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -20,7 +20,14 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function UserLogin() {
   const [error, setError] = useState("");
   const router = useRouter();
-  const { loginUser } = useAuth();
+  const { loginUser, currentUser, currentAdmin, logout } = useAuth();
+
+  // Auto-logout if admin is logged in (not user)
+  useEffect(() => {
+    if (currentAdmin) {
+      logout();
+    }
+  }, [currentAdmin, logout]);
 
   const {
     register,
@@ -31,11 +38,17 @@ export default function UserLogin() {
   });
 
   const onSubmit = (data: LoginForm) => {
+    setError("");
     if (loginUser(data.email, data.password)) {
       router.push("/user/dashboard");
     } else {
       setError("Invalid email or password");
     }
+  };
+
+  const handleSwitchAccount = () => {
+    logout();
+    setError("");
   };
 
   return (
