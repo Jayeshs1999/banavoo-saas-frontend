@@ -1,14 +1,22 @@
 // Types for PGWala project
 
+export interface Address {
+  area: string;
+  landmark: string;
+  city: string;
+  pincode: string;
+  state: string;
+}
+
 export interface PGAdmin {
   id: string;
   pgName: string;
   ownerName: string;
   mobile: string;
   email: string;
-  address: string;
+  address: Address;
   password: string;
-  role: string,
+  role: string;
 }
 
 export interface User {
