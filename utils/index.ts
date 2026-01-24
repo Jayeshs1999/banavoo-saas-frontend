@@ -23,6 +23,11 @@ export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
+
+export const getToken = (): string | null => {
+  return localStorage.getItem("token") || sessionStorage.getItem("token");
+};
+
 // Dummy data
 import { PGAdmin, User, PG, BookingRequest } from '../types';
 
@@ -30,11 +35,18 @@ export const dummyPGAdmins: PGAdmin[] = [
   {
     id: 'admin1',
     pgName: 'Green Valley PG',
-    ownerName: 'Rajesh Kumar',
+    ownerName: 'Jayesh Sevatkar',
     mobile: '9876543210',
-    email: 'rajesh@greenvalley.com',
-    address: '123 Main St, Mumbai, Maharashtra',
+    email: 'jayesh@gmail.com',
+    address: {
+      area: 'Andheri West',
+      landmark: 'Near XYZ Mall',
+      city: 'Mumbai',
+      pincode: '400058',
+      state: 'Maharashtra',
+    },
     password: 'password123',
+    role: 'admin',
   },
 ];
 
@@ -43,10 +55,11 @@ export const dummyUsers: User[] = [
     id: 'user1',
     firstName: 'Amit',
     lastName: 'Sharma',
-    email: 'amit@gmail.com',
+    email: 'jayesh@gmail.com',
     mobile: '9876543211',
     address: '456 Elm St, Mumbai, Maharashtra',
     password: 'password123',
+    role: 'user',
   },
 ];
 
@@ -64,6 +77,9 @@ export const dummyPGs: PG[] = [
           { id: 'bed1', allocated: false, price: 5000 },
           { id: 'bed2', allocated: true, price: 5000 },
         ],
+        price: 10000,
+        pricingPeriod: 'day',
+
       },
       {
         id: 'room2',
@@ -72,6 +88,8 @@ export const dummyPGs: PG[] = [
           { id: 'bed3', allocated: false, price: 4500 },
           { id: 'bed4', allocated: false, price: 4500 },
         ],
+        price: 10000,
+        pricingPeriod: 'month',
       },
     ],
     onlinePayment: true,

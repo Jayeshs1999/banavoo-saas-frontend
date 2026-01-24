@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/Card';
 import { dummyRequests } from '../../../utils';
 import { formatDate } from '../../../utils';
 
 export default function AdminRequests() {
+  const router = useRouter();
   const [requests, setRequests] = useState(dummyRequests);
 
   const handleApprove = (id: string) => {
@@ -23,7 +25,12 @@ export default function AdminRequests() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Booking Requests</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="sm:text-2xl md:text-3xl font-bold">Booking Requests</h1>
+        <Button variant="outline" onClick={() => router.back()}>
+          ← Back
+        </Button>
+      </div>
 
       <div className="space-y-4">
         {requests.map((request) => (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,24 +9,32 @@ import { Button } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components';
 import { useAuth } from '../../context/AuthContext';
 
+const addressSchema = z.object({
+  area: z.string().min(1, 'Area is required'),
+  landmark: z.string().min(1, 'Landmark / Set location is required'),
+  city: z.string().min(1, 'City is required'),
+  pincode: z.string().regex(/^\d{6}$/, 'Pincode must be 6 digits'),
+  state: z.string().min(1, 'State is required'),
+});
+
 const profileSchema = z.object({
   pgName: z.string().min(1, 'PG Name is required'),
   ownerName: z.string().min(1, 'Owner Name is required'),
   mobile: z.string().min(10, 'Mobile number must be at least 10 digits'),
   email: z.string().email('Invalid email address'),
-  address: z.string().min(1, 'Address is required'),
+  address: addressSchema,
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function AdminProfile() {
+  const router = useRouter();
   const { currentAdmin } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -50,7 +59,12 @@ export default function AdminProfile() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">Profile</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Profile</h1>
+        <Button variant="outline" onClick={() => router.back()}>
+          ← Back
+        </Button>
+      </div>
 
       <Card>
         <CardHeader>
@@ -124,19 +138,66 @@ export default function AdminProfile() {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium mb-1">
-                  Address
-                </label>
-                <textarea
-                  {...register('address')}
-                  id="address"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.address && (
-                  <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
-                )}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium">Address</label>
+                <div>
+                  <input
+                    {...register('address.area')}
+                    type="text"
+                    placeholder="Area"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {errors.address?.area && (
+                    <p className="text-red-500 text-sm mt-1">{errors.address.area.message}</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    {...register('address.landmark')}
+                    type="text"
+                    placeholder="Landmark / Set location"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {errors.address?.landmark && (
+                    <p className="text-red-500 text-sm mt-1">{errors.address.landmark.message}</p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      {...register('address.city')}
+                      type="text"
+                      placeholder="City"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {errors.address?.city && (
+                      <p className="text-red-500 text-sm mt-1">{errors.address.city.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      {...register('address.pincode')}
+                      type="text"
+                      placeholder="Pincode (6 digits)"
+                      maxLength={6}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {errors.address?.pincode && (
+                      <p className="text-red-500 text-sm mt-1">{errors.address.pincode.message}</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <input
+                    {...register('address.state')}
+                    type="text"
+                    placeholder="State"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {errors.address?.state && (
+                    <p className="text-red-500 text-sm mt-1">{errors.address.state.message}</p>
+                  )}
+                </div>
               </div>
 
               <Button type="submit">Save Changes</Button>
@@ -161,7 +222,9 @@ export default function AdminProfile() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600">Address</label>
-                <p>{currentAdmin.address}</p>
+                <p>
+                  {currentAdmin.address.area}, {currentAdmin.address.landmark}, {currentAdmin.address.city} - {currentAdmin.address.pincode}, {currentAdmin.address.state}
+                </p>
               </div>
             </div>
           )}

@@ -1,23 +1,34 @@
 // Types for PGWala project
 
+export interface Address {
+  area: string;
+  landmark: string;
+  city: string;
+  pincode: string;
+  state: string;
+}
+
 export interface PGAdmin {
   id: string;
   pgName: string;
   ownerName: string;
   mobile: string;
   email: string;
-  address: string;
+  address: Address;
   password: string;
+  role: string;
 }
 
 export interface User {
   id: string;
+  name?: string;
   firstName: string;
   lastName: string;
   email: string;
   mobile: string;
   address: string;
   password: string;
+  role: string;
 }
 
 export interface PG {
@@ -39,6 +50,8 @@ export interface Room {
   id: string;
   name: string;
   beds: Bed[];
+  price: number;
+  pricingPeriod: 'day' | 'month';
 }
 
 export interface Bed {

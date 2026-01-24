@@ -32,9 +32,7 @@ export default function RootLayout({
       >
         <ClientAuthProvider>
           <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
+          <main className="flex-grow">{children}</main>
           <Footer />
         </ClientAuthProvider>
       </body>
