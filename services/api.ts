@@ -1,6 +1,6 @@
 // API Service for Dormitory Management System
 
-const API_BASE = typeof window !== 'undefined' ? (window as any).NEXT_PUBLIC_API_URL || 'http://localhost:5000/api' : 'http://localhost:5000/api';
+const API_BASE =  'https://dormitory-backend-5rda.onrender.com/api';
 
 // Helper function to get auth token
 const getAuthToken = () => {
