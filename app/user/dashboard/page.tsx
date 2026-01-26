@@ -1,35 +1,42 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components';
-import { useAuth } from '../../context/AuthContext';
-import { dummyPGs } from '../../../utils';
-import { PG } from '../../../types';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components";
+import { useAuth } from "../../context/AuthContext";
+import { dummyPGs } from "../../../utils";
+import { PG } from "../../../types";
 
 export default function UserDashboard() {
   const { currentUser, logout } = useAuth();
   const router = useRouter();
   const [pgs] = useState<PG[]>(dummyPGs);
   const [filters, setFilters] = useState({
-    city: '',
-    subcity: '',
+    city: "",
+    subcity: "",
   });
 
-  const filteredPGs = pgs.filter(pg =>
-    (!filters.city || pg.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
-    (!filters.subcity || pg.location.subcity.toLowerCase().includes(filters.subcity.toLowerCase()))
+  const filteredPGs = pgs.filter(
+    (pg) =>
+      (!filters.city ||
+        pg?.location?.city
+          .toLowerCase()
+          .includes(filters.city.toLowerCase())) &&
+      (!filters.subcity ||
+        pg?.location?.subcity
+          .toLowerCase()
+          .includes(filters.subcity.toLowerCase())),
   );
 
   const handleBook = (pgId: string) => {
     // In real app, navigate to booking page
-    alert('Booking functionality to be implemented');
+    alert("Booking functionality to be implemented");
   };
 
   if (!currentUser) {
-    router.push('/user/login');
+    router.push("/user/login");
     return <div>Loading...</div>;
   }
 
@@ -64,7 +71,9 @@ export default function UserDashboard() {
             type="text"
             placeholder="Filter by subcity"
             value={filters.subcity}
-            onChange={(e) => setFilters({ ...filters, subcity: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, subcity: e.target.value })
+            }
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -79,10 +88,16 @@ export default function UserDashboard() {
             <CardContent>
               <div className="mb-4">
                 <p className="text-sm text-gray-600">
-                  {pg.location.subcity}, {pg.location.city}, {pg.location.state}
+                  {pg?.location?.subcity}, {pg?.location?.city},{" "}
+                  {pg?.location?.state}
                 </p>
                 <p className="text-sm text-gray-600">
-                  Available Beds: {pg.structure.reduce((acc, room) => acc + room.beds.filter(bed => !bed.allocated).length, 0)}
+                  Available Beds:{" "}
+                  {pg.structure.reduce(
+                    (acc, room) =>
+                      acc + room.beds.filter((bed) => !bed.allocated).length,
+                    0,
+                  )}
                 </p>
               </div>
 
@@ -90,13 +105,14 @@ export default function UserDashboard() {
                 <h4 className="font-semibold mb-2">Rooms:</h4>
                 {pg.structure.map((room) => (
                   <div key={room.id} className="text-sm mb-1">
-                    {room.name}: {room.beds.filter(bed => !bed.allocated).length} available
+                    {room.name}:{" "}
+                    {room.beds.filter((bed) => !bed.allocated).length} available
                   </div>
                 ))}
               </div>
 
               <Button onClick={() => handleBook(pg.id)} className="w-full">
-                {pg.onlinePayment ? 'Book Online' : 'Send Request'}
+                {pg.onlinePayment ? "Book Online" : "Send Request"}
               </Button>
             </CardContent>
           </Card>
