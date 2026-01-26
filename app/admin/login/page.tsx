@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 
 const loginSchema = z.object({
@@ -19,8 +19,15 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function AdminLogin() {
   const router = useRouter();
-  const { loginAdmin, currentAdmin, currentUser, logout } = useAuth();
-  const [error, setError] = useState("");
+  const {
+    loginAdmin,
+    currentAdmin,
+    currentUser,
+    logout,
+    error,
+    loading,
+    clearError,
+  } = useAuth();
 
   // Auto-logout if user is logged in (not admin)
   useEffect(() => {
@@ -37,14 +44,12 @@ export default function AdminLogin() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginForm) => {
-    setError("");
-    const success = loginAdmin(data.email, data.password);
-    
+  const onSubmit = async (data: LoginForm) => {
+    clearError();
+    const success = await loginAdmin(data.email, data.password);
+
     if (success) {
       router.push("/admin/dashboard");
-    } else {
-      setError("Invalid email or password");
     }
   };
 

@@ -38,14 +38,22 @@ type RegisterForm = z.infer<typeof registerSchema>;
 export default function AdminRegister() {
   const [error, setError] = useState("");
   const router = useRouter();
-  const { registerAdmin, sendMobileOtp, verifyMobileOtp, sendEmailOtp, verifyEmailOtp } = useAuth();
+  const {
+    registerAdmin,
+    sendMobileOtp,
+    verifyMobileOtp,
+    sendEmailOtp,
+    verifyEmailOtp,
+  } = useAuth();
 
   // OTP state
   const [mobileOtp, setMobileOtp] = useState("");
   const [emailOtp, setEmailOtp] = useState("");
   const [mobileOtpSent, setMobileOtpSent] = useState(false);
   const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [verifiedForMobile, setVerifiedForMobile] = useState<string | null>(null);
+  const [verifiedForMobile, setVerifiedForMobile] = useState<string | null>(
+    null,
+  );
   const [verifiedForEmail, setVerifiedForEmail] = useState<string | null>(null);
   const [otpError, setOtpError] = useState("");
 
@@ -78,8 +86,10 @@ export default function AdminRegister() {
     }
   }, [emailVal, verifiedForEmail]);
 
-  const mobileVerified = verifiedForMobile != null && mobileVal === verifiedForMobile;
-  const emailVerified = verifiedForEmail != null && emailVal === verifiedForEmail;
+  const mobileVerified =
+    verifiedForMobile != null && mobileVal === verifiedForMobile;
+  const emailVerified =
+    verifiedForEmail != null && emailVal === verifiedForEmail;
 
   const handleSendMobileOtp = async () => {
     setOtpError("");
@@ -128,7 +138,9 @@ export default function AdminRegister() {
   const onSubmit = (data: RegisterForm) => {
     setOtpError("");
     if (!mobileVerified || !emailVerified) {
-      setOtpError("Please verify both mobile and email with OTP before registering.");
+      setOtpError(
+        "Please verify both mobile and email with OTP before registering.",
+      );
       return;
     }
     try {
@@ -159,7 +171,10 @@ export default function AdminRegister() {
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label htmlFor="pgName" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="pgName"
+                    className="block text-sm font-medium mb-1"
+                  >
                     PG Name
                   </label>
                   <input
@@ -169,12 +184,17 @@ export default function AdminRegister() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.pgName && (
-                    <p className="text-red-500 text-sm mt-1">{errors.pgName.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.pgName.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="ownerName" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="ownerName"
+                    className="block text-sm font-medium mb-1"
+                  >
                     Owner Name
                   </label>
                   <input
@@ -184,13 +204,18 @@ export default function AdminRegister() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.ownerName && (
-                    <p className="text-red-500 text-sm mt-1">{errors.ownerName.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.ownerName.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Mobile with OTP */}
                 <div>
-                  <label htmlFor="mobile" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="mobile"
+                    className="block text-sm font-medium mb-1"
+                  >
                     Mobile Number
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -208,11 +233,15 @@ export default function AdminRegister() {
                       disabled={mobileVerified}
                       className="shrink-0 w-full sm:w-auto"
                     >
-                      {mobileOtpSent && !mobileVerified ? "Resend OTP" : "Send OTP"}
+                      {mobileOtpSent && !mobileVerified
+                        ? "Resend OTP"
+                        : "Send OTP"}
                     </Button>
                   </div>
                   {errors.mobile && (
-                    <p className="text-red-500 text-sm mt-1">{errors.mobile.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.mobile.message}
+                    </p>
                   )}
                   {mobileOtpSent && !mobileVerified && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-2">
@@ -222,22 +251,33 @@ export default function AdminRegister() {
                         maxLength={6}
                         placeholder="Enter 6-digit OTP"
                         value={mobileOtp}
-                        onChange={(e) => setMobileOtp(e.target.value.replace(/\D/g, ""))}
+                        onChange={(e) =>
+                          setMobileOtp(e.target.value.replace(/\D/g, ""))
+                        }
                         className="min-w-0 flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <Button type="button" onClick={handleVerifyMobileOtp} className="shrink-0 w-full sm:w-auto">
+                      <Button
+                        type="button"
+                        onClick={handleVerifyMobileOtp}
+                        className="shrink-0 w-full sm:w-auto"
+                      >
                         Verify
                       </Button>
                     </div>
                   )}
                   {mobileVerified && (
-                    <p className="text-green-600 text-sm mt-1">✓ Mobile verified</p>
+                    <p className="text-green-600 text-sm mt-1">
+                      ✓ Mobile verified
+                    </p>
                   )}
                 </div>
 
                 {/* Email with OTP */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium mb-1"
+                  >
                     Email
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -254,11 +294,15 @@ export default function AdminRegister() {
                       disabled={emailVerified}
                       className="shrink-0 w-full sm:w-auto"
                     >
-                      {emailOtpSent && !emailVerified ? "Resend OTP" : "Send OTP"}
+                      {emailOtpSent && !emailVerified
+                        ? "Resend OTP"
+                        : "Send OTP"}
                     </Button>
                   </div>
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.email.message}
+                    </p>
                   )}
                   {emailOtpSent && !emailVerified && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-2">
@@ -268,19 +312,27 @@ export default function AdminRegister() {
                         maxLength={6}
                         placeholder="Enter 6-digit OTP"
                         value={emailOtp}
-                        onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))}
+                        onChange={(e) =>
+                          setEmailOtp(e.target.value.replace(/\D/g, ""))
+                        }
                         className="min-w-0 flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <Button type="button" onClick={handleVerifyEmailOtp} className="shrink-0 w-full sm:w-auto">
+                      <Button
+                        type="button"
+                        onClick={handleVerifyEmailOtp}
+                        className="shrink-0 w-full sm:w-auto"
+                      >
                         Verify
                       </Button>
                     </div>
                   )}
-                {(otpError || error) && (
-                  <p className="text-red-500 text-sm">{otpError || error}</p>
-                )}
+                  {(otpError || error) && (
+                    <p className="text-red-500 text-sm">{otpError || error}</p>
+                  )}
                   {emailVerified && (
-                    <p className="text-green-600 text-sm mt-1">✓ Email verified</p>
+                    <p className="text-green-600 text-sm mt-1">
+                      ✓ Email verified
+                    </p>
                   )}
                 </div>
 
@@ -295,7 +347,9 @@ export default function AdminRegister() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.address?.area && (
-                      <p className="text-red-500 text-sm mt-1">{errors.address.area.message}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.address.area.message}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -320,7 +374,9 @@ export default function AdminRegister() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {errors.address?.city && (
-                        <p className="text-red-500 text-sm mt-1">{errors.address.city.message}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.address.city.message}
+                        </p>
                       )}
                     </div>
                     <div>
@@ -346,13 +402,18 @@ export default function AdminRegister() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.address?.state && (
-                      <p className="text-red-500 text-sm mt-1">{errors.address.state.message}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.address.state.message}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium mb-1"
+                  >
                     Password
                   </label>
                   <input
@@ -362,12 +423,17 @@ export default function AdminRegister() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium mb-1"
+                  >
                     Confirm Password
                   </label>
                   <input
@@ -383,13 +449,20 @@ export default function AdminRegister() {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={!mobileVerified || !emailVerified}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!mobileVerified || !emailVerified}
+                >
                   Register
                 </Button>
               </form>
 
               <div className="mt-4 text-center">
-                <Link href="/admin/login" className="text-blue-500 hover:underline">
+                <Link
+                  href="/admin/login"
+                  className="text-blue-500 hover:underline"
+                >
                   Already have an account? Login
                 </Link>
               </div>

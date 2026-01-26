@@ -37,9 +37,10 @@ export default function UserLogin() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginForm) => {
+  const onSubmit = async (data: LoginForm) => {
     setError("");
-    if (loginUser(data.email, data.password)) {
+    const success = await loginUser(data.email, data.password);
+    if (success) {
       router.push("/user/dashboard");
     } else {
       setError("Invalid email or password");

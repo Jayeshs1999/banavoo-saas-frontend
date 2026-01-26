@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, {
   createContext,
@@ -6,27 +6,30 @@ import React, {
   useState,
   ReactNode,
   useEffect,
-} from 'react';
-import { PGAdmin, User } from '../../types';
-import { dummyPGAdmins, dummyUsers } from '../../utils';
+} from "react";
+import { PGAdmin, User } from "../../types";
+import { authAPI } from "../../services/api";
 
 /* -------------------- HELPERS -------------------- */
 
-const setAuthData = (userType: 'admin' | 'user', userData: PGAdmin | User) => {
+const setAuthData = (
+  userType: "admin" | "user",
+  userData: PGAdmin | User,
+  token: string,
+) => {
   const authData = {
     userType,
-    token: Date.now().toString(),
+    token,
     user: userData,
     timestamp: new Date().toISOString(),
   };
-  localStorage.setItem('authData', JSON.stringify(authData));
-  document.cookie = `authToken=${authData.token};path=/;max-age=${7 * 24 * 60 * 60}`;
-  document.cookie = `userType=${userType};path=/;max-age=${7 * 24 * 60 * 60}`;
+  localStorage.setItem("authData", JSON.stringify(authData));
+  localStorage.setItem("token", token);
 };
 
 const getAuthData = () => {
   try {
-    const data = localStorage.getItem('authData');
+    const data = localStorage.getItem("authData");
     return data ? JSON.parse(data) : null;
   } catch {
     return null;
@@ -34,9 +37,9 @@ const getAuthData = () => {
 };
 
 const clearAuthData = () => {
-  localStorage.removeItem('authData');
-  document.cookie = 'authToken=;path=/;max-age=0';
-  document.cookie = 'userType=;path=/;max-age=0';
+  localStorage.removeItem("authData");
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
 };
 
 /* -------------------- CONTEXT TYPE -------------------- */
@@ -44,12 +47,14 @@ const clearAuthData = () => {
 interface AuthContextType {
   currentAdmin: PGAdmin | null;
   currentUser: User | null;
+  loading: boolean;
+  error: string | null;
 
-  loginAdmin: (email: string, password: string) => boolean;
-  loginUser: (email: string, password: string) => boolean;
+  loginAdmin: (email: string, password: string) => Promise<boolean>;
+  loginUser: (email: string, password: string) => Promise<boolean>;
 
-  registerAdmin: (admin: Omit<PGAdmin, 'id'>) => void;
-  registerUser: (user: Omit<User, 'id'>) => void;
+  registerAdmin: (admin: Omit<PGAdmin, "id">) => Promise<boolean>;
+  registerUser: (user: Omit<User, "id">) => Promise<boolean>;
 
   sendMobileOtp: (mobile: string) => Promise<void>;
   verifyMobileOtp: (mobile: string, otp: string) => Promise<boolean>;
@@ -58,6 +63,7 @@ interface AuthContextType {
   verifyEmailOtp: (email: string, otp: string) => Promise<boolean>;
 
   logout: () => void;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,7 +71,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -79,110 +85,182 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentAdmin, setCurrentAdmin] = useState<PGAdmin | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  const [admins, setAdmins] = useState<PGAdmin[]>(dummyPGAdmins);
-  const [users, setUsers] = useState<User[]>(dummyUsers);
-
-  // TEMP OTP STORES (keyed by mobile/email)
-  const [mobileOtps, setMobileOtps] = useState<Record<string, string>>({});
-  const [emailOtps, setEmailOtps] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const authData = getAuthData();
-    if (authData?.userType === 'admin') {
+    if (authData?.userType === "admin") {
       setCurrentAdmin(authData.user);
     }
-    if (authData?.userType === 'user') {
+    if (authData?.userType === "user") {
       setCurrentUser(authData.user);
     }
   }, []);
 
+  const clearError = () => setError(null);
+
   /* -------------------- LOGIN -------------------- */
 
-  const loginAdmin = (email: string, password: string): boolean => {
-    const admin = admins.find(
-      a => a.email === email && a.password === password
-    );
-    if (!admin) return false;
+  const loginAdmin = async (
+    email: string,
+    password: string,
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authAPI.adminLogin(email, password);
 
-    setCurrentAdmin(admin);
-    setCurrentUser(null);
-    setAuthData('admin', admin);
-    return true;
+      // Store token and admin data
+      localStorage.setItem("token", response.token || "admin-token");
+      setCurrentAdmin(response);
+      setCurrentUser(null);
+
+      setAuthData("admin", response, response.token || "admin-token");
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loginUser = (email: string, password: string): boolean => {
-    const user = users.find(
-      u => u.email === email && u.password === password
-    );
-    if (!user) return false;
+  const loginUser = async (
+    email: string,
+    password: string,
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authAPI.adminLogin(email, password); // Note: Using admin login for now, will need user login API
 
-    setCurrentUser(user);
-    setCurrentAdmin(null);
-    setAuthData('user', user);
-    return true;
+      // Store token and user data
+      localStorage.setItem("token", response.token || "user-token");
+      setCurrentUser(response);
+      setCurrentAdmin(null);
+
+      setAuthData("user", response, response.token || "user-token");
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* -------------------- OTP LOGIC -------------------- */
 
-  const generateOtp = () =>
-    Math.floor(100000 + Math.random() * 900000).toString();
-
   const sendMobileOtp = async (mobile: string) => {
-    const otp = generateOtp();
-    setMobileOtps(prev => ({ ...prev, [mobile]: otp }));
-    console.log('Mobile OTP (dev only):', otp);
+    setLoading(true);
+    setError(null);
+    try {
+      await authAPI.sendMobileOtp(mobile);
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const verifyMobileOtp = async (mobile: string, otp: string) => {
-    const valid = mobileOtps[mobile] === otp;
-    if (valid) {
-      const { [mobile]: _, ...rest } = mobileOtps;
-      setMobileOtps(rest);
+  const verifyMobileOtp = async (
+    mobile: string,
+    otp: string,
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await authAPI.verifyMobileOtp(mobile, otp);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Invalid OTP");
+      return false;
+    } finally {
+      setLoading(false);
     }
-    return valid;
   };
 
   const sendEmailOtp = async (email: string) => {
-    const otp = generateOtp();
-    setEmailOtps(prev => ({ ...prev, [email]: otp }));
-    console.log('Email OTP (dev only):', otp);
+    setLoading(true);
+    setError(null);
+    try {
+      await authAPI.sendEmailOtp(email);
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const verifyEmailOtp = async (email: string, otp: string) => {
-    const valid = emailOtps[email] === otp;
-    if (valid) {
-      const { [email]: _, ...rest } = emailOtps;
-      setEmailOtps(rest);
+  const verifyEmailOtp = async (
+    email: string,
+    otp: string,
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await authAPI.verifyEmailOtp(email, otp);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Invalid OTP");
+      return false;
+    } finally {
+      setLoading(false);
     }
-    return valid;
   };
 
   /* -------------------- REGISTER -------------------- */
 
-  const registerAdmin = (adminData: Omit<PGAdmin, 'id'>) => {
-    const newAdmin: PGAdmin = {
-      ...adminData,
-      id: `admin${admins.length + 1}`,
-    };
-    setAdmins(prev => [...prev, newAdmin]);
-    setCurrentAdmin(newAdmin);
-    setAuthData('admin', newAdmin);
+  const registerAdmin = async (
+    adminData: Omit<PGAdmin, "id">,
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authAPI.adminRegister({
+        pgName: adminData.pgName,
+        ownerName: adminData.ownerName,
+        email: adminData.email,
+        mobile: adminData.mobile,
+        password: adminData.password,
+        address: adminData.address,
+      });
+
+      // Store token and admin data
+      localStorage.setItem("token", response.token || "admin-token");
+      setCurrentAdmin(response);
+      setCurrentUser(null);
+
+      setAuthData("admin", response, response.token || "admin-token");
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const registerUser = (userData: Omit<User, 'id'>) => {
-    const newUser: User = {
-      ...userData,
-      id: `user${users.length + 1}`,
-    };
-    setUsers(prev => [...prev, newUser]);
-    setCurrentUser(newUser);
-    setAuthData('user', newUser);
+  const registerUser = async (userData: Omit<User, "id">): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Note: User registration API not implemented yet
+      setError("User registration not available yet");
+      return false;
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* -------------------- LOGOUT -------------------- */
 
   const logout = () => {
+    authAPI.logout();
     setCurrentAdmin(null);
     setCurrentUser(null);
     clearAuthData();
@@ -193,6 +271,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{
         currentAdmin,
         currentUser,
+        loading,
+        error,
         loginAdmin,
         loginUser,
         registerAdmin,
@@ -202,6 +282,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         sendEmailOtp,
         verifyEmailOtp,
         logout,
+        clearError,
       }}
     >
       {children}
