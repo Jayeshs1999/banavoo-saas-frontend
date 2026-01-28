@@ -27,6 +27,12 @@ export default function CreatePG() {
   const [roomError, setRoomError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [location, setLocation] = useState({
+    subcity: "",
+    city: "",
+    state: "",
+    country: "India",
+  });
   const router = useRouter();
 
   const {
@@ -135,6 +141,19 @@ export default function CreatePG() {
     setError("");
     setRoomError("");
 
+    // Validate location fields
+    if (
+      !location.subcity.trim() ||
+      !location.city.trim() ||
+      !location.state.trim()
+    ) {
+      setError(
+        "Please fill in all required location fields (Subcity, City, and State)",
+      );
+      setLoading(false);
+      return;
+    }
+
     // Validate at least one room exists
     if (rooms.length === 0) {
       setRoomError("Please add at least one room");
@@ -153,27 +172,74 @@ export default function CreatePG() {
     }
 
     try {
+      // Transform rooms data to match backend structure
+      const transformedStructure = rooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        beds: room.beds.map((bed) => ({
+          id: bed.id,
+          allocated: bed.allocated,
+          price: bed.price,
+        })),
+        price: room.price,
+        pricingPeriod: room.pricingPeriod,
+      }));
+
       const newPG = {
         name: data.name,
         photos: photos,
-        structure: rooms,
+        structure: transformedStructure,
         onlinePayment: data.onlinePayment,
         location: {
-          subcity: "",
-          city: "",
-          state: "",
-          country: "",
+          subcity: location.subcity.trim(),
+          city: location.city.trim(),
+          state: location.state.trim(),
+          country: location.country.trim() || "India",
         },
       };
 
-      // TODO: PG creation API not implemented yet
-      // For now, just show success message
-      alert(
-        "PG created successfully! (Note: PG management API not yet implemented)",
-      );
-      router.push("/admin/dashboard");
+      // Call the PG creation API
+      console.log("Creating PG with data:", newPG);
+
+      // Debug token information
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      console.log("Token found:", !!token);
+      if (token) {
+        console.log("Token preview:", token.substring(0, 20) + "...");
+      }
+
+      const response = await pgAPI.createPG(newPG);
+      console.log("PG creation response:", response);
+
+      if (response.success) {
+        // Show success message and redirect
+        alert("PG created successfully!");
+        router.push("/admin/dashboard");
+      } else {
+        setError(response.message || "Failed to create PG. Please try again.");
+      }
     } catch (err: any) {
-      setError(err.message || "Failed to create PG");
+      console.error("PG creation error:", err);
+      console.error("Error details:", err.message, err.stack);
+
+      // Handle different error types
+      if (err.message && err.message.includes("401")) {
+        setError(
+          "Authentication failed. Please log in again as an admin. The token may have expired.",
+        );
+        // Clear invalid token
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+      } else if (err.message && err.message.includes("400")) {
+        setError("Invalid data provided. Please check your inputs.");
+      } else if (err.message && err.message.includes("Network")) {
+        setError(
+          "Network error. Please check your internet connection and try again.",
+        );
+      } else {
+        setError(err.message || "Failed to create PG. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -221,6 +287,90 @@ export default function CreatePG() {
                 />
                 Enable online payment for bookings
               </label>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Location Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="subcity"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Subcity/Area
+                </label>
+                <input
+                  type="text"
+                  id="subcity"
+                  value={location.subcity}
+                  onChange={(e) =>
+                    setLocation({ ...location, subcity: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter subcity or area"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="city"
+                  className="block text-sm font-medium mb-1"
+                >
+                  City
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  value={location.city}
+                  onChange={(e) =>
+                    setLocation({ ...location, city: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter city"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="state"
+                  className="block text-sm font-medium mb-1"
+                >
+                  State
+                </label>
+                <input
+                  type="text"
+                  id="state"
+                  value={location.state}
+                  onChange={(e) =>
+                    setLocation({ ...location, state: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter state"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Country
+                </label>
+                <input
+                  type="text"
+                  id="country"
+                  value={location.country}
+                  onChange={(e) =>
+                    setLocation({ ...location, country: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter country"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
