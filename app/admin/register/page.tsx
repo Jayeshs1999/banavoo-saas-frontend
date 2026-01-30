@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
+import StateDropdown from "@/components/StateDropdown";
 import { useAuth } from "../../context/AuthContext";
 
 const addressSchema = z.object({
@@ -395,11 +396,14 @@ export default function AdminRegister() {
                     </div>
                   </div>
                   <div>
-                    <input
-                      {...register("address.state")}
-                      type="text"
-                      placeholder="State"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    <StateDropdown
+                      value={watch("address.state")}
+                      onChange={(value) =>
+                        register("address.state").onChange({
+                          target: { value },
+                        })
+                      }
+                      placeholder="Select a state"
                     />
                     {errors.address?.state && (
                       <p className="text-red-500 text-sm mt-1">

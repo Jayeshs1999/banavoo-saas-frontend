@@ -166,6 +166,7 @@ export const pgAPI = {
       city: string;
       state: string;
       country: string;
+      pin: string;
     };
   }) => {
     return apiRequest('/pgs', {

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
+import StateDropdown from "@/components/StateDropdown";
 import { PG, Room } from "../../../types";
 import { generateId } from "../../../utils";
 import { pgAPI, uploadAPI } from "../../../services/api";
@@ -32,6 +33,7 @@ export default function CreatePG() {
     city: "",
     state: "",
     country: "India",
+    pin: "",
   });
   const router = useRouter();
 
@@ -145,10 +147,11 @@ export default function CreatePG() {
     if (
       !location.subcity.trim() ||
       !location.city.trim() ||
-      !location.state.trim()
+      !location.state.trim() ||
+      !location.pin?.trim()
     ) {
       setError(
-        "Please fill in all required location fields (Subcity, City, and State)",
+        "Please fill in all required location fields (Subcity, City, Pin and State)",
       );
       setLoading(false);
       return;
@@ -195,6 +198,7 @@ export default function CreatePG() {
           city: location.city.trim(),
           state: location.state.trim(),
           country: location.country.trim() || "India",
+          pin: location.pin?.trim(),
         },
       };
 
@@ -342,15 +346,28 @@ export default function CreatePG() {
                 >
                   State
                 </label>
+                <StateDropdown
+                  value={location.state}
+                  onChange={(value) =>
+                    setLocation({ ...location, state: value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="pin" className="block text-sm font-medium mb-1">
+                  Pin code
+                </label>
                 <input
                   type="text"
-                  id="state"
-                  value={location.state}
+                  id="pin"
+                  value={location.pin}
                   onChange={(e) =>
-                    setLocation({ ...location, state: e.target.value })
+                    setLocation({ ...location, pin: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter state"
+                  placeholder="Enter Pin"
                 />
               </div>
               <div>
@@ -363,6 +380,7 @@ export default function CreatePG() {
                 <input
                   type="text"
                   id="country"
+                  disabled
                   value={location.country}
                   onChange={(e) =>
                     setLocation({ ...location, country: e.target.value })
