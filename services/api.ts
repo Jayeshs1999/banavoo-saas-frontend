@@ -1,6 +1,7 @@
 // API Service for Dormitory Management System
 
 const API_BASE =  'https://dormitory-backend-5rda.onrender.com/api';
+// const API_BASE =  'http://localhost:5000/api';
 
 // Helper function to get auth token
 const getAuthToken = () => {
@@ -26,7 +27,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 
   try {
     const response = await fetch(url, defaultOptions);
-    
+        
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -251,4 +252,28 @@ export const uploadAPI = {
 
     return await response.json();
   },
+};
+
+
+export const superAdminAPI = {
+  // Get dashboard data
+  getSUperAdminDashboardInfo: async () => {
+    return apiRequest('/super-admin/dashboard');
+  },
+
+  // Get admin list
+  getAdminList: async () => {
+    return apiRequest(`/super-admin/admins`);
+  },
+
+  // Get PG list
+  getPGList: async () => {
+    return apiRequest(`/super-admin/pgs`);
+  },
+
+  // Get PG list
+  getLocationList: async () => {
+    return apiRequest(`/super-admin/location-stats`);
+  },
+
 };
