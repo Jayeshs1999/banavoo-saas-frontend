@@ -77,7 +77,7 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="grid grid-cols-1 items-center mb-6 sm:grid-cols-2">
         <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
         <div className="flex gap-4">
           <Link href="/admin/superadmin-portal/admins">
@@ -104,7 +104,7 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Admin Statistics */}
         <Card>
           <CardHeader>
@@ -212,7 +212,7 @@ export default function SuperAdminDashboard() {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link href="/admin/superadmin-portal/admins" className="block">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="text-center py-6">

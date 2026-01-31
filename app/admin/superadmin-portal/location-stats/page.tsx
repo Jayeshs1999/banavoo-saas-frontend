@@ -115,7 +115,7 @@ export default function LocationStats() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         {/* Summary Cards */}
         <Card>
           <CardHeader>
@@ -224,12 +224,12 @@ export default function LocationStats() {
                     <table className="w-full table-auto">
                       <thead>
                         <tr className="border-b bg-gray-50">
-                          <th className="text-left p-2">City</th>
-                          <th className="text-left p-2">PGs</th>
-                          <th className="text-left p-2">Rooms</th>
-                          <th className="text-left p-2">Beds</th>
-                          <th className="text-left p-2">Allocated</th>
-                          <th className="text-left p-2">Available</th>
+                          <th className="text-left p-2 sm:p-3">City</th>
+                          <th className="text-left p-2 sm:p-3">PGs</th>
+                          <th className="text-left p-2 sm:p-3">Rooms</th>
+                          <th className="text-left p-2 sm:p-3">Beds</th>
+                          <th className="text-left p-2 sm:p-3">Allocated</th>
+                          <th className="text-left p-2 sm:p-3">Available</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -238,26 +238,28 @@ export default function LocationStats() {
                             key={city.city}
                             className="border-b hover:bg-gray-50"
                           >
-                            <td className="p-2 font-medium">{city.city}</td>
-                            <td className="p-2">{city.pgCount}</td>
-                            <td className="p-2">{city.totalRooms}</td>
-                            <td className="p-2">{city.totalBeds}</td>
-                            <td className="p-2 text-red-600">
+                            <td className="p-2 sm:p-3 font-medium">
+                              {city.city}
+                            </td>
+                            <td className="p-2 sm:p-3">{city.pgCount}</td>
+                            <td className="p-2 sm:p-3">{city.totalRooms}</td>
+                            <td className="p-2 sm:p-3">{city.totalBeds}</td>
+                            <td className="p-2 sm:p-3 text-red-600">
                               {city.allocatedBeds}
                             </td>
-                            <td className="p-2 text-green-600">
+                            <td className="p-2 sm:p-3 text-green-600">
                               {city.availableBeds}
                             </td>
                           </tr>
                         ))}
                         {/* Summary row for state */}
                         <tr className="border-t font-bold bg-gray-50">
-                          <td className="p-2">Total</td>
-                          <td className="p-2">{state.totalPGs}</td>
-                          <td className="p-2">{state.totalRooms}</td>
-                          <td className="p-2">{state.totalBeds}</td>
-                          <td className="p-2">{state.allocatedBeds}</td>
-                          <td className="p-2">{state.availableBeds}</td>
+                          <td className="p-2 sm:p-3">Total</td>
+                          <td className="p-2 sm:p-3">{state.totalPGs}</td>
+                          <td className="p-2 sm:p-3">{state.totalRooms}</td>
+                          <td className="p-2 sm:p-3">{state.totalBeds}</td>
+                          <td className="p-2 sm:p-3">{state.allocatedBeds}</td>
+                          <td className="p-2 sm:p-3">{state.availableBeds}</td>
                         </tr>
                       </tbody>
                     </table>

@@ -124,19 +124,19 @@ export default function AdminsList() {
               <table className="w-full table-auto">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2">Name</th>
-                    <th className="text-left p-2">Email</th>
-                    <th className="text-left p-2">Mobile</th>
-                    <th className="text-left p-2">Role</th>
-                    <th className="text-left p-2">Verified</th>
-                    <th className="text-left p-2">PG Name</th>
-                    <th className="text-left p-2">Joined</th>
+                    <th className="text-left p-2 sm:p-3">Name</th>
+                    <th className="text-left p-2 sm:p-3">Email</th>
+                    <th className="text-left p-2 sm:p-3">Mobile</th>
+                    <th className="text-left p-2 sm:p-3">Role</th>
+                    <th className="text-left p-2 sm:p-3">Verified</th>
+                    <th className="text-left p-2 sm:p-3">PG Name</th>
+                    <th className="text-left p-2 sm:p-3">Joined</th>
                   </tr>
                 </thead>
                 <tbody>
                   {admins.map((admin) => (
                     <tr key={admin._id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">
+                      <td className="p-2 sm:p-3">
                         <div>
                           <div className="font-bold">{admin.ownerName}</div>
                           <div className="text-sm text-gray-600">
@@ -144,9 +144,9 @@ export default function AdminsList() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-2">{admin.email}</td>
-                      <td className="p-2">{admin.mobile}</td>
-                      <td className="p-2">
+                      <td className="p-2 sm:p-3">{admin.email}</td>
+                      <td className="p-2 sm:p-3">{admin.mobile}</td>
+                      <td className="p-2 sm:p-3">
                         <span
                           className={`px-2 py-1 rounded text-xs font-bold ${
                             admin.role === "super_admin"
@@ -157,7 +157,7 @@ export default function AdminsList() {
                           {admin.role.toUpperCase()}
                         </span>
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 sm:p-3">
                         <span
                           className={`px-2 py-1 rounded text-xs font-bold ${
                             admin.isVerified
@@ -168,8 +168,8 @@ export default function AdminsList() {
                           {admin.isVerified ? "VERIFIED" : "NOT VERIFIED"}
                         </span>
                       </td>
-                      <td className="p-2">{admin.pgName}</td>
-                      <td className="p-2 text-sm text-gray-600">
+                      <td className="p-2 sm:p-3">{admin.pgName}</td>
+                      <td className="p-2 sm:p-3 text-sm text-gray-600">
                         {new Date(admin.createdAt).toLocaleDateString()}
                       </td>
                     </tr>
