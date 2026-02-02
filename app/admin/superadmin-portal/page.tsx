@@ -32,7 +32,7 @@ export default function SuperAdminDashboard() {
 
       console.log("response", response);
 
-      if (!response.success) {
+      if (!response) {
         throw new Error("Failed to fetch dashboard stats");
       }
 
@@ -115,19 +115,19 @@ export default function SuperAdminDashboard() {
               <div className="flex justify-between">
                 <span>Total Admins:</span>
                 <span className="font-bold">
-                  {stats?.data?.totalAdmins || 0}
+                  {stats?.adminStats?.totalAdmins || 0}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Regular Admins:</span>
                 <span className="font-bold text-blue-600">
-                  {stats?.data?.totalRegularAdmins || 0}
+                  {stats?.adminStats?.regularAdmins || 0}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Super Admins:</span>
                 <span className="font-bold text-red-600">
-                  {stats?.data?.totalSuperAdmins || 0}
+                  {stats?.adminStats?.superAdmins || 0}
                 </span>
               </div>
             </div>
@@ -143,18 +143,20 @@ export default function SuperAdminDashboard() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Total PGs:</span>
-                <span className="font-bold">{stats?.data?.totalPGs || 0}</span>
+                <span className="font-bold">
+                  {stats?.pgStats?.totalPGs || 0}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Active PGs:</span>
                 <span className="font-bold text-green-600">
-                  {stats?.data?.activePGs || 0}
+                  {stats?.pgStats?.activePGs || 0}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Inactive PGs:</span>
                 <span className="font-bold text-gray-600">
-                  {stats?.data?.inactivePGs || 0}
+                  {stats?.pgStats?.inactivePGs || 0}
                 </span>
               </div>
             </div>
@@ -171,17 +173,19 @@ export default function SuperAdminDashboard() {
               <div className="flex justify-between">
                 <span>Total Rooms:</span>
                 <span className="font-bold">
-                  {stats?.data?.totalRooms || 0}
+                  {stats?.roomStats?.totalRooms || 0}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Total Beds:</span>
-                <span className="font-bold">{stats?.data?.totalBeds || 0}</span>
+                <span className="font-bold">
+                  {stats?.roomStats?.totalBeds || 0}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Available Beds:</span>
                 <span className="font-bold text-green-600">
-                  {stats?.data?.totalAvailableBeds || 0}
+                  {stats?.roomStats?.totalAvailableBeds || 0}
                 </span>
               </div>
             </div>
@@ -196,7 +200,7 @@ export default function SuperAdminDashboard() {
           <CardContent>
             <div className="text-center">
               <div className="text-4xl font-bold text-blue-600">
-                {stats?.data?.occupancyRate || 0}%
+                {stats?.roomStats?.occupancyRate || 0}%
               </div>
               <div className="text-sm text-gray-600 mt-2">
                 Overall occupancy across all PGs

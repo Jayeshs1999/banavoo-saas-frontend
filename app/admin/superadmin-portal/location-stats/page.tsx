@@ -48,11 +48,11 @@ export default function LocationStats() {
     try {
       const response = await superAdminAPI?.getLocationList();
 
-      if (!response.success) {
+      if (!response) {
         throw new Error("Failed to fetch location stats");
       }
 
-      setLocationStats(response?.data);
+      setLocationStats(response);
     } catch (err: any) {
       setError(err.message);
     } finally {

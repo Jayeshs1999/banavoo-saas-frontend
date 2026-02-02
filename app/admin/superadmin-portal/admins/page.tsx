@@ -41,11 +41,11 @@ export default function AdminsList() {
       const token = localStorage.getItem("token");
       const response = await superAdminAPI?.getAdminList();
 
-      if (!response.success) {
+      if (!response) {
         throw new Error("Failed to fetch admins list");
       }
 
-      setAdmins(response?.data);
+      setAdmins(response);
     } catch (err: any) {
       setError(err.message);
     } finally {

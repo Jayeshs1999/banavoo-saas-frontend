@@ -58,11 +58,11 @@ export default function PGsList() {
     try {
       const response = await superAdminAPI?.getPGList();
 
-      if (!response.success) {
+      if (!response) {
         throw new Error("Failed to fetch PGs list");
       }
 
-      setPGs(response?.data);
+      setPGs(response);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -155,7 +155,7 @@ export default function PGsList() {
                                 : "bg-gray-100 text-gray-800"
                             }`}
                           >
-                            {pg?.isActive ? "Active" : "Inactive"}
+                            {true ? "Active" : "Inactive"}
                           </span>
                           {pg?.onlinePayment && (
                             <span className="ml-2 px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-800">
@@ -190,26 +190,26 @@ export default function PGsList() {
                           <div>
                             <span className="text-gray-600">Beds:</span>
                             <span className="ml-2 font-bold">
-                              {pg?.stats?.totalBeds}
+                              {pg?.totalBeds}
                             </span>
                           </div>
                           <div>
                             <span className="text-gray-600">Allocated:</span>
                             <span className="ml-2 font-bold text-red-600">
-                              {pg?.stats?.occupiedBeds}
+                              {pg?.allocatedBeds}
                             </span>
                           </div>
                           <div>
                             <span className="text-gray-600">Available:</span>
                             <span className="ml-2 font-bold text-green-600">
-                              {pg?.stats?.availableBeds}
+                              {pg?.availableBeds}
                             </span>
                           </div>
                         </div>
                         <div className="mt-2">
                           <span className="text-gray-600">Occupancy:</span>
                           <span className="ml-2 font-bold">
-                            {pg?.stats?.occupancyRate}%
+                            {pg?.occupancyRate}%
                           </span>
                         </div>
                       </div>
