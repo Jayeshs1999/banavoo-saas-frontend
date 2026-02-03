@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
 
@@ -18,9 +19,19 @@ export default function Header() {
   return (
     <header className="bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold">
-          STHALS.IN
-        </Link>
+        <div className="flex gap-2 justify-center items-center">
+          <Image
+            src="/logo1.png"
+            alt="STHALS Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+            priority
+          />
+          <Link href="/" className="text-xl font-bold">
+            STHALS.IN
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-4 items-center">
