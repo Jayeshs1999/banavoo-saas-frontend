@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { Menu, X, LogOut } from 'lucide-react';
+import Link from "next/link";
+import { useState } from "react";
+import { Menu, X, LogOut } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,15 +19,23 @@ export default function Header() {
     <header className="bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
-          STAL.IN
+          STHALS.IN
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-4 items-center">
-          <Link href="/" className="hover:text-accent">Home</Link>
-          <Link href="/dashboard" className="hover:text-accent">Dashboard</Link>
-          <Link href="/about" className="hover:text-accent">About</Link>
-          <Link href="/contact" className="hover:text-accent">Contact</Link>
+          <Link href="/" className="hover:text-accent">
+            Home
+          </Link>
+          <Link href="/dashboard" className="hover:text-accent">
+            Dashboard
+          </Link>
+          <Link href="/about" className="hover:text-accent">
+            About
+          </Link>
+          <Link href="/contact" className="hover:text-accent">
+            Contact
+          </Link>
           {isLoggedIn && (
             <button
               onClick={handleLogout}
@@ -40,10 +48,7 @@ export default function Header() {
         </nav>
 
         {/* Mobile Menu Button */}
-        <button
-          onClick={toggleMenu}
-          className="md:hidden flex items-center"
-        >
+        <button onClick={toggleMenu} className="md:hidden flex items-center">
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -51,10 +56,34 @@ export default function Header() {
       {/* Mobile Navigation */}
       {isOpen && (
         <nav className="md:hidden bg-primary-dark bg-opacity-95 px-4 py-4 space-y-3 flex flex-col">
-          <Link href="/" className="hover:text-accent block py-2" onClick={toggleMenu}>Home</Link>
-          <Link href="/dashboard" className="hover:text-accent block py-2" onClick={toggleMenu}>Dashboard</Link>
-          <Link href="/about" className="hover:text-accent block py-2" onClick={toggleMenu}>About</Link>
-          <Link href="/contact" className="hover:text-accent block py-2" onClick={toggleMenu}>Contact</Link>
+          <Link
+            href="/"
+            className="hover:text-accent block py-2"
+            onClick={toggleMenu}
+          >
+            Home
+          </Link>
+          <Link
+            href="/dashboard"
+            className="hover:text-accent block py-2"
+            onClick={toggleMenu}
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/about"
+            className="hover:text-accent block py-2"
+            onClick={toggleMenu}
+          >
+            About
+          </Link>
+          <Link
+            href="/contact"
+            className="hover:text-accent block py-2"
+            onClick={toggleMenu}
+          >
+            Contact
+          </Link>
           {isLoggedIn && (
             <button
               onClick={handleLogout}

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components";
@@ -57,7 +57,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col justify-center relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 text-primary-foreground">
-            Welcome to STAL.IN
+            Welcome to STHALS.IN
           </h1>
           <p className="text-muted-foreground text-lg mb-6 text-primary-foreground">
             Find your perfect PG accommodation or manage your PG business
