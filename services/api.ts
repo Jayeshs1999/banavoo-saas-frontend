@@ -275,5 +275,19 @@ export const superAdminAPI = {
   getLocationList: async () => {
     return apiRequest(`/super-admin/location-stats`);
   },
+};
 
+// Contact API
+export const contactAPI = {
+  // Send contact message
+  sendContactMessage: async (data: {
+    name: string;
+    email: string;
+    message: string;
+  }) => {
+    return apiRequest('/contact', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };

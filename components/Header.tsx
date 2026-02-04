@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <header className="bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex gap-2 justify-center items-center">
+        {/* <div className="flex gap-2 justify-center items-center">
           <Image
             src="/logo1.png"
             alt="STHALS Logo"
@@ -27,20 +27,20 @@ export default function Header() {
             height={40}
             className="object-contain"
             priority
-          />
-          <Link href="/" className="text-xl font-bold">
-            STHALS.IN
-          </Link>
-        </div>
+          /> */}
+        <Link href="/" className="text-xl font-bold">
+          STHALS.IN
+        </Link>
+        {/* </div> */}
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-4 items-center">
           <Link href="/" className="hover:text-accent">
             Home
           </Link>
-          <Link href="/dashboard" className="hover:text-accent">
+          {/* <Link href="/dashboard" className="hover:text-accent">
             Dashboard
-          </Link>
+          </Link> */}
           <Link href="/about" className="hover:text-accent">
             About
           </Link>
