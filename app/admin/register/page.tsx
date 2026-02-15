@@ -38,6 +38,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function AdminRegister() {
   const [error, setError] = useState("");
+  const [selectedState, setSelectedState] = useState("");
   const router = useRouter();
   const {
     registerAdmin,
@@ -48,20 +49,21 @@ export default function AdminRegister() {
   } = useAuth();
 
   // OTP state
-  const [mobileOtp, setMobileOtp] = useState("");
-  const [emailOtp, setEmailOtp] = useState("");
-  const [mobileOtpSent, setMobileOtpSent] = useState(false);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [verifiedForMobile, setVerifiedForMobile] = useState<string | null>(
-    null,
-  );
-  const [verifiedForEmail, setVerifiedForEmail] = useState<string | null>(null);
-  const [otpError, setOtpError] = useState("");
+  // const [mobileOtp, setMobileOtp] = useState("");
+  // const [emailOtp, setEmailOtp] = useState("");
+  // const [mobileOtpSent, setMobileOtpSent] = useState(false);
+  // const [emailOtpSent, setEmailOtpSent] = useState(false);
+  // const [verifiedForMobile, setVerifiedForMobile] = useState<string | null>(
+  //   null,
+  // );
+  // const [verifiedForEmail, setVerifiedForEmail] = useState<string | null>(null);
+  // const [otpError, setOtpError] = useState("");
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -71,79 +73,79 @@ export default function AdminRegister() {
   const emailVal = watch("email");
 
   // Reset OTP state when mobile/email changes after verification
-  useEffect(() => {
-    if (verifiedForMobile != null && mobileVal !== verifiedForMobile) {
-      setVerifiedForMobile(null);
-      setMobileOtpSent(false);
-      setMobileOtp("");
-    }
-  }, [mobileVal, verifiedForMobile]);
+  // useEffect(() => {
+  //   if (verifiedForMobile != null && mobileVal !== verifiedForMobile) {
+  //     setVerifiedForMobile(null);
+  //     setMobileOtpSent(false);
+  //     setMobileOtp("");
+  //   }
+  // }, [mobileVal, verifiedForMobile]);
 
-  useEffect(() => {
-    if (verifiedForEmail != null && emailVal !== verifiedForEmail) {
-      setVerifiedForEmail(null);
-      setEmailOtpSent(false);
-      setEmailOtp("");
-    }
-  }, [emailVal, verifiedForEmail]);
+  // useEffect(() => {
+  //   if (verifiedForEmail != null && emailVal !== verifiedForEmail) {
+  //     setVerifiedForEmail(null);
+  //     setEmailOtpSent(false);
+  //     setEmailOtp("");
+  //   }
+  // }, [emailVal, verifiedForEmail]);
 
-  const mobileVerified =
-    verifiedForMobile != null && mobileVal === verifiedForMobile;
-  const emailVerified =
-    verifiedForEmail != null && emailVal === verifiedForEmail;
+  // const mobileVerified =
+  //   verifiedForMobile != null && mobileVal === verifiedForMobile;
+  // const emailVerified =
+  //   verifiedForEmail != null && emailVal === verifiedForEmail;
 
-  const handleSendMobileOtp = async () => {
-    setOtpError("");
-    const mob = watch("mobile");
-    if (!mob || mob.length < 10) {
-      setOtpError("Enter a valid 10-digit mobile number first");
-      return;
-    }
-    await sendMobileOtp(mob);
-    setMobileOtpSent(true);
-  };
+  // const handleSendMobileOtp = async () => {
+  //   setOtpError("");
+  //   const mob = watch("mobile");
+  //   if (!mob || mob.length < 10) {
+  //     setOtpError("Enter a valid 10-digit mobile number first");
+  //     return;
+  //   }
+  //   await sendMobileOtp(mob);
+  //   setMobileOtpSent(true);
+  // };
 
-  const handleVerifyMobileOtp = async () => {
-    setOtpError("");
-    const mob = watch("mobile");
-    const ok = await verifyMobileOtp(mob, mobileOtp);
-    if (ok) {
-      setVerifiedForMobile(mob);
-    } else {
-      setOtpError("Invalid OTP for mobile");
-    }
-  };
+  // const handleVerifyMobileOtp = async () => {
+  //   setOtpError("");
+  //   const mob = watch("mobile");
+  //   const ok = await verifyMobileOtp(mob, mobileOtp);
+  //   if (ok) {
+  //     setVerifiedForMobile(mob);
+  //   } else {
+  //     setOtpError("Invalid OTP for mobile");
+  //   }
+  // };
 
-  const handleSendEmailOtp = async () => {
-    setOtpError("");
-    const em = watch("email");
-    if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-      setOtpError("Enter a valid email first");
-      return;
-    }
-    await sendEmailOtp(em);
-    setEmailOtpSent(true);
-  };
+  // const handleSendEmailOtp = async () => {
+  //   setOtpError("");
+  //   const em = watch("email");
+  //   if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+  //     setOtpError("Enter a valid email first");
+  //     return;
+  //   }
+  //   await sendEmailOtp(em);
+  //   setEmailOtpSent(true);
+  // };
 
-  const handleVerifyEmailOtp = async () => {
-    setOtpError("");
-    const em = watch("email");
-    const ok = await verifyEmailOtp(em, emailOtp);
-    if (ok) {
-      setVerifiedForEmail(em);
-    } else {
-      setOtpError("Invalid OTP for email");
-    }
-  };
+  // const handleVerifyEmailOtp = async () => {
+  //   setOtpError("");
+  //   const em = watch("email");
+  //   const ok = await verifyEmailOtp(em, emailOtp);
+  //   if (ok) {
+  //     setVerifiedForEmail(em);
+  //   } else {
+  //     setOtpError("Invalid OTP for email");
+  //   }
+  // };
 
   const onSubmit = (data: RegisterForm) => {
-    setOtpError("");
-    if (!mobileVerified || !emailVerified) {
-      setOtpError(
-        "Please verify both mobile and email with OTP before registering.",
-      );
-      return;
-    }
+    // setOtpError("");
+    // if (!mobileVerified || !emailVerified) {
+    //   setOtpError(
+    //     "Please verify both mobile and email with OTP before registering.",
+    //   );
+    //   return;
+    // }
     try {
       registerAdmin({
         pgName: data.pgName,
@@ -211,7 +213,6 @@ export default function AdminRegister() {
                   )}
                 </div>
 
-                {/* Mobile with OTP */}
                 <div>
                   <label
                     htmlFor="mobile"
@@ -219,61 +220,20 @@ export default function AdminRegister() {
                   >
                     Mobile Number
                   </label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      {...register("mobile")}
-                      type="tel"
-                      id="mobile"
-                      placeholder="10-digit number"
-                      className="min-w-0 flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleSendMobileOtp}
-                      disabled={mobileVerified}
-                      className="shrink-0 w-full sm:w-auto"
-                    >
-                      {mobileOtpSent && !mobileVerified
-                        ? "Resend OTP"
-                        : "Send OTP"}
-                    </Button>
-                  </div>
+                  <input
+                    {...register("mobile")}
+                    type="tel"
+                    id="mobile"
+                    placeholder="10-digit number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                   {errors.mobile && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.mobile.message}
                     </p>
                   )}
-                  {mobileOtpSent && !mobileVerified && (
-                    <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder="Enter 6-digit OTP"
-                        value={mobileOtp}
-                        onChange={(e) =>
-                          setMobileOtp(e.target.value.replace(/\D/g, ""))
-                        }
-                        className="min-w-0 flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleVerifyMobileOtp}
-                        className="shrink-0 w-full sm:w-auto"
-                      >
-                        Verify
-                      </Button>
-                    </div>
-                  )}
-                  {mobileVerified && (
-                    <p className="text-green-600 text-sm mt-1">
-                      ✓ Mobile verified
-                    </p>
-                  )}
                 </div>
 
-                {/* Email with OTP */}
                 <div>
                   <label
                     htmlFor="email"
@@ -281,58 +241,15 @@ export default function AdminRegister() {
                   >
                     Email
                   </label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      {...register("email")}
-                      type="email"
-                      id="email"
-                      className="min-w-0 flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleSendEmailOtp}
-                      disabled={emailVerified}
-                      className="shrink-0 w-full sm:w-auto"
-                    >
-                      {emailOtpSent && !emailVerified
-                        ? "Resend OTP"
-                        : "Send OTP"}
-                    </Button>
-                  </div>
+                  <input
+                    {...register("email")}
+                    type="email"
+                    id="email"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                   {errors.email && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.email.message}
-                    </p>
-                  )}
-                  {emailOtpSent && !emailVerified && (
-                    <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder="Enter 6-digit OTP"
-                        value={emailOtp}
-                        onChange={(e) =>
-                          setEmailOtp(e.target.value.replace(/\D/g, ""))
-                        }
-                        className="min-w-0 flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleVerifyEmailOtp}
-                        className="shrink-0 w-full sm:w-auto"
-                      >
-                        Verify
-                      </Button>
-                    </div>
-                  )}
-                  {(otpError || error) && (
-                    <p className="text-red-500 text-sm">{otpError || error}</p>
-                  )}
-                  {emailVerified && (
-                    <p className="text-green-600 text-sm mt-1">
-                      ✓ Email verified
                     </p>
                   )}
                 </div>
@@ -397,13 +314,14 @@ export default function AdminRegister() {
                   </div>
                   <div>
                     <StateDropdown
-                      value={watch("address.state")}
-                      onChange={(value) =>
-                        register("address.state").onChange({
-                          target: { value },
-                        })
-                      }
+                      value={selectedState}
+                      onChange={(value) => {
+                        setSelectedState(value);
+                        // Also update the form state using setValue
+                        setValue("address.state", value);
+                      }}
                       placeholder="Select a state"
+                      required
                     />
                     {errors.address?.state && (
                       <p className="text-red-500 text-sm mt-1">
@@ -453,11 +371,7 @@ export default function AdminRegister() {
                   )}
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={!mobileVerified || !emailVerified}
-                >
+                <Button type="submit" className="w-full">
                   Register
                 </Button>
               </form>
