@@ -62,6 +62,7 @@ interface AuthContextType {
   sendEmailOtp: (email: string) => Promise<void>;
   verifyEmailOtp: (email: string, otp: string) => Promise<boolean>;
 
+  updateCurrentAdmin: (adminData: Partial<PGAdmin>) => void;
   logout: () => void;
   clearError: () => void;
 }
@@ -266,6 +267,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearAuthData();
   };
 
+  const updateCurrentAdmin = (adminData: Partial<PGAdmin>) => {
+    if (currentAdmin) {
+      const updatedAdmin = { ...currentAdmin, ...adminData };
+      setCurrentAdmin(updatedAdmin);
+      setAuthData("admin", updatedAdmin, localStorage.getItem("token") || "");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -281,6 +290,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         verifyMobileOtp,
         sendEmailOtp,
         verifyEmailOtp,
+        updateCurrentAdmin,
         logout,
         clearError,
       }}

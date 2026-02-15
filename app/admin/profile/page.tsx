@@ -1,27 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components';
-import { useAuth } from '../../context/AuthContext';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components";
+import { useAuth } from "../../context/AuthContext";
+import { authAPI } from "../../../services/api";
 
 const addressSchema = z.object({
-  area: z.string().min(1, 'Area is required'),
-  landmark: z.string().min(1, 'Landmark / Set location is required'),
-  city: z.string().min(1, 'City is required'),
-  pincode: z.string().regex(/^\d{6}$/, 'Pincode must be 6 digits'),
-  state: z.string().min(1, 'State is required'),
+  area: z.string().min(1, "Area is required"),
+  landmark: z.string().min(1, "Landmark / Set location is required"),
+  city: z.string().min(1, "City is required"),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits"),
+  state: z.string().min(1, "State is required"),
 });
 
 const profileSchema = z.object({
-  pgName: z.string().min(1, 'PG Name is required'),
-  ownerName: z.string().min(1, 'Owner Name is required'),
-  mobile: z.string().min(10, 'Mobile number must be at least 10 digits'),
-  email: z.string().email('Invalid email address'),
+  pgName: z.string().min(1, "PG Name is required"),
+  ownerName: z.string().min(1, "Owner Name is required"),
+  mobile: z.string().min(10, "Mobile number must be at least 10 digits"),
+  email: z.string().email("Invalid email address"),
   address: addressSchema,
 });
 
@@ -29,8 +30,10 @@ type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function AdminProfile() {
   const router = useRouter();
-  const { currentAdmin } = useAuth();
+  const { currentAdmin, updateCurrentAdmin } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -38,19 +41,64 @@ export default function AdminProfile() {
     formState: { errors },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
-    defaultValues: currentAdmin ? {
-      pgName: currentAdmin.pgName,
-      ownerName: currentAdmin.ownerName,
-      mobile: currentAdmin.mobile,
-      email: currentAdmin.email,
-      address: currentAdmin.address,
-    } : {},
+    defaultValues:
+      currentAdmin && currentAdmin.address
+        ? {
+            pgName: currentAdmin.pgName,
+            ownerName: currentAdmin.ownerName,
+            mobile: currentAdmin.mobile,
+            email: currentAdmin.email,
+            address: currentAdmin.address,
+          }
+        : {
+            pgName: "",
+            ownerName: "",
+            mobile: "",
+            email: "",
+            address: {
+              area: "",
+              landmark: "",
+              city: "",
+              pincode: "",
+              state: "",
+            },
+          },
   });
 
-  const onSubmit = (data: ProfileForm) => {
-    // In real app, update profile
-    console.log('Updated profile:', data);
-    setIsEditing(false);
+  const onSubmit = async (data: ProfileForm) => {
+    try {
+      setIsUpdating(true);
+      setUpdateMessage(null);
+
+      // Call the API to update the profile
+      const response = await authAPI.updateAdminProfile({
+        pgName: data.pgName,
+        ownerName: data.ownerName,
+        mobile: data.mobile,
+        email: data.email,
+        address: data.address,
+      });
+
+      // Update the current admin in context and localStorage
+      updateCurrentAdmin({
+        pgName: data.pgName,
+        ownerName: data.ownerName,
+        mobile: data.mobile,
+        email: data.email,
+        address: data.address,
+      });
+
+      // Show success message
+      setUpdateMessage("Profile updated successfully!");
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error("Profile update failed:", error);
+      setUpdateMessage(
+        error.message || "Failed to update profile. Please try again.",
+      );
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   if (!currentAdmin) {
@@ -71,70 +119,101 @@ export default function AdminProfile() {
           <div className="flex justify-between items-center">
             <CardTitle>PG Information</CardTitle>
             <Button onClick={() => setIsEditing(!isEditing)}>
-              {isEditing ? 'Cancel' : 'Edit'}
+              {isEditing ? "Cancel" : "Edit"}
             </Button>
           </div>
         </CardHeader>
+        {updateMessage && (
+          <div
+            className={`p-3 rounded-md ${
+              updateMessage.includes("successfully")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {updateMessage}
+          </div>
+        )}
         <CardContent>
           {isEditing ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label htmlFor="pgName" className="block text-sm font-medium mb-1">
+                <label
+                  htmlFor="pgName"
+                  className="block text-sm font-medium mb-1"
+                >
                   PG Name
                 </label>
                 <input
-                  {...register('pgName')}
+                  {...register("pgName")}
                   type="text"
                   id="pgName"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.pgName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.pgName.message}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.pgName.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="ownerName" className="block text-sm font-medium mb-1">
+                <label
+                  htmlFor="ownerName"
+                  className="block text-sm font-medium mb-1"
+                >
                   Owner Name
                 </label>
                 <input
-                  {...register('ownerName')}
+                  {...register("ownerName")}
                   type="text"
                   id="ownerName"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.ownerName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.ownerName.message}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.ownerName.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="mobile" className="block text-sm font-medium mb-1">
+                <label
+                  htmlFor="mobile"
+                  className="block text-sm font-medium mb-1"
+                >
                   Mobile Number
                 </label>
                 <input
-                  {...register('mobile')}
+                  {...register("mobile")}
                   type="tel"
                   id="mobile"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.mobile && (
-                  <p className="text-red-500 text-sm mt-1">{errors.mobile.message}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.mobile.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium mb-1"
+                >
                   Email
                 </label>
                 <input
-                  {...register('email')}
+                  {...register("email")}
                   type="email"
                   id="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
@@ -142,88 +221,114 @@ export default function AdminProfile() {
                 <label className="block text-sm font-medium">Address</label>
                 <div>
                   <input
-                    {...register('address.area')}
+                    {...register("address.area")}
                     type="text"
                     placeholder="Area"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.address?.area && (
-                    <p className="text-red-500 text-sm mt-1">{errors.address.area.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.address.area.message}
+                    </p>
                   )}
                 </div>
                 <div>
                   <input
-                    {...register('address.landmark')}
+                    {...register("address.landmark")}
                     type="text"
                     placeholder="Landmark / Set location"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.address?.landmark && (
-                    <p className="text-red-500 text-sm mt-1">{errors.address.landmark.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.address.landmark.message}
+                    </p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <input
-                      {...register('address.city')}
+                      {...register("address.city")}
                       type="text"
                       placeholder="City"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.address?.city && (
-                      <p className="text-red-500 text-sm mt-1">{errors.address.city.message}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.address.city.message}
+                      </p>
                     )}
                   </div>
                   <div>
                     <input
-                      {...register('address.pincode')}
+                      {...register("address.pincode")}
                       type="text"
                       placeholder="Pincode (6 digits)"
                       maxLength={6}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.address?.pincode && (
-                      <p className="text-red-500 text-sm mt-1">{errors.address.pincode.message}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.address.pincode.message}
+                      </p>
                     )}
                   </div>
                 </div>
                 <div>
                   <input
-                    {...register('address.state')}
+                    {...register("address.state")}
                     type="text"
                     placeholder="State"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {errors.address?.state && (
-                    <p className="text-red-500 text-sm mt-1">{errors.address.state.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.address.state.message}
+                    </p>
                   )}
                 </div>
               </div>
 
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? "Updating..." : "Save Changes"}
+              </Button>
             </form>
           ) : (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600">PG Name</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  PG Name
+                </label>
                 <p>{currentAdmin.pgName}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Owner Name</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Owner Name
+                </label>
                 <p>{currentAdmin.ownerName}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Mobile Number</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Mobile Number
+                </label>
                 <p>{currentAdmin.mobile}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Email</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Email
+                </label>
                 <p>{currentAdmin.email}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Address</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Address
+                </label>
                 <p>
-                  {currentAdmin.address.area}, {currentAdmin.address.landmark}, {currentAdmin.address.city} - {currentAdmin.address.pincode}, {currentAdmin.address.state}
+                  {currentAdmin.address?.area || "N/A"},{" "}
+                  {currentAdmin.address?.landmark || "N/A"},{" "}
+                  {currentAdmin.address?.city || "N/A"} -{" "}
+                  {currentAdmin.address?.pincode || "N/A"},{" "}
+                  {currentAdmin.address?.state || "N/A"}
                 </p>
               </div>
             </div>
