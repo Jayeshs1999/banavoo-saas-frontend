@@ -4,16 +4,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
+import { getAuthData, useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { logout } = useAuth();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+  const data = getAuthData();
+  const router = useRouter();
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setIsOpen(false);
+    logout();
+    router.push("/admin/login");
   };
 
   return (
@@ -38,16 +43,26 @@ export default function Header() {
           <Link href="/" className="hover:text-accent">
             Home
           </Link>
-          {/* <Link href="/dashboard" className="hover:text-accent">
+          {data?.user?.role === "admin" && (
+            <Link href="/admin/create-pg" className="hover:text-accent">
+              Create PGs
+            </Link>
+          )}
+          <Link href="/dashboard" className="hover:text-accent">
             Dashboard
-          </Link> */}
+          </Link>
           <Link href="/about" className="hover:text-accent">
             About
           </Link>
           <Link href="/contact" className="hover:text-accent">
             Contact
           </Link>
-          {isLoggedIn && (
+          {data?.user?.role === "admin" && (
+            <Link href="/admin/profile" className="hover:text-accent">
+              View Profile
+            </Link>
+          )}
+          {data?.user?.role && (
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition"
@@ -74,6 +89,14 @@ export default function Header() {
           >
             Home
           </Link>
+          {data?.user?.role === "admin" && (
+            <Link
+              href="/admin/create-pg"
+              className="hover:text-accent block py-2"
+            >
+              Create PGs
+            </Link>
+          )}
           <Link
             href="/dashboard"
             className="hover:text-accent block py-2"
@@ -95,7 +118,15 @@ export default function Header() {
           >
             Contact
           </Link>
-          {isLoggedIn && (
+          {data?.user?.role === "admin" && (
+            <Link
+              href="/admin/profile"
+              className="hover:text-accent block py-2"
+            >
+              View Profile
+            </Link>
+          )}
+          {data?.user?.role && (
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition w-full justify-center"

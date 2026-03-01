@@ -27,7 +27,7 @@ const setAuthData = (
   localStorage.setItem("token", token);
 };
 
-const getAuthData = () => {
+export const getAuthData = () => {
   try {
     const data = localStorage.getItem("authData");
     return data ? JSON.parse(data) : null;
