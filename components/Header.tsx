@@ -33,7 +33,7 @@ export default function Header() {
             className="object-contain"
             priority
           /> */}
-        <Link href="/" className="text-xl font-bold">
+        <Link href="/" className="uncial-antiqua-regular text-[25px] font-bold">
           STHALS.IN
         </Link>
         {/* </div> */}
@@ -51,6 +51,11 @@ export default function Header() {
           {data?.user?.role === "admin" && (
             <Link href="/dashboard" className="hover:text-accent">
               Manage PGs
+            </Link>
+          )}
+          {data?.user?.role === "admin" && (
+            <Link href="/admin/requests" className="hover:text-accent">
+              View Requests
             </Link>
           )}
           <Link href="/about" className="hover:text-accent">
@@ -95,17 +100,27 @@ export default function Header() {
             <Link
               href="/admin/create-pg"
               className="hover:text-accent block py-2"
+              onClick={toggleMenu}
             >
               Create PGs
             </Link>
           )}
-          {data?.user?.role && (
+          {data?.user?.role === "admin" && (
             <Link
               href="/dashboard"
               className="hover:text-accent block py-2"
               onClick={toggleMenu}
             >
               Manage PGs
+            </Link>
+          )}
+          {data?.user?.role === "admin" && (
+            <Link
+              href="/admin/requests"
+              className="hover:text-accent block py-2"
+              onClick={toggleMenu}
+            >
+              View Requests
             </Link>
           )}
           <Link
@@ -126,6 +141,7 @@ export default function Header() {
             <Link
               href="/admin/profile"
               className="hover:text-accent block py-2"
+              onClick={toggleMenu}
             >
               View Profile
             </Link>

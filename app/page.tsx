@@ -1,9 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardBadge,
+} from "@/components";
 import { useAuth } from "./context/AuthContext";
 import { useRouter } from "next/navigation";
+import {
+  Building,
+  Users,
+  Shield,
+  Calendar,
+  Bed,
+  DollarSign,
+} from "lucide-react";
 
 export default function Home() {
   const { currentAdmin, currentUser } = useAuth();
@@ -21,20 +36,35 @@ export default function Home() {
 
   if (currentUser) {
     return (
-      <div className="relative min-h-screen bg-[url('../public/bg-pg.jpg')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
         <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col justify-center items-center relative z-10">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4 text-primary-foreground">
-              Welcome back, {currentUser.name}!
-            </h1>
-            <p className="text-muted-foreground text-lg mb-8 text-primary-foreground">
-              You are logged in as User
-            </p>
-            <Link href="/user/dashboard">
-              <Button size="lg">Go to User Dashboard</Button>
-            </Link>
-          </div>
+          <Card variant="elevated" className="max-w-2xl text-center">
+            <CardHeader>
+              <CardTitle icon={<Users className="w-8 h-8" />}>
+                Welcome back, {currentUser.name}!
+              </CardTitle>
+              <CardBadge variant="success">User Account Active</CardBadge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-6 text-lg">
+                You are logged in as User
+              </p>
+              <div className="space-y-4">
+                <Link href="/user/dashboard">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                  >
+                    Go to User Dashboard
+                  </Button>
+                </Link>
+                <p className="text-sm text-gray-500">
+                  Manage your bookings and preferences
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -42,47 +72,139 @@ export default function Home() {
 
   // Only show login options if NOT logged in
   return (
-    <div className="relative min-h-screen bg-[url('../public/bg-pg.jpg')] bg-cover bg-center">
-      <div className="absolute inset-0 bg-black opacity-50"></div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 animate-gradient-x"></div>
+
+      {/* Animated Background Elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/15 rounded-full blur-3xl animate-float-slow animate-pulse-slow"></div>
+      <div className="absolute top-40 right-10 w-96 h-96 bg-purple-400/15 rounded-full blur-3xl animate-float-fast animate-pulse-fast"></div>
+      <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-400/15 rounded-full blur-3xl animate-float-medium animate-pulse-medium"></div>
+
+      {/* Floating Color Particles */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-blue-300 rounded-full opacity-60 animate-bounce-slow"></div>
+        <div className="absolute top-3/4 right-1/4 w-6 h-6 bg-purple-300 rounded-full opacity-40 animate-bounce-medium"></div>
+        <div className="absolute top-1/2 left-3/4 w-3 h-3 bg-pink-300 rounded-full opacity-50 animate-bounce-fast"></div>
+        <div className="absolute top-1/6 right-1/6 w-5 h-5 bg-green-300 rounded-full opacity-30 animate-bounce-slow"></div>
+        <div className="absolute bottom-1/4 left-1/6 w-4 h-4 bg-yellow-300 rounded-full opacity-40 animate-bounce-medium"></div>
+      </div>
+
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-10 animate-grid-move"></div>
+
       <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col justify-center relative z-10">
+        {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 text-primary-foreground">
+          <h1 className="text-4xl secondary-foreground mb-4 bungee-spice-regular">
             Welcome to STHALS.IN
           </h1>
-          <p className="text-muted-foreground text-lg mb-6 text-primary-foreground">
+          <p className="secondary-foreground text-lg mb-6 poiret-one-regular font-bold">
             Find your perfect PG accommodation or manage your PG business
           </p>
+          <CardBadge variant="primary" className="mt-4">
+            Trusted by 1000+ PG Owners
+          </CardBadge>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <Card className="bg-background">
+        {/* Login Options */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          <Card
+            variant="bordered"
+            className="group hover:shadow-2xl transition-all duration-300 border-2"
+          >
             <CardHeader>
-              <CardTitle>PG Admin Portal</CardTitle>
+              <CardTitle icon={<Building className="w-8 h-8 text-blue-500" />}>
+                PG Admin Portal
+              </CardTitle>
+              <CardBadge variant="primary">For PG Owners & Managers</CardBadge>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Register your PG, manage bookings, and handle requests from
-                tenants.
+              <p className="text-gray-600 mb-6 text-lg">
+                Access your PG management dashboard to view bookings, manage
+                rooms, and handle tenant requests.
               </p>
-              <Link href="/admin/login">
-                <Button>Go to Admin Portal</Button>
-              </Link>
+              <div className="space-y-4">
+                <Link href="/admin/login">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r  bg-primary hover:bg-primary text-white shadow-lg group-hover:shadow-xl transition-all duration-300"
+                  >
+                    Login as Admin
+                  </Button>
+                </Link>
+                <div className="flex justify-between text-sm text-gray-500 mt-2">
+                  <span>• Manage multiple PGs</span>
+                  <span>• Real-time analytics</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-background">
+          <Card
+            variant="elevated"
+            className="group hover:shadow-2xl transition-all duration-300"
+          >
             <CardHeader>
-              <CardTitle>User Portal</CardTitle>
+              <CardTitle icon={<Users className="w-8 h-8 text-purple-500" />}>
+                User Portal
+              </CardTitle>
+              <CardBadge variant="success">Get Started Today</CardBadge>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Find and book PG accommodations that suit your needs.
+              <p className="text-gray-600 mb-6 text-lg">
+                Find the perfect PG that fits your lifestyle and your budget.
+                Smart living starts with the right PG.
               </p>
-              <Link href="/user/login">
-                <Button>Go to User Portal</Button>
-              </Link>
+              <div className="space-y-4">
+                <Link href="/user/login">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 group-hover:shadow-xl"
+                  >
+                    Login as User
+                  </Button>
+                </Link>
+                <div className="flex justify-between text-sm text-gray-500 mt-2">
+                  <span>• Free Search</span>
+                  <span>• 24/7 support</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Stats Section */}
+        <div className="mt-16 text-center">
+          <Card variant="glass" className="p-8 backdrop-blur-xl">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold text-blue-600">1000+</div>
+                <div className="text-gray-600">Happy PG Owners</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-green-600">5000+</div>
+                <div className="text-gray-600">Managed Rooms</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-purple-600">99.9%</div>
+                <div className="text-gray-600">Uptime Guarantee</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-orange-600">24/7</div>
+                <div className="text-gray-600">Customer Support</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Footer Message */}
+        <div className="mt-12 text-center">
+          <p className="text-gray-500 text-sm">
+            This portal is exclusively for PG administrators and property
+            managers.
+          </p>
         </div>
       </div>
     </div>

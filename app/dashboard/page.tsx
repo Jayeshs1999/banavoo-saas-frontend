@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Card,
+  CardBadge,
   CardContent,
   CardHeader,
   CardTitle,
@@ -11,6 +12,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { pgAPI } from "@/services/api";
 import Link from "next/link";
+import { Building } from "lucide-react";
 
 // interface Student {
 //   id: string;
@@ -63,125 +65,146 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="m-3 sm:m-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Your PGs ({pgs.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center items-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : pgs.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              You haven't created any PGs yet. <br />
-              <Link
-                href="/admin/create-pg"
-                className="text-blue-500 hover:underline"
-              >
-                Create your first PG
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pgs.map((pg) => {
-                const totalRooms = pg.structure.length;
-                const totalBeds = pg.structure.reduce(
-                  (sum: number, room: any) => sum + room.beds.length,
-                  0,
-                );
-                const allocatedBeds = pg.structure.reduce(
-                  (sum: number, room: any) =>
-                    sum + room.beds.filter((bed: any) => bed.allocated).length,
-                  0,
-                );
-                const availableBeds = totalBeds - allocatedBeds;
-                const occupancyRate =
-                  totalBeds > 0
-                    ? ((allocatedBeds / totalBeds) * 100).toFixed(0)
-                    : "0";
+    <div className="m-0 sm:m-8">
+      <Card variant="glass" className="p-5 backdrop-blur-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            Your PGs
+          </h2>
+          <div className="flex gap-2">
+            <CardBadge variant="success">{pgs.length} Total</CardBadge>
+          </div>
+        </div>
 
-                return (
-                  <Card
-                    key={pg._id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
+        {loading ? (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : pgs.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Building className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-lg font-medium mb-2">No PGs Yet</p>
+            <p className="text-sm">Create your first PG to get started</p>
+            <Link href="/admin/create-pg">
+              <Button
+                size="lg"
+                className="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+              >
+                Create Your First PG
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pgs.map((pg) => {
+              const totalRooms = pg.structure.length;
+              const totalBeds = pg.structure.reduce(
+                (sum: number, room: any) => sum + room.beds.length,
+                0,
+              );
+              const allocatedBeds = pg.structure.reduce(
+                (sum: number, room: any) =>
+                  sum + room.beds.filter((bed: any) => bed.allocated).length,
+                0,
+              );
+              const availableBeds = totalBeds - allocatedBeds;
+              const occupancyRate =
+                totalBeds > 0
+                  ? ((allocatedBeds / totalBeds) * 100).toFixed(0)
+                  : "0";
+
+              return (
+                <Card
+                  key={pg._id}
+                  variant="elevated"
+                  className="hover:shadow-2xl transition-all duration-300 group"
+                >
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-bold text-lg">{pg.name}</h3>
+                          <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {pg.name}
+                          </h3>
                           <p className="text-sm text-gray-600">
                             {pg.location?.subcity}, {pg.location?.city}
                           </p>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="bg-blue-50 p-2 rounded">
-                            <span className="text-blue-600 font-semibold">
-                              {totalRooms}
-                            </span>
-                            <span className="text-gray-600 ml-1">Rooms</span>
-                          </div>
-                          <div className="bg-green-50 p-2 rounded">
-                            <span className="text-green-600 font-semibold">
-                              {totalBeds}
-                            </span>
-                            <span className="text-gray-600 ml-1">Beds</span>
-                          </div>
-                          <div className="bg-red-50 p-2 rounded">
-                            <span className="text-red-600 font-semibold">
-                              {allocatedBeds}
-                            </span>
-                            <span className="text-gray-600 ml-1">
-                              Allocated
-                            </span>
-                          </div>
-                          <div className="bg-yellow-50 p-2 rounded">
-                            <span className="text-yellow-600 font-semibold">
-                              {availableBeds}
-                            </span>
-                            <span className="text-gray-600 ml-1">
-                              Available
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold">
-                            Occupancy: {occupancyRate}%
-                          </span>
-                          <div className="w-full bg-gray-200 rounded-full h-2 ml-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${occupancyRate}%` }}
-                            ></div>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Link href={`/admin/pgs/${pg._id}`}>
-                            <Button size="sm" variant="outline">
-                              View
-                            </Button>
-                          </Link>
-                          <Link href={`/admin/edit-pg/${pg._id}`}>
-                            <Button
-                              size="sm"
-                              className="bg-blue-500 hover:bg-blue-700"
-                            >
-                              Edit
-                            </Button>
-                          </Link>
+                        <div className="w-12 h-12 bg-gradient-to-br bg-primary rounded-full flex items-center justify-center shadow-lg">
+                          <Building className="w-6 h-6 text-white" />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <span className="text-blue-600 font-semibold">
+                            {totalRooms}
+                          </span>
+                          <span className="text-gray-600 ml-1">Rooms</span>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded-lg">
+                          <span className="text-green-600 font-semibold">
+                            {totalBeds}
+                          </span>
+                          <span className="text-gray-600 ml-1">Beds</span>
+                        </div>
+                        <div className="bg-red-50 p-3 rounded-lg">
+                          <span className="text-red-600 font-semibold">
+                            {allocatedBeds}
+                          </span>
+                          <span className="text-gray-600 ml-1">Allocated</span>
+                        </div>
+                        <div className="bg-yellow-50 p-3 rounded-lg">
+                          <span className="text-yellow-600 font-semibold">
+                            {availableBeds}
+                          </span>
+                          <span className="text-gray-600 ml-1">Available</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-gray-700">
+                          Occupancy: {occupancyRate}%
+                        </span>
+                        <div className="w-full bg-gray-200 rounded-full h-3 ml-2">
+                          <div
+                            className="bg-gradient-to-r  bg-primary h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${occupancyRate}%` }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Link className="w-full" href={`/admin/pgs/${pg._id}`}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 w-full border-2 border-primary text-primary hover:bg-background hover:text-primary transition-all duration-300"
+                          >
+                            View Details
+                          </Button>
+                        </Link>
+                        <Link
+                          className="w-full"
+                          href={`/admin/edit-pg/${pg._id}`}
+                        >
+                          <Button
+                            size="sm"
+                            className="flex-1 w-full bg-gradient-to-r   text-white"
+                          >
+                            Edit
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </Card>
     </div>
   );
