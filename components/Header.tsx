@@ -48,9 +48,11 @@ export default function Header() {
               Create PGs
             </Link>
           )}
-          <Link href="/dashboard" className="hover:text-accent">
-            Dashboard
-          </Link>
+          {data?.user?.role === "admin" && (
+            <Link href="/dashboard" className="hover:text-accent">
+              Manage PGs
+            </Link>
+          )}
           <Link href="/about" className="hover:text-accent">
             About
           </Link>
@@ -97,13 +99,15 @@ export default function Header() {
               Create PGs
             </Link>
           )}
-          <Link
-            href="/dashboard"
-            className="hover:text-accent block py-2"
-            onClick={toggleMenu}
-          >
-            Dashboard
-          </Link>
+          {data?.user?.role && (
+            <Link
+              href="/dashboard"
+              className="hover:text-accent block py-2"
+              onClick={toggleMenu}
+            >
+              Manage PGs
+            </Link>
+          )}
           <Link
             href="/about"
             className="hover:text-accent block py-2"
