@@ -138,16 +138,10 @@ export default function AdminRegister() {
   //   }
   // };
 
-  const onSubmit = (data: RegisterForm) => {
-    // setOtpError("");
-    // if (!mobileVerified || !emailVerified) {
-    //   setOtpError(
-    //     "Please verify both mobile and email with OTP before registering.",
-    //   );
-    //   return;
-    // }
+  const onSubmit = async (data: RegisterForm) => {
+    setError("");
     try {
-      registerAdmin({
+      const success = await registerAdmin({
         pgName: data.pgName,
         ownerName: data.ownerName,
         mobile: data.mobile,
@@ -156,7 +150,11 @@ export default function AdminRegister() {
         password: data.password,
         role: "admin",
       });
-      router.push("/admin/dashboard");
+      if (success) {
+        router.push("/admin/dashboard");
+      } else {
+        setError("Registration failed");
+      }
     } catch (err) {
       setError("Registration failed");
     }
