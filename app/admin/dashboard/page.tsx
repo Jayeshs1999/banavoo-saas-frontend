@@ -24,12 +24,14 @@ import {
   MessageSquare,
   User,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminDashboard() {
   const { currentAdmin, logout } = useAuth();
   const router = useRouter();
   const [pgs, setPGs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (currentAdmin) {
@@ -75,7 +77,7 @@ export default function AdminDashboard() {
           {/* Welcome Header */}
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold">
-              Welcome, {currentAdmin?.ownerName}
+              {t("dashboard.welcome")}, {currentAdmin?.ownerName}
             </h1>
           </div>
 
@@ -89,24 +91,20 @@ export default function AdminDashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle icon={<Plus className="w-8 h-8 text-green-500" />}>
-                    Create New PG
+                    {t("dashboard.createNewPG")}
                   </CardTitle>
-                  {/* <CardBadge variant="success">
-                    Quick Setup
-                  </CardBadge> */}
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-6">
-                  Add a new PG with structure and settings. Start managing your
-                  properties today.
+                  {t("dashboard.createNewPGDesc")}
                 </p>
                 <Link href="/admin/create-pg">
                   <Button
                     size="lg"
                     className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-lg group-hover:shadow-xl transition-all duration-300"
                   >
-                    Create PG
+                    {t("dashboard.createPG")}
                   </Button>
                 </Link>
               </CardContent>
@@ -122,21 +120,23 @@ export default function AdminDashboard() {
                   <CardTitle
                     icon={<MessageSquare className="w-8 h-8 text-blue-500" />}
                   >
-                    Requests Received
+                    {t("dashboard.requestsReceived")}
                   </CardTitle>
-                  <CardBadge variant="primary">Active</CardBadge>
+                  <CardBadge variant="primary">
+                    {t("dashboard.active")}
+                  </CardBadge>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-6">
-                  View and manage booking requests from potential tenants.
+                  {t("dashboard.requestsDesc")}
                 </p>
                 <Link href="/admin/requests">
                   <Button
                     size="lg"
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg group-hover:shadow-xl transition-all duration-300"
                   >
-                    View Requests
+                    {t("dashboard.viewRequests")}
                   </Button>
                 </Link>
               </CardContent>
@@ -152,21 +152,23 @@ export default function AdminDashboard() {
                   <CardTitle
                     icon={<User className="w-8 h-8 text-purple-500" />}
                   >
-                    Profile
+                    {t("dashboard.profile")}
                   </CardTitle>
-                  <CardBadge variant="secondary">Settings</CardBadge>
+                  <CardBadge variant="secondary">
+                    {t("dashboard.settings")}
+                  </CardBadge>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-6">
-                  View and edit your profile information and account settings.
+                  {t("dashboard.profileDesc")}
                 </p>
                 <Link href="/admin/profile">
                   <Button
                     size="lg"
                     className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg group-hover:shadow-xl transition-all duration-300"
                   >
-                    View Profile
+                    {t("dashboard.viewProfile")}
                   </Button>
                 </Link>
               </CardContent>
@@ -183,15 +185,16 @@ export default function AdminDashboard() {
                     <CardTitle
                       icon={<Settings className="w-8 h-8 text-orange-500" />}
                     >
-                      Super Admin Portal
+                      {t("dashboard.superAdminPortal")}
                     </CardTitle>
-                    <CardBadge variant="error">Admin Only</CardBadge>
+                    <CardBadge variant="error">
+                      {t("dashboard.adminOnly")}
+                    </CardBadge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-6">
-                    Access super admin features and manage all PGs across the
-                    platform.
+                    {t("dashboard.superAdminDesc")}
                   </p>
                   <div className="grid md:grid-cols-3 gap-4">
                     <Link href="/admin/superadmin-portal/admins">
@@ -199,7 +202,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         className="w-full border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white transition-all duration-300"
                       >
-                        Manage Admins
+                        {t("dashboard.manageAdmins")}
                       </Button>
                     </Link>
                     <Link href="/admin/superadmin-portal/pgs">
@@ -207,7 +210,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         className="w-full border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white transition-all duration-300"
                       >
-                        All PGs
+                        {t("dashboard.allPGs")}
                       </Button>
                     </Link>
                     <Link href="/admin/superadmin-portal/location-stats">
@@ -215,7 +218,7 @@ export default function AdminDashboard() {
                         variant="outline"
                         className="w-full border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white transition-all duration-300"
                       >
-                        Location Stats
+                        {t("dashboard.locationStats")}
                       </Button>
                     </Link>
                   </div>
@@ -230,7 +233,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-bold text-blue-600">
                 {pgs.length}
               </div>
-              <div className="text-gray-600">Total PGs</div>
+              <div className="text-gray-600">{t("dashboard.totalPGs")}</div>
             </Card>
             <Card variant="glass" className="p-6 backdrop-blur-xl text-center">
               <div className="text-3xl font-bold text-green-600">
@@ -245,7 +248,7 @@ export default function AdminDashboard() {
                   0,
                 )}
               </div>
-              <div className="text-gray-600">Total Beds</div>
+              <div className="text-gray-600">{t("dashboard.totalBeds")}</div>
             </Card>
             <Card variant="glass" className="p-6 backdrop-blur-xl text-center">
               <div className="text-3xl font-bold text-purple-600">
@@ -261,7 +264,7 @@ export default function AdminDashboard() {
                   0,
                 )}
               </div>
-              <div className="text-gray-600">Occupied</div>
+              <div className="text-gray-600">{t("dashboard.occupied")}</div>
             </Card>
             <Card variant="glass" className="p-6 backdrop-blur-xl text-center">
               <div className="text-3xl font-bold text-orange-600">
@@ -278,7 +281,7 @@ export default function AdminDashboard() {
                   0,
                 )}
               </div>
-              <div className="text-gray-600">Available</div>
+              <div className="text-gray-600">{t("dashboard.available")}</div>
             </Card>
           </div>
         </div>

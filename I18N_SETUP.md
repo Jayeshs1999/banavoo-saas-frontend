@@ -1,6 +1,6 @@
 # Internationalization (i18n) Setup Guide
 
-This project uses `i18next` and `react-i18next` for internationalization with support for English, Marathi, and Hindi languages.
+This project uses `i18next` and `react-i18next` for internationalization with support for English and Hindi languages.
 
 ## Setup Overview
 
@@ -22,9 +22,6 @@ dormitory/
 ├── messages/
 │   ├── en/
 │   │   ├── translation.json # English translations
-│   │   └── translation.d.ts # TypeScript declaration
-│   ├── mr/
-│   │   ├── translation.json # Marathi translations
 │   │   └── translation.d.ts # TypeScript declaration
 │   └── hi/
 │       ├── translation.json # Hindi translations
@@ -54,7 +51,7 @@ export default function MyComponent() {
 
 ### Adding New Translations
 
-1. Add new keys to all translation files (`messages/en/translation.json`, `messages/mr/translation.json`, `messages/hi/translation.json`):
+1. Add new keys to both `messages/en/translation.json` and `messages/hi/translation.json`:
 
 ```json
 // messages/en/translation.json
@@ -62,16 +59,6 @@ export default function MyComponent() {
   "myNewKey": "English text",
   "mySection": {
     "title": "Section Title"
-  }
-}
-```
-
-```json
-// messages/mr/translation.json
-{
-  "myNewKey": "मराठी मजकूर",
-  "mySection": {
-    "title": "विभाग शीर्षक"
   }
 }
 ```
@@ -88,7 +75,7 @@ export default function MyComponent() {
 
 ## Language Switcher
 
-The `LanguageSwitcher` component is already integrated into the Header. It provides a dropdown to switch between English, Marathi, and Hindi.
+The `LanguageSwitcher` component is already integrated into the Header. It provides a dropdown to switch between English and Hindi.
 
 ## Features
 
@@ -99,7 +86,6 @@ The `LanguageSwitcher` component is already integrated into the Header. It provi
 ## Supported Languages
 
 - **English (en)** - Default language
-- **Marathi (mr)** - मराठी
 - **Hindi (hi)** - हिंदी
 
 ## Adding More Languages
@@ -114,7 +100,6 @@ import translationES from "../messages/es/translation.json";
 
 const resources = {
   en: { translation: translationEN },
-  mr: { translation: translationMR },
   hi: { translation: translationHI },
   es: { translation: translationES }, // Add this
 };

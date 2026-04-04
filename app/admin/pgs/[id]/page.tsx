@@ -7,6 +7,7 @@ import { Button } from "@/components";
 import ImageViewer from "@/components/ImageViewer";
 import { useAuth } from "@/app/context/AuthContext";
 import { pgAPI } from "@/services/api";
+import { useTranslation } from "react-i18next";
 
 interface PG {
   _id: string;
@@ -45,6 +46,7 @@ export default function PGDetails() {
   const params = useParams();
   const pgId = params.id as string;
   const { currentAdmin } = useAuth();
+  const { t } = useTranslation();
 
   const [pg, setPG] = useState<PG | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,7 +166,8 @@ export default function PGDetails() {
         <div>
           <h1 className="text-3xl font-bold">{pg.name}</h1>
           <p className="text-gray-600 mt-2">
-            Created: {new Date(pg.createdAt).toLocaleDateString()}
+            {t("pgDetails.created")}:{" "}
+            {new Date(pg.createdAt).toLocaleDateString()}
           </p>
         </div>
         <div className="flex gap-4">
@@ -172,10 +175,10 @@ export default function PGDetails() {
             onClick={handleEdit}
             className="bg-blue-500 hover:bg-blue-700"
           >
-            Edit PG
+            {t("pgDetails.editPG")}
           </Button>
           <Button onClick={handleBack} variant="outline">
-            ← Back to Dashboard
+            ← {t("pgDetails.backToDashboard")}
           </Button>
         </div>
       </div>
@@ -184,7 +187,7 @@ export default function PGDetails() {
         {/* PG Photos */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Photos</CardTitle>
+            <CardTitle>{t("pgDetails.photos")}</CardTitle>
           </CardHeader>
           <CardContent>
             {pg.photos.length > 0 ? (
@@ -238,13 +241,13 @@ export default function PGDetails() {
 
                 <p className="text-xs text-gray-500 text-center">
                   {pg.photos.length > 1
-                    ? "Click to view full size • Use arrow keys to navigate"
-                    : "Click to view full size"}
+                    ? t("pgDetails.clickToView")
+                    : t("pgDetails.clickToViewFull")}
                 </p>
               </div>
             ) : (
               <div className="text-center text-gray-500 py-8">
-                No photos available
+                {t("pgDetails.noPhotos")}
               </div>
             )}
           </CardContent>
@@ -253,7 +256,7 @@ export default function PGDetails() {
         {/* PG Statistics */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>PG Statistics</CardTitle>
+            <CardTitle>{t("pgDetails.pgStatistics")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -261,30 +264,38 @@ export default function PGDetails() {
                 <div className="text-2xl font-bold text-blue-600">
                   {totalRooms}
                 </div>
-                <div className="text-sm text-gray-600">Total Rooms</div>
+                <div className="text-sm text-gray-600">
+                  {t("pgDetails.totalRooms")}
+                </div>
               </div>
               <div className="bg-green-50 p-4 rounded">
                 <div className="text-2xl font-bold text-green-600">
                   {totalBeds}
                 </div>
-                <div className="text-sm text-gray-600">Total Beds</div>
+                <div className="text-sm text-gray-600">
+                  {t("pgDetails.totalBeds")}
+                </div>
               </div>
               <div className="bg-red-50 p-4 rounded">
                 <div className="text-2xl font-bold text-red-600">
                   {allocatedBeds}
                 </div>
-                <div className="text-sm text-gray-600">Allocated Beds</div>
+                <div className="text-sm text-gray-600">
+                  {t("pgDetails.allocatedBeds")}
+                </div>
               </div>
               <div className="bg-yellow-50 p-4 rounded">
                 <div className="text-2xl font-bold text-yellow-600">
                   {availableBeds}
                 </div>
-                <div className="text-sm text-gray-600">Available Beds</div>
+                <div className="text-sm text-gray-600">
+                  {t("pgDetails.availableBeds")}
+                </div>
               </div>
             </div>
             <div className="mt-4 p-4 bg-gray-50 rounded">
               <div className="text-lg font-semibold">
-                Occupancy Rate: {occupancyRate}%
+                {t("pgDetails.occupancyRate")}: {occupancyRate}%
               </div>
               <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
                 <div
@@ -301,7 +312,7 @@ export default function PGDetails() {
         {/* Location Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Location Information</CardTitle>
+            <CardTitle>{t("pgDetails.locationInfo")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -314,7 +325,9 @@ export default function PGDetails() {
                 </p>
               </div>
               <div>
-                <span className="font-semibold">Online Payment:</span>
+                <span className="font-semibold">
+                  {t("pgDetails.onlinePayment")}:
+                </span>
                 <span
                   className={`ml-2 px-2 py-1 rounded text-xs font-bold ${
                     pg.onlinePayment
@@ -322,7 +335,7 @@ export default function PGDetails() {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {pg.onlinePayment ? "Enabled" : "Disabled"}
+                  {pg.onlinePayment ? t("common.yes") : t("common.no")}
                 </span>
               </div>
             </div>
@@ -332,7 +345,7 @@ export default function PGDetails() {
         {/* Room Structure */}
         <Card>
           <CardHeader>
-            <CardTitle>Room Structure</CardTitle>
+            <CardTitle>{t("pgDetails.roomStructure")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -354,9 +367,13 @@ export default function PGDetails() {
                             : "bg-green-100 border-green-300"
                         }`}
                       >
-                        <div className="font-semibold">Bed {index + 1}</div>
+                        <div className="font-semibold">
+                          {t("pgDetails.bed")} {index + 1}
+                        </div>
                         <div className="text-sm">
-                          {bed.allocated ? "Allocated" : "Available"}
+                          {bed.allocated
+                            ? t("pgDetails.allocated")
+                            : t("pgDetails.available")}
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
                           ₹{bed.price}
@@ -384,23 +401,23 @@ export default function PGDetails() {
       {/* Admin Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Admin Information</CardTitle>
+          <CardTitle>{t("pgDetails.adminInfo")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <span className="font-semibold">Admin:</span>
+              <span className="font-semibold">{t("pgDetails.admin")}:</span>
               <p className="text-gray-600 mt-1">
                 {typeof pg.adminId === "object"
                   ? pg.adminId?.ownerName ||
                     pg.adminId?.pgName ||
                     pg.adminId?.email ||
-                    "Unknown Admin"
-                  : pg.adminId || "Unknown Admin"}
+                    t("pgDetails.unknownAdmin")
+                  : pg.adminId || t("pgDetails.unknownAdmin")}
               </p>
             </div>
             <div>
-              <span className="font-semibold">Created:</span>
+              <span className="font-semibold">{t("pgDetails.created")}:</span>
               <p className="text-gray-600 mt-1">
                 {new Date(pg.createdAt).toLocaleDateString()}
               </p>
