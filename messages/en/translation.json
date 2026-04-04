@@ -1,0 +1,123 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "apply": "Apply",
+    "reset": "Reset",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "header": {
+    "title": "STHALS.IN",
+    "home": "Home",
+    "createPGs": "Create PGs",
+    "managePGs": "Manage PGs",
+    "viewRequests": "View Requests",
+    "about": "About",
+    "contact": "Contact",
+    "viewProfile": "View Profile",
+    "logout": "Logout"
+  },
+  "home": {
+    "welcomeTitle": "Welcome to STHALS.IN",
+    "welcomeSubtitle": "Find your perfect PG accommodation or manage your PG business",
+    "trustedBy": "Trusted by 1000+ PG Owners",
+    "adminPortal": {
+      "title": "PG Admin Portal",
+      "subtitle": "For PG Owners & Managers",
+      "description": "Access your PG management dashboard to view bookings, manage rooms, and handle tenant requests.",
+      "loginButton": "Login as Admin",
+      "feature1": "Manage multiple PGs",
+      "feature2": "Real-time analytics"
+    },
+    "userPortal": {
+      "title": "User Portal",
+      "subtitle": "Coming Soon",
+      "description": "Find the perfect PG that fits your lifestyle and your budget. Smart living starts with the right PG.",
+      "loginButton": "Login as User - Coming Soon",
+      "feature1": "Free Search",
+      "feature2": "24/7 support",
+      "underDevelopment": "This feature is under development and will be available soon!"
+    },
+    "stats": {
+      "pgOwners": "Happy PG Owners",
+      "managedRooms": "Managed Rooms",
+      "uptime": "Uptime Guarantee",
+      "support": "Customer Support"
+    },
+    "footerMessage": "This portal is exclusively designed for PG administrators, property managers, and users who want to search for and book PG accommodations or dormitories.",
+    "welcomeBack": "Welcome back,",
+    "userAccountActive": "User Account Active",
+    "loggedUser": "You are logged in as User",
+    "goToDashboard": "Go to User Dashboard",
+    "manageBookings": "Manage your bookings and preferences"
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember me",
+    "loginButton": "Login",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign Up",
+    "hasAccount": "Already have an account?",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to your dashboard",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity",
+    "settings": "Settings"
+  },
+  "pg": {
+    "createPG": "Create PG",
+    "managePG": "Manage PG",
+    "pgName": "PG Name",
+    "pgAddress": "PG Address",
+    "pgCity": "City",
+    "pgState": "State",
+    "pgPincode": "Pincode",
+    "pgDescription": "Description",
+    "pgAmenities": "Amenities",
+    "pgRooms": "Rooms",
+    "pgPricing": "Pricing",
+    "pgImages": "Images",
+    "pgContact": "Contact Number",
+    "pgEmail": "Contact Email"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Cannot exceed {{max}} characters",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Please try again"
+  }
+}

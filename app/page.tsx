@@ -19,10 +19,12 @@ import {
   Bed,
   DollarSign,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
   const { currentAdmin, currentUser } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const redirectToHome = () => {
     router.push("/admin/dashboard");
@@ -42,13 +44,15 @@ export default function Home() {
           <Card variant="elevated" className="max-w-2xl text-center">
             <CardHeader>
               <CardTitle icon={<Users className="w-8 h-8" />}>
-                Welcome back, {currentUser.name}!
+                {t("home.welcomeBack")} {currentUser.name}!
               </CardTitle>
-              <CardBadge variant="success">User Account Active</CardBadge>
+              <CardBadge variant="success">
+                {t("home.userAccountActive")}
+              </CardBadge>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-6 text-lg">
-                You are logged in as User
+                {t("home.loggedUser")}
               </p>
               <div className="space-y-4">
                 <Link href="/user/dashboard">
@@ -56,11 +60,11 @@ export default function Home() {
                     size="lg"
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                   >
-                    Go to User Dashboard
+                    {t("home.goToDashboard")}
                   </Button>
                 </Link>
                 <p className="text-sm text-gray-500">
-                  Manage your bookings and preferences
+                  {t("home.manageBookings")}
                 </p>
               </div>
             </CardContent>
@@ -97,13 +101,13 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl secondary-foreground mb-4 bungee-spice-regular">
-            Welcome to STHALS.IN
+            {t("home.welcomeTitle")}
           </h1>
           <p className="secondary-foreground text-lg mb-6 poiret-one-regular font-bold">
-            Find your perfect PG accommodation or manage your PG business
+            {t("home.welcomeSubtitle")}
           </p>
           <CardBadge variant="primary" className="mt-4">
-            Trusted by 1000+ PG Owners
+            {t("home.trustedBy")}
           </CardBadge>
         </div>
 
@@ -115,14 +119,15 @@ export default function Home() {
           >
             <CardHeader>
               <CardTitle icon={<Building className="w-8 h-8 text-blue-500" />}>
-                PG Admin Portal
+                {t("home.adminPortal.title")}
               </CardTitle>
-              <CardBadge variant="primary">For PG Owners & Managers</CardBadge>
+              <CardBadge variant="primary">
+                {t("home.adminPortal.subtitle")}
+              </CardBadge>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-6 text-lg">
-                Access your PG management dashboard to view bookings, manage
-                rooms, and handle tenant requests.
+                {t("home.adminPortal.description")}
               </p>
               <div className="space-y-4">
                 <Link href="/admin/login">
@@ -130,12 +135,12 @@ export default function Home() {
                     size="lg"
                     className="w-full bg-gradient-to-r  bg-primary hover:bg-primary text-white shadow-lg group-hover:shadow-xl transition-all duration-300"
                   >
-                    Login as Admin
+                    {t("home.adminPortal.loginButton")}
                   </Button>
                 </Link>
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
-                  <span>• Manage multiple PGs</span>
-                  <span>• Real-time analytics</span>
+                  <span>• {t("home.adminPortal.feature1")}</span>
+                  <span>• {t("home.adminPortal.feature2")}</span>
                 </div>
               </div>
             </CardContent>
@@ -148,14 +153,15 @@ export default function Home() {
           >
             <CardHeader>
               <CardTitle icon={<Users className="w-8 h-8 text-purple-500" />}>
-                User Portal
+                {t("home.userPortal.title")}
               </CardTitle>
-              <CardBadge variant="warning">Coming Soon</CardBadge>
+              <CardBadge variant="warning">
+                {t("home.userPortal.subtitle")}
+              </CardBadge>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-6 text-lg">
-                Find the perfect PG that fits your lifestyle and your budget.
-                Smart living starts with the right PG.
+                {t("home.userPortal.description")}
               </p>
               <div className="space-y-4">
                 <div className="w-full">
@@ -163,17 +169,16 @@ export default function Home() {
                     disabled
                     className="w-full bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed font-medium"
                   >
-                    Login as User - Coming Soon
+                    {t("home.userPortal.loginButton")}
                   </button>
                 </div>
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
-                  <span>• Free Search</span>
-                  <span>• 24/7 support</span>
+                  <span>• {t("home.userPortal.feature1")}</span>
+                  <span>• {t("home.userPortal.feature2")}</span>
                 </div>
                 <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
                   <p className="text-sm text-purple-700 text-center font-medium">
-                    🚧 This feature is under development and will be available
-                    soon!
+                    🚧 {t("home.userPortal.underDevelopment")}
                   </p>
                 </div>
               </div>
@@ -187,19 +192,21 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
               <div>
                 <div className="text-3xl font-bold text-blue-600">1000+</div>
-                <div className="text-gray-600">Happy PG Owners</div>
+                <div className="text-gray-600">{t("home.stats.pgOwners")}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-green-600">5000+</div>
-                <div className="text-gray-600">Managed Rooms</div>
+                <div className="text-gray-600">
+                  {t("home.stats.managedRooms")}
+                </div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-purple-600">99.9%</div>
-                <div className="text-gray-600">Uptime Guarantee</div>
+                <div className="text-gray-600">{t("home.stats.uptime")}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-orange-600">24/7</div>
-                <div className="text-gray-600">Customer Support</div>
+                <div className="text-gray-600">{t("home.stats.support")}</div>
               </div>
             </div>
           </Card>
@@ -207,10 +214,7 @@ export default function Home() {
 
         {/* Footer Message */}
         <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
-            This portal is exclusively for PG administrators and property
-            managers.
-          </p>
+          <p className="text-gray-500 text-sm">{t("home.footerMessage")}</p>
         </div>
       </div>
     </div>

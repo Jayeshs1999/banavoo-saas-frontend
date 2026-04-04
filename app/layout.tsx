@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ClientAuthProvider } from "./ClientAuthProvider";
 import StructuredData from "../components/StructuredData";
+import I18nProvider from "../components/I18nProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -135,7 +136,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Structured Data Components */}
         <StructuredData type="Organization" data={{}} />
@@ -159,11 +160,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        <ClientAuthProvider>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </ClientAuthProvider>
+        <I18nProvider>
+          <ClientAuthProvider>
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </ClientAuthProvider>
+        </I18nProvider>
       </body>
     </html>
   );
