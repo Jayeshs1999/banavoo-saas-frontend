@@ -6,11 +6,14 @@ import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
 import { getAuthData, useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { logout } = useAuth();
+  const { t } = useTranslation();
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const data = getAuthData();
@@ -34,48 +37,49 @@ export default function Header() {
             priority
           /> */}
         <Link href="/" className="uncial-antiqua-regular text-[25px] font-bold">
-          STHALS.IN
+          {t("header.title")}
         </Link>
         {/* </div> */}
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-4 items-center">
           <Link href="/" className="hover:text-accent">
-            Home
+            {t("header.home")}
           </Link>
           {data?.user?.role === "admin" && (
             <Link href="/admin/create-pg" className="hover:text-accent">
-              Create PGs
+              {t("header.createPGs")}
             </Link>
           )}
           {data?.user?.role === "admin" && (
             <Link href="/dashboard" className="hover:text-accent">
-              Manage PGs
+              {t("header.managePGs")}
             </Link>
           )}
           {data?.user?.role === "admin" && (
             <Link href="/admin/requests" className="hover:text-accent">
-              View Requests
+              {t("header.viewRequests")}
             </Link>
           )}
           <Link href="/about" className="hover:text-accent">
-            About
+            {t("header.about")}
           </Link>
           <Link href="/contact" className="hover:text-accent">
-            Contact
+            {t("header.contact")}
           </Link>
           {data?.user?.role === "admin" && (
             <Link href="/admin/profile" className="hover:text-accent">
-              View Profile
+              {t("header.viewProfile")}
             </Link>
           )}
+          <LanguageSwitcher />
           {data?.user?.role && (
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition"
             >
               <LogOut size={18} />
-              Logout
+              {t("header.logout")}
             </button>
           )}
         </nav>
@@ -94,7 +98,7 @@ export default function Header() {
             className="hover:text-accent block py-2"
             onClick={toggleMenu}
           >
-            Home
+            {t("header.home")}
           </Link>
           {data?.user?.role === "admin" && (
             <Link
@@ -102,7 +106,7 @@ export default function Header() {
               className="hover:text-accent block py-2"
               onClick={toggleMenu}
             >
-              Create PGs
+              {t("header.createPGs")}
             </Link>
           )}
           {data?.user?.role === "admin" && (
@@ -111,7 +115,7 @@ export default function Header() {
               className="hover:text-accent block py-2"
               onClick={toggleMenu}
             >
-              Manage PGs
+              {t("header.managePGs")}
             </Link>
           )}
           {data?.user?.role === "admin" && (
@@ -120,7 +124,7 @@ export default function Header() {
               className="hover:text-accent block py-2"
               onClick={toggleMenu}
             >
-              View Requests
+              {t("header.viewRequests")}
             </Link>
           )}
           <Link
@@ -128,14 +132,14 @@ export default function Header() {
             className="hover:text-accent block py-2"
             onClick={toggleMenu}
           >
-            About
+            {t("header.about")}
           </Link>
           <Link
             href="/contact"
             className="hover:text-accent block py-2"
             onClick={toggleMenu}
           >
-            Contact
+            {t("header.contact")}
           </Link>
           {data?.user?.role === "admin" && (
             <Link
@@ -143,16 +147,19 @@ export default function Header() {
               className="hover:text-accent block py-2"
               onClick={toggleMenu}
             >
-              View Profile
+              {t("header.viewProfile")}
             </Link>
           )}
+          <div className="py-2">
+            <LanguageSwitcher />
+          </div>
           {data?.user?.role && (
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition w-full justify-center"
             >
               <LogOut size={18} />
-              Logout
+              {t("header.logout")}
             </button>
           )}
         </nav>
