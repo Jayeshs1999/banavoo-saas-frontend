@@ -11,6 +11,7 @@ import StateDropdown from "@/components/StateDropdown";
 import { PG, Room } from "../../../types";
 import { generateId } from "../../../utils";
 import { pgAPI, uploadAPI } from "../../../services/api";
+import { useTranslation } from "react-i18next";
 
 const pgSchema = z.object({
   name: z.string().min(1, "PG Name is required"),
@@ -36,6 +37,7 @@ export default function CreatePG() {
     pin: "",
   });
   const router = useRouter();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -251,7 +253,7 @@ export default function CreatePG() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Create New PG</h1>
+      <h1 className="text-3xl font-bold mb-8">{t("createPG.title")}</h1>
 
       {error && (
         <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md mb-6">
@@ -262,12 +264,12 @@ export default function CreatePG() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
+            <CardTitle>{t("createPG.basicInfo")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
-                PG Name
+                {t("createPG.pgName")}
               </label>
               <input
                 {...register("name")}
@@ -289,7 +291,7 @@ export default function CreatePG() {
                   type="checkbox"
                   className="mr-2"
                 />
-                Enable online payment for bookings
+                {t("createPG.enableOnlinePayment")}
               </label>
             </div>
           </CardContent>
@@ -297,7 +299,7 @@ export default function CreatePG() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Location Information</CardTitle>
+            <CardTitle>{t("createPG.locationInfo")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -306,7 +308,7 @@ export default function CreatePG() {
                   htmlFor="subcity"
                   className="block text-sm font-medium mb-1"
                 >
-                  Subcity/Area
+                  {t("createPG.subcity")}
                 </label>
                 <input
                   type="text"
@@ -324,7 +326,7 @@ export default function CreatePG() {
                   htmlFor="city"
                   className="block text-sm font-medium mb-1"
                 >
-                  City
+                  {t("createPG.city")}
                 </label>
                 <input
                   type="text"
@@ -344,7 +346,7 @@ export default function CreatePG() {
                   htmlFor="state"
                   className="block text-sm font-medium mb-1"
                 >
-                  State
+                  {t("createPG.state")}
                 </label>
                 <StateDropdown
                   value={location.state}
@@ -357,7 +359,7 @@ export default function CreatePG() {
 
               <div>
                 <label htmlFor="pin" className="block text-sm font-medium mb-1">
-                  Pin code
+                  {t("createPG.pincode")}
                 </label>
                 <input
                   type="text"
@@ -375,7 +377,7 @@ export default function CreatePG() {
                   htmlFor="country"
                   className="block text-sm font-medium mb-1"
                 >
-                  Country
+                  {t("createPG.country")}
                 </label>
                 <input
                   type="text"
@@ -395,7 +397,7 @@ export default function CreatePG() {
 
         <Card>
           <CardHeader>
-            <CardTitle>PG Structure</CardTitle>
+            <CardTitle>{t("createPG.pgStructure")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
@@ -403,7 +405,7 @@ export default function CreatePG() {
                 htmlFor="roomName"
                 className="block text-sm font-medium mb-1"
               >
-                Add Room
+                {t("createPG.addRoom")}
               </label>
               <div className="flex flex-wrap gap-2">
                 <input
@@ -411,14 +413,14 @@ export default function CreatePG() {
                   id="roomName"
                   value={currentRoom}
                   onChange={(e) => setCurrentRoom(e.target.value)}
-                  placeholder="Room name (e.g., Room 101)"
+                  placeholder={t("createPG.roomNamePlaceholder")}
                   className="flex-1 min-w-[150px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <input
                   type="number"
                   value={currentRoomPrice}
                   onChange={(e) => setCurrentRoomPrice(e.target.value)}
-                  placeholder="Price per bed"
+                  placeholder={t("createPG.pricePerBed")}
                   className="min-w-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <select
@@ -428,15 +430,15 @@ export default function CreatePG() {
                   }
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="day">Per Day</option>
-                  <option value="month">Per Month</option>
+                  <option value="day">{t("createPG.perDay")}</option>
+                  <option value="month">{t("createPG.perMonth")}</option>
                 </select>
                 <Button
                   type="button"
                   disabled={!currentRoom || !currentRoomPrice}
                   onClick={addRoom}
                 >
-                  Add Room
+                  {t("createPG.addRoom")}
                 </Button>
               </div>
               {roomError && (
@@ -461,7 +463,7 @@ export default function CreatePG() {
                         onClick={() => addBed(room.id)}
                         size="sm"
                       >
-                        Add Bed
+                        {t("createPG.addBed")}
                       </Button>
                       <Button
                         type="button"
@@ -470,7 +472,7 @@ export default function CreatePG() {
                         size="sm"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
-                        Delete Room
+                        {t("createPG.deleteRoom")}
                       </Button>
                     </div>
                   </div>
@@ -485,9 +487,11 @@ export default function CreatePG() {
                         }`}
                         onClick={() => toggleBedAllocation(room.id, bed.id)}
                       >
-                        Bed {index + 1}
+                        {t("createPG.bed")} {index + 1}
                         <br />
-                        {bed.allocated ? "Allocated" : "Available"}
+                        {bed.allocated
+                          ? t("createPG.allocated")
+                          : t("createPG.available")}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -509,7 +513,7 @@ export default function CreatePG() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Upload Images</CardTitle>
+            <CardTitle>{t("createPG.uploadImages")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -517,7 +521,7 @@ export default function CreatePG() {
                 htmlFor="photos"
                 className="block text-sm font-medium mb-2"
               >
-                Upload PG Photos
+                {t("createPG.uploadPGPhotos")}
               </label>
               <input
                 type="file"
@@ -529,11 +533,11 @@ export default function CreatePG() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-sm text-gray-500 mt-1">
-                You can upload multiple images
+                {t("createPG.uploadMultipleImages")}
               </p>
               {loading && (
                 <p className="text-sm text-blue-600 mt-2">
-                  Uploading images...
+                  {t("createPG.uploadingImages")}
                 </p>
               )}
             </div>
@@ -541,7 +545,7 @@ export default function CreatePG() {
             {photos.length > 0 && (
               <div>
                 <h3 className="text-sm font-medium mb-3">
-                  Uploaded Images ({photos.length})
+                  {t("createPG.uploadedImages")} ({photos.length})
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {photos.map((photo, index) => (
@@ -569,10 +573,10 @@ export default function CreatePG() {
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>
-            {loading ? "Creating PG..." : "Save PG"}
+            {loading ? t("createPG.creatingPG") : t("createPG.savePG")}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         </div>
       </form>

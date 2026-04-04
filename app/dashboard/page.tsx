@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import { pgAPI } from "@/services/api";
 import Link from "next/link";
 import { Building } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // interface Student {
 //   id: string;
@@ -43,6 +44,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { currentAdmin, logout } = useAuth();
   const [pgs, setPGs] = useState<any[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (currentAdmin) {
@@ -69,10 +71,12 @@ export default function Dashboard() {
       <Card variant="glass" className="p-5 backdrop-blur-xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            Your PGs
+            {t("dashboard.yourPGs")}
           </h2>
           <div className="flex gap-2">
-            <CardBadge variant="success">{pgs.length} Total</CardBadge>
+            <CardBadge variant="success">
+              {pgs.length} {t("dashboard.total")}
+            </CardBadge>
           </div>
         </div>
 
@@ -85,14 +89,14 @@ export default function Dashboard() {
             <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Building className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium mb-2">No PGs Yet</p>
-            <p className="text-sm">Create your first PG to get started</p>
+            <p className="text-lg font-medium mb-2">{t("dashboard.noPGs")}</p>
+            <p className="text-sm">{t("dashboard.createFirstPG")}</p>
             <Link href="/admin/create-pg">
               <Button
                 size="lg"
                 className="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
               >
-                Create Your First PG
+                {t("dashboard.createFirstPGButton")}
               </Button>
             </Link>
           </div>
@@ -142,31 +146,39 @@ export default function Dashboard() {
                           <span className="text-blue-600 font-semibold">
                             {totalRooms}
                           </span>
-                          <span className="text-gray-600 ml-1">Rooms</span>
+                          <span className="text-gray-600 ml-1">
+                            {t("dashboard.rooms")}
+                          </span>
                         </div>
                         <div className="bg-green-50 p-3 rounded-lg">
                           <span className="text-green-600 font-semibold">
                             {totalBeds}
                           </span>
-                          <span className="text-gray-600 ml-1">Beds</span>
+                          <span className="text-gray-600 ml-1">
+                            {t("dashboard.beds")}
+                          </span>
                         </div>
                         <div className="bg-red-50 p-3 rounded-lg">
                           <span className="text-red-600 font-semibold">
                             {allocatedBeds}
                           </span>
-                          <span className="text-gray-600 ml-1">Allocated</span>
+                          <span className="text-gray-600 ml-1">
+                            {t("dashboard.allocated")}
+                          </span>
                         </div>
                         <div className="bg-yellow-50 p-3 rounded-lg">
                           <span className="text-yellow-600 font-semibold">
                             {availableBeds}
                           </span>
-                          <span className="text-gray-600 ml-1">Available</span>
+                          <span className="text-gray-600 ml-1">
+                            {t("dashboard.available")}
+                          </span>
                         </div>
                       </div>
 
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-semibold text-gray-700">
-                          Occupancy: {occupancyRate}%
+                          {t("dashboard.occupancy")}: {occupancyRate}%
                         </span>
                         <div className="w-full bg-gray-200 rounded-full h-3 ml-2">
                           <div
@@ -183,7 +195,7 @@ export default function Dashboard() {
                             variant="outline"
                             className="flex-1 w-full border-2 border-primary text-primary hover:bg-background hover:text-primary transition-all duration-300"
                           >
-                            View Details
+                            {t("dashboard.viewDetails")}
                           </Button>
                         </Link>
                         <Link
@@ -194,7 +206,7 @@ export default function Dashboard() {
                             size="sm"
                             className="flex-1 w-full bg-gradient-to-r   text-white"
                           >
-                            Edit
+                            {t("common.edit")}
                           </Button>
                         </Link>
                       </div>

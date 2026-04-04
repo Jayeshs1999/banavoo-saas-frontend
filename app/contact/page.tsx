@@ -8,8 +8,10 @@ import {
   CardTitle,
 } from "../../components";
 import { contactAPI } from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 export default function Contact() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,26 +59,27 @@ export default function Contact() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6 text-center">Contact Us</h1>
+        <h1 className="text-4xl font-bold mb-6 text-center">
+          {t("contact.title")}
+        </h1>
         <p className="text-muted-foreground text-lg mb-8 text-center">
-          Get in touch with our PG management team. We're here to help you with
-          any questions or concerns.
+          {t("contact.description")}
         </p>
 
         <Card>
           <CardHeader>
-            <CardTitle>Send us a message</CardTitle>
+            <CardTitle>{t("contact.sendMessage")}</CardTitle>
           </CardHeader>
           <CardContent>
             {submitStatus === "success" && (
               <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                Thank you for your message! We'll get back to you soon.
+                {t("contact.successMessage")}
               </div>
             )}
 
             {submitStatus === "error" && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {errorMessage || "Failed to send message. Please try again."}
+                {errorMessage || t("contact.errorMessage")}
               </div>
             )}
 
@@ -86,7 +89,7 @@ export default function Contact() {
                   htmlFor="name"
                   className="block text-sm font-medium mb-1"
                 >
-                  Name *
+                  {t("contact.name")} *
                 </label>
                 <input
                   type="text"
@@ -96,7 +99,7 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Your full name"
+                  placeholder={t("contact.namePlaceholder")}
                 />
               </div>
               <div>
@@ -104,7 +107,7 @@ export default function Contact() {
                   htmlFor="email"
                   className="block text-sm font-medium mb-1"
                 >
-                  Email *
+                  {t("contact.email")} *
                 </label>
                 <input
                   type="email"
@@ -114,7 +117,7 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="your.email@example.com"
+                  placeholder={t("contact.emailPlaceholder")}
                 />
               </div>
               <div>
@@ -122,7 +125,7 @@ export default function Contact() {
                   htmlFor="message"
                   className="block text-sm font-medium mb-1"
                 >
-                  Message *
+                  {t("contact.message")} *
                 </label>
                 <textarea
                   id="message"
@@ -132,21 +135,21 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Please describe your inquiry or message..."
+                  placeholder={t("contact.messagePlaceholder")}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Sending..." : "Send Message"}
+                {isSubmitting
+                  ? t("contact.sending")
+                  : t("contact.sendMessageButton")}
               </Button>
             </form>
 
             <div className="mt-6 text-sm text-muted-foreground">
-              <p className="mb-2">You can also reach us at:</p>
+              <p className="mb-2">{t("contact.alternativeContact")}</p>
               <p>Email: jayeshsevatkar55@gmail.com</p>
               <p>Phone: +91 8888585093</p>
-              <p className="mt-2">
-                Business hours: Monday - Saturday, 9:00 AM - 6:00 PM
-              </p>
+              <p className="mt-2">{t("contact.businessHours")}</p>
             </div>
           </CardContent>
         </Card>
