@@ -11,7 +11,7 @@ import {
   CardTitle,
   CardBadge,
 } from "@/components";
-import { useAuth } from "@/app/context/AuthContext";
+import { getAuthData, useAuth } from "@/app/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { pgAPI } from "@/services/api";
 import {
@@ -38,6 +38,16 @@ export default function AdminDashboard() {
       fetchAdminPGs();
     }
   }, [currentAdmin]);
+
+  if (!currentAdmin) {
+    const authData = getAuthData();
+    if (authData?.userType === "admin") {
+      router.push("/admin/dashboard");
+      return;
+    }
+    router.push("/admin/login");
+    return <div>Loading...</div>;
+  }
 
   const fetchAdminPGs = async () => {
     setLoading(true);

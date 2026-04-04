@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
-import { useAuth } from "../../context/AuthContext";
+import { getAuthData, useAuth } from "../../context/AuthContext";
 import { pgAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
 
@@ -101,6 +101,11 @@ export default function UserDashboard() {
   };
 
   if (!currentUser) {
+    const authData = getAuthData();
+    if (authData?.userType === "user") {
+      router.push("/user/dashboard");
+      return;
+    }
     router.push("/user/login");
     return <div>Loading...</div>;
   }
@@ -183,91 +188,117 @@ export default function UserDashboard() {
           {filteredPGs.map((pg) => (
             <Card
               key={pg._id || pg.id}
-              className="hover:shadow-lg transition-shadow"
+              className="overflow-hidden hover:shadow-xl transition-all duration-300 group"
             >
               <div
-                className="cursor-pointer"
+                className="relative cursor-pointer"
                 onClick={() => router.push(`/pg/${pg._id || pg.id}`)}
               >
                 {pg.photos && pg.photos.length > 0 ? (
-                  <div className="h-40 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg">
+                  <div className="relative h-48 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={pg.photos[0]}
                       alt={pg.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-[darkorange]">
+                      <h3 className="text-white text-xl font-bold drop-shadow-lg ">
+                        {pg.name}
+                      </h3>
+                    </div>
                   </div>
                 ) : (
-                  <div className="h-40 -mx-6 -mt-6 mb-4 bg-gray-200 rounded-t-lg flex items-center justify-center">
-                    <span className="text-gray-500">No Image</span>
+                  <div className="h-48 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                    <div className="text-center">
+                      <svg
+                        className="w-16 h-16 text-gray-500 mx-auto mb-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                        />
+                      </svg>
+                      <span className="text-gray-600 font-medium">
+                        No Image
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-[darkorange]">
+                      <h3 className="text-white text-xl font-bold drop-shadow-lg">
+                        {pg.name}
+                      </h3>
+                    </div>
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="text-xl">{pg.name}</CardTitle>
-                </CardHeader>
               </div>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-2 mb-3">
+                  <svg
+                    className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  <p className="text-sm text-gray-600 flex-1">
                     {pg?.location?.subcity}, {pg?.location?.city},{" "}
                     {pg?.location?.state}
                   </p>
-                  <p
-                    className={`text-sm mt-2 ${
+                </div>
+
+                <div className="flex items-center justify-between mb-3">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       getAvailableBeds(pg) > 0
-                        ? "text-green-600"
-                        : "text-red-600"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {getAvailableBeds(pg) > 0
-                      ? `${getAvailableBeds(pg)} ${t("userDashboard.bedsAvailable")}`
-                      : t("userDashboard.fullyOccupied")}
-                  </p>
+                      ? `${getAvailableBeds(pg)} beds available`
+                      : "Fully Occupied"}
+                  </span>
+                  {pg.onlinePayment && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Online Payment
+                    </span>
+                  )}
                 </div>
 
-                <div className="mb-4 space-y-1">
-                  <h4 className="font-semibold text-sm mb-2">
-                    {t("userDashboard.rooms")}:
-                  </h4>
-                  {pg.structure.slice(0, 2).map((room) => (
-                    <div
-                      key={room._id || room.id}
-                      className="text-sm text-gray-600 flex justify-between"
-                    >
-                      <span>{room.name}</span>
-                      <span>
-                        ₹{room.price}/
-                        {room.pricingPeriod === "day"
-                          ? t("common.day")
-                          : t("common.month")}
+                <div className="border-t pt-3 mb-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Starting from</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      ₹
+                      {Math.min(
+                        ...pg.structure.map((r) => r.price),
+                      ).toLocaleString()}
+                      <span className="text-xs text-gray-500 font-normal">
+                        /
+                        {pg.structure[0]?.pricingPeriod === "day"
+                          ? "day"
+                          : "month"}
                       </span>
-                    </div>
-                  ))}
-                  {pg.structure.length > 2 && (
-                    <p className="text-sm text-blue-500">
-                      +{pg.structure.length - 2} more rooms
-                    </p>
-                  )}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
@@ -276,15 +307,13 @@ export default function UserDashboard() {
                     className="flex-1"
                     disabled={getAvailableBeds(pg) === 0}
                   >
-                    {pg.onlinePayment
-                      ? t("userDashboard.bookOnline")
-                      : t("userDashboard.sendRequest")}
+                    {pg.onlinePayment ? "Book Now" : "Send Request"}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => router.push(`/pg/${pg._id || pg.id}`)}
                   >
-                    {t("common.view")}
+                    View
                   </Button>
                 </div>
               </CardContent>
