@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components";
@@ -34,8 +34,8 @@ interface PG {
   };
 }
 
-export default function UserBooking() {
-  const { currentUser, logout } = useAuth();
+function BookingForm() {
+  const { currentUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -47,7 +47,6 @@ export default function UserBooking() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Form state
   const [selectedRoom, setSelectedRoom] = useState<string>("");
   const [selectedBed, setSelectedBed] = useState<string>("");
   const [joinDate, setJoinDate] = useState<string>("");
@@ -79,13 +78,6 @@ export default function UserBooking() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getAvailableBeds = () => {
-    if (!pg || !selectedRoom) return [];
-    const room = pg.structure.find((r) => r._id === selectedRoom);
-    if (!room) return [];
-    return room.beds.filter((bed) => !bed.allocated);
   };
 
   const getSelectedBedPrice = () => {
@@ -191,7 +183,6 @@ export default function UserBooking() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {/* PG Details */}
         <div className="md:col-span-1">
           <Card>
             <CardHeader>
@@ -223,7 +214,6 @@ export default function UserBooking() {
           </Card>
         </div>
 
-        {/* Booking Form */}
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
@@ -237,7 +227,6 @@ export default function UserBooking() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Room Selection */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     {t("booking.selectRoom")} *
@@ -284,7 +273,6 @@ export default function UserBooking() {
                   </div>
                 </div>
 
-                {/* Bed Selection */}
                 {selectedRoom && (
                   <div>
                     <label className="block text-sm font-medium mb-2">
@@ -332,7 +320,6 @@ export default function UserBooking() {
                   </div>
                 )}
 
-                {/* Join Date and Stay Days */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
@@ -365,7 +352,6 @@ export default function UserBooking() {
                   </div>
                 </div>
 
-                {/* Payment Method */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     {t("booking.paymentMethod")}
@@ -398,7 +384,6 @@ export default function UserBooking() {
                   </div>
                 </div>
 
-                {/* Notes */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     {t("booking.notes")} (Optional)
@@ -416,7 +401,6 @@ export default function UserBooking() {
                   </p>
                 </div>
 
-                {/* Total Price */}
                 {selectedBed && (
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
@@ -434,7 +418,6 @@ export default function UserBooking() {
                   </div>
                 )}
 
-                {/* Submit Button */}
                 <div className="flex gap-4">
                   <Button
                     type="submit"
@@ -457,5 +440,21 @@ export default function UserBooking() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UserBooking() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+      }
+    >
+      <BookingForm />
+    </Suspense>
   );
 }
