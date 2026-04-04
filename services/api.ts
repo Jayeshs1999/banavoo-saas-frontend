@@ -12,6 +12,22 @@ const getAuthToken = () => {
   return null;
 };
 
+// Helper function to get user type
+const getUserType = () => {
+  if (typeof window !== 'undefined') {
+    const authData = localStorage.getItem('authData');
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        return parsed.userType || null;
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+};
+
 // Helper function to make API requests
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_BASE}${endpoint}`;
@@ -135,6 +151,57 @@ export const authAPI = {
   },
 };
 
+// User API
+export const userAPI = {
+  // User Authentication
+  userLogin: async (email: string, password: string) => {
+    return apiRequest('/users/auth', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  userRegister: async (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    mobile: string;
+    password: string;
+    address: string;
+  }) => {
+    return apiRequest('/users/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  getUserProfile: async () => {
+    return apiRequest('/users/profile');
+  },
+
+  updateUserProfile: async (data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    mobile?: string;
+    address?: string;
+    password?: string;
+  }) => {
+    return apiRequest('/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  logout: async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+    }
+    return Promise.resolve({ message: 'Logged out successfully' });
+  },
+};
+
 // PG API
 export const pgAPI = {
   // Get all PGs for admin
@@ -204,6 +271,39 @@ export const pgAPI = {
     });
     return apiRequest(`/pgs/search?${searchParams.toString()}`);
   },
+
+  // Public endpoints (no auth required)
+  getAllPGsPublic: async () => {
+    const url = `${API_BASE}/pgs/public`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+
+  getPGPublic: async (pgId: string) => {
+    const url = `${API_BASE}/pgs/public/${pgId}`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  },
 };
 
 // Booking API
@@ -229,6 +329,32 @@ export const bookingAPI = {
   // Get booking by ID
   getBooking: async (bookingId: string) => {
     return apiRequest(`/bookings/${bookingId}`);
+  },
+
+  // User bookings
+  getMyBookings: async () => {
+    return apiRequest('/bookings/my-bookings');
+  },
+
+  createBooking: async (data: {
+    pgId: string;
+    roomId: string;
+    bedId: string;
+    joinDate: string;
+    stayDays: number;
+    notes?: string;
+    paymentMethod?: 'online' | 'cash';
+  }) => {
+    return apiRequest('/bookings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  cancelBooking: async (bookingId: string) => {
+    return apiRequest(`/bookings/${bookingId}/cancel`, {
+      method: 'PUT',
+    });
   },
 };
 
