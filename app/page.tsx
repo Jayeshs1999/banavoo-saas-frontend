@@ -37,41 +37,8 @@ export default function Home() {
   }
 
   if (currentUser) {
-    return (
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
-        <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col justify-center items-center relative z-10">
-          <Card variant="elevated" className="max-w-2xl text-center">
-            <CardHeader>
-              <CardTitle icon={<Users className="w-8 h-8" />}>
-                {t("home.welcomeBack")} {currentUser.name}!
-              </CardTitle>
-              <CardBadge variant="success">
-                {t("home.userAccountActive")}
-              </CardBadge>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-6 text-lg">
-                {t("home.loggedUser")}
-              </p>
-              <div className="space-y-4">
-                <Link href="/user/dashboard">
-                  <Button
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-                  >
-                    {t("home.goToDashboard")}
-                  </Button>
-                </Link>
-                <p className="text-sm text-gray-500">
-                  {t("home.manageBookings")}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    router.push("/user/dashboard");
+    return;
   }
 
   // Only show login options if NOT logged in
@@ -146,40 +113,34 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          {/* User Portal - Coming Soon */}
           <Card
             variant="elevated"
-            className="group hover:shadow-2xl transition-all duration-300 opacity-75"
+            className="group hover:shadow-2xl transition-all duration-300"
           >
             <CardHeader>
               <CardTitle icon={<Users className="w-8 h-8 text-purple-500" />}>
-                {t("home.userPortal.title")}
+                User Portal
               </CardTitle>
-              <CardBadge variant="warning">
-                {t("home.userPortal.subtitle")}
-              </CardBadge>
+              <CardBadge variant="success">Get Started Today</CardBadge>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-6 text-lg">
-                {t("home.userPortal.description")}
+                Find the perfect PG that fits your lifestyle and your budget.
+                Smart living starts with the right PG.
               </p>
               <div className="space-y-4">
-                <div className="w-full">
-                  <button
-                    disabled
-                    className="w-full bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed font-medium"
+                <Link href="/user/login">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 group-hover:shadow-xl"
                   >
-                    {t("home.userPortal.loginButton")}
-                  </button>
-                </div>
+                    Login as User
+                  </Button>
+                </Link>
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
-                  <span>• {t("home.userPortal.feature1")}</span>
-                  <span>• {t("home.userPortal.feature2")}</span>
-                </div>
-                <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                  <p className="text-sm text-purple-700 text-center font-medium">
-                    🚧 {t("home.userPortal.underDevelopment")}
-                  </p>
+                  <span>• Free Search</span>
+                  <span>• 24/7 support</span>
                 </div>
               </div>
             </CardContent>
