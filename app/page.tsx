@@ -141,15 +141,16 @@ export default function Home() {
             </CardContent>
           </Card>
 
+          {/* User Portal - Coming Soon */}
           <Card
             variant="elevated"
-            className="group hover:shadow-2xl transition-all duration-300"
+            className="group hover:shadow-2xl transition-all duration-300 opacity-75"
           >
             <CardHeader>
               <CardTitle icon={<Users className="w-8 h-8 text-purple-500" />}>
                 User Portal
               </CardTitle>
-              <CardBadge variant="success">Get Started Today</CardBadge>
+              <CardBadge variant="warning">Coming Soon</CardBadge>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-6 text-lg">
@@ -157,18 +158,23 @@ export default function Home() {
                 Smart living starts with the right PG.
               </p>
               <div className="space-y-4">
-                <Link href="/user/login">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 group-hover:shadow-xl"
+                <div className="w-full">
+                  <button
+                    disabled
+                    className="w-full bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed font-medium"
                   >
-                    Login as User
-                  </Button>
-                </Link>
+                    Login as User - Coming Soon
+                  </button>
+                </div>
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
                   <span>• Free Search</span>
                   <span>• 24/7 support</span>
+                </div>
+                <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <p className="text-sm text-purple-700 text-center font-medium">
+                    🚧 This feature is under development and will be available
+                    soon!
+                  </p>
                 </div>
               </div>
             </CardContent>
