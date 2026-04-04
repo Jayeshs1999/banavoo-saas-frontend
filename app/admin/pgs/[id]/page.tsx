@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { Button } from "@/components";
+import ImageViewer from "@/components/ImageViewer";
 import { useAuth } from "@/app/context/AuthContext";
 import { pgAPI } from "@/services/api";
 
@@ -48,6 +49,8 @@ export default function PGDetails() {
   const [pg, setPG] = useState<PG | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (pgId) {
@@ -80,6 +83,29 @@ export default function PGDetails() {
 
   const handleBack = () => {
     router.push("/admin/dashboard");
+  };
+
+  const openImageViewer = (index: number) => {
+    setCurrentImageIndex(index);
+    setViewerOpen(true);
+  };
+
+  const closeImageViewer = () => {
+    setViewerOpen(false);
+  };
+
+  const previousImage = () => {
+    if (!pg) return;
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? pg.photos.length - 1 : prev - 1,
+    );
+  };
+
+  const nextImage = () => {
+    if (!pg) return;
+    setCurrentImageIndex((prev) =>
+      prev === pg.photos.length - 1 ? 0 : prev + 1,
+    );
   };
 
   if (loading) {
@@ -134,7 +160,7 @@ export default function PGDetails() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">{pg.name}</h1>
           <p className="text-gray-600 mt-2">
@@ -162,17 +188,59 @@ export default function PGDetails() {
           </CardHeader>
           <CardContent>
             {pg.photos.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
-                {pg.photos.map((photo, index) => (
-                  <div key={index} className="aspect-square">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={photo}
-                      alt={`PG photo ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+              <div className="space-y-3">
+                {/* Main photo display */}
+                <div
+                  className="aspect-video cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+                  onClick={() => openImageViewer(currentImageIndex)}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={pg.photos[currentImageIndex]}
+                    alt={`PG photo ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {pg.photos.length > 1 && (
+                    <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                      {currentImageIndex + 1} / {pg.photos.length}
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnail strip */}
+                {pg.photos.length > 1 && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {pg.photos.map((photo, index) => (
+                      <div
+                        key={index}
+                        className={`aspect-square cursor-pointer rounded border-2 transition-all ${
+                          index === currentImageIndex
+                            ? "border-blue-500 shadow-md"
+                            : "border-transparent hover:border-gray-300"
+                        }`}
+                        onClick={() => {
+                          setCurrentImageIndex(index);
+                          if (pg.photos.length > 1) {
+                            openImageViewer(index);
+                          }
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={photo}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover rounded"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+
+                <p className="text-xs text-gray-500 text-center">
+                  {pg.photos.length > 1
+                    ? "Click to view full size • Use arrow keys to navigate"
+                    : "Click to view full size"}
+                </p>
               </div>
             ) : (
               <div className="text-center text-gray-500 py-8">
@@ -302,6 +370,16 @@ export default function PGDetails() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Full-screen Image Viewer */}
+      <ImageViewer
+        images={pg.photos}
+        currentIndex={currentImageIndex}
+        isOpen={viewerOpen}
+        onClose={closeImageViewer}
+        onPrevious={previousImage}
+        onNext={nextImage}
+      />
 
       {/* Admin Information */}
       <Card>
