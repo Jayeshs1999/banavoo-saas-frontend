@@ -61,6 +61,13 @@ export default function Header() {
               {t("header.viewRequests")}
             </Link>
           )}
+
+          {data?.user?.role === "user" && (
+            <Link href="/user/requests" className="hover:text-accent">
+              {t("userDashboard.myRequests")}
+            </Link>
+          )}
+
           <Link href="/about" className="hover:text-accent">
             {t("header.about")}
           </Link>
@@ -72,6 +79,13 @@ export default function Header() {
               {t("header.viewProfile")}
             </Link>
           )}
+
+          {data?.user?.role === "user" && (
+            <Link href="/user/profile" className="hover:text-accent">
+              {t("userDashboard.profile")}
+            </Link>
+          )}
+
           <LanguageSwitcher />
           {data?.user?.role && (
             <button
@@ -127,6 +141,17 @@ export default function Header() {
               {t("header.viewRequests")}
             </Link>
           )}
+
+          {data?.user?.role === "user" && (
+            <Link
+              href="/user/requests"
+              className="hover:text-accent block py-2"
+              onClick={toggleMenu}
+            >
+              {t("userDashboard.myRequests")}
+            </Link>
+          )}
+
           <Link
             href="/about"
             className="hover:text-accent block py-2"
@@ -150,6 +175,17 @@ export default function Header() {
               {t("header.viewProfile")}
             </Link>
           )}
+
+          {data?.user?.role === "user" && (
+            <Link
+              href="/user/profile"
+              className="hover:text-accent block py-2"
+              onClick={toggleMenu}
+            >
+              {t("userDashboard.profile")}
+            </Link>
+          )}
+
           <div className="py-2">
             <LanguageSwitcher />
           </div>

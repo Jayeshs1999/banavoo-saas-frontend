@@ -8,7 +8,7 @@ import React, {
   useEffect,
 } from "react";
 import { PGAdmin, User } from "../../types";
-import { authAPI } from "../../services/api";
+import { authAPI, userAPI } from "../../services/api";
 
 /* -------------------- HELPERS -------------------- */
 
@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await authAPI.adminLogin(email, password); // Note: Using admin login for now, will need user login API
+      const response = await userAPI.userLogin(email, password);
 
       // Store token and user data
       localStorage.setItem("token", response.token || "user-token");
@@ -247,9 +247,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      // Note: User registration API not implemented yet
-      setError("User registration not available yet");
-      return false;
+      const response = await userAPI.userRegister({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        mobile: userData.mobile,
+        password: userData.password,
+        address: userData.address,
+      });
+
+      // Store token and user data
+      localStorage.setItem("token", response.token || "user-token");
+      setCurrentUser(response);
+      setCurrentAdmin(null);
+
+      setAuthData("user", response, response.token || "user-token");
+      return true;
     } catch (err: any) {
       setError(err.message || "Registration failed");
       return false;

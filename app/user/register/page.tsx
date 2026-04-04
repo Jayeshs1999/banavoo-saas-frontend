@@ -40,20 +40,24 @@ export default function UserRegister() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterForm) => {
+  const onSubmit = async (data: RegisterForm) => {
     try {
-      registerUser({
+      const success = await registerUser({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         mobile: data.mobile,
         address: data.address,
         password: data.password,
-        role: 'user',
+        role: "user",
       });
-      router.push("/user/dashboard");
-    } catch (err) {
-      setError("Registration failed");
+      if (success) {
+        router.push("/user/dashboard");
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
     }
   };
 
