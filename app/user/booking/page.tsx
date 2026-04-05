@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { useAuth } from "../../context/AuthContext";
 import { pgAPI, bookingAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
+import { calculatePrice, calculateDays } from "../../../utils";
 
 interface PG {
   _id: string;
@@ -89,8 +90,48 @@ function BookingForm() {
     return bed.price;
   };
 
+  const getSelectedRoomPricingPeriod = () => {
+    if (!pg || !selectedRoom) return "month";
+    const room = pg.structure.find((r) => r._id === selectedRoom);
+    return room?.pricingPeriod || "month";
+  };
+
   const calculateTotal = () => {
-    return getSelectedBedPrice() * stayDays;
+    if (!joinDate || !selectedBed) return 0;
+    const price = getSelectedBedPrice();
+    const pricingPeriod = getSelectedRoomPricingPeriod();
+    const checkInDate = new Date(joinDate);
+    const checkOutDate = new Date(checkInDate);
+    checkOutDate.setDate(checkOutDate.getDate() + stayDays);
+
+    const { totalPrice } = calculatePrice({
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      price,
+      pricingPeriod,
+    });
+    return totalPrice;
+  };
+
+  const getBookingBreakdown = () => {
+    if (!joinDate || !selectedBed) return null;
+    const pricingPeriod = getSelectedRoomPricingPeriod();
+    const checkInDate = new Date(joinDate);
+    const checkOutDate = new Date(checkInDate);
+    checkOutDate.setDate(checkOutDate.getDate() + stayDays);
+
+    const { days, months } = calculatePrice({
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      price: getSelectedBedPrice(),
+      pricingPeriod,
+    });
+
+    if (pricingPeriod === "day") {
+      return `${getSelectedBedPrice()} × ${days} ${days === 1 ? t("common.day") : t("common.days")}`;
+    } else {
+      return `${getSelectedBedPrice()} × ${months} ${months === 1 ? t("common.month") : t("common.months")}`;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -401,7 +442,7 @@ function BookingForm() {
                   </p>
                 </div>
 
-                {selectedBed && (
+                {selectedBed && joinDate && (
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold">
@@ -412,8 +453,7 @@ function BookingForm() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
-                      {getSelectedBedPrice()} × {stayDays}{" "}
-                      {stayDays === 1 ? t("common.day") : t("common.days")}
+                      {getBookingBreakdown()}
                     </p>
                   </div>
                 )}

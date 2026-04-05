@@ -45,6 +45,11 @@ interface Booking {
   roomName?: string;
   bedNumber?: number | string;
   bedPrice?: number;
+  pricingPeriod?: "day" | "month";
+  priceBreakdown?: {
+    unitCount: number;
+    unitLabel: string;
+  };
 }
 
 export default function AdminRequests() {
@@ -306,6 +311,15 @@ export default function AdminRequests() {
                     <p className="text-xl font-bold text-blue-600">
                       ₹{booking.totalPrice.toLocaleString()}
                     </p>
+                    {booking.priceBreakdown && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        (
+                        {booking.bedPrice
+                          ? `₹${booking.bedPrice} × ${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
+                          : `${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`}
+                        )
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -435,6 +449,15 @@ export default function AdminRequests() {
                   <p className="font-bold text-lg text-blue-600">
                     ₹{selectedBooking.totalPrice.toLocaleString()}
                   </p>
+                  {selectedBooking.priceBreakdown && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      (
+                      {selectedBooking.bedPrice
+                        ? `₹${selectedBooking.bedPrice} × ${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
+                        : `${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`}
+                      )
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Payment Method</p>
