@@ -24,6 +24,11 @@ export default function Header() {
     router.push("/admin/login");
   };
 
+  const handleUserLogout = () => {
+    logout();
+    router.push("/user/login");
+  };
+
   return (
     <header className="bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -89,7 +94,11 @@ export default function Header() {
           <LanguageSwitcher />
           {data?.user?.role && (
             <button
-              onClick={handleLogout}
+              onClick={() =>
+                data?.user?.role === "user"
+                  ? handleUserLogout()
+                  : handleLogout()
+              }
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition"
             >
               <LogOut size={18} />
@@ -191,7 +200,11 @@ export default function Header() {
           </div>
           {data?.user?.role && (
             <button
-              onClick={handleLogout}
+              onClick={() =>
+                data?.user?.role === "user"
+                  ? handleUserLogout()
+                  : handleLogout()
+              }
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition w-full justify-center"
             >
               <LogOut size={18} />

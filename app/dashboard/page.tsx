@@ -8,6 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  ShareButton,
 } from "../../components";
 import { useAuth } from "../context/AuthContext";
 import { pgAPI } from "@/services/api";
@@ -136,8 +137,17 @@ export default function Dashboard() {
                             {pg.location?.subcity}, {pg.location?.city}
                           </p>
                         </div>
+                        {/* <div className="flex items-center gap-2">
+                          <ShareButton
+                            pgId={pg._id}
+                            pgName={pg.name}
+                            pgLocation={pg.location}
+                            price={pg.structure[0]?.price}
+                            size="sm"
+                          /> */}
                         <div className="w-12 h-12 bg-gradient-to-br bg-primary rounded-full flex items-center justify-center shadow-lg">
                           <Building className="w-6 h-6 text-white" />
+                          {/* </div> */}
                         </div>
                       </div>
 
