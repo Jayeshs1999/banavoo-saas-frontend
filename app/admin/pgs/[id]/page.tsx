@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
-import { Button } from "@/components";
+import { Button, ShareButton } from "@/components";
 import ImageViewer from "@/components/ImageViewer";
 import { useAuth } from "@/app/context/AuthContext";
 import { pgAPI } from "@/services/api";
@@ -162,7 +162,7 @@ export default function PGDetails() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">{pg.name}</h1>
           <p className="text-gray-600 mt-2">
@@ -171,6 +171,13 @@ export default function PGDetails() {
           </p>
         </div>
         <div className="flex gap-4">
+          <ShareButton
+            pgId={pgId}
+            pgName={pg.name}
+            pgLocation={pg.location}
+            price={pg.structure[0]?.price}
+            size="sm"
+          />
           <Button
             onClick={handleEdit}
             className="bg-blue-500 hover:bg-blue-700"

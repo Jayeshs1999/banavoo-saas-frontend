@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components";
+import { Button, ShareButton } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import ImageViewer from "@/components/ImageViewer";
 import { pgAPI } from "../../../services/api";
@@ -182,9 +182,16 @@ export default function PGDetails() {
         >
           ← Back to Dashboard
         </Link>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 gap-4">
           <h1 className="text-3xl font-bold">{pg.name}</h1>
           <div className="flex gap-4 mt-4 sm:mt-0">
+            <ShareButton
+              pgId={pgId}
+              pgName={pg.name}
+              pgLocation={pg.location}
+              price={pg.structure[0]?.price}
+              size="sm"
+            />
             {currentAdmin && (
               <Link href={`/admin/edit-pg/${pgId}`}>
                 <Button variant="outline">{t("pgDetails.editPG")}</Button>
