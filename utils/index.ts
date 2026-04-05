@@ -23,6 +23,76 @@ export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
+/**
+ * Calculate the number of days between two dates
+ */
+export const calculateDays = (checkIn: Date | string, checkOut: Date | string): number => {
+  const startDate = new Date(checkIn);
+  const endDate = new Date(checkOut);
+  const diffTime = endDate.getTime() - startDate.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(1, diffDays);
+};
+
+/**
+ * Calculate the number of months between two dates (30 days = 1 month)
+ */
+export const calculateMonths = (checkIn: Date | string, checkOut: Date | string): number => {
+  const days = calculateDays(checkIn, checkOut);
+  return Math.max(1, Math.ceil(days / 30));
+};
+
+/**
+ * Calculate the total price for a booking based on pricing period
+ */
+export const calculatePrice = (params: {
+  checkIn: Date | string;
+  checkOut: Date | string;
+  price: number;
+  pricingPeriod: 'day' | 'month';
+}): { totalPrice: number; days: number; months: number } => {
+  const days = calculateDays(params.checkIn, params.checkOut);
+  const months = calculateMonths(params.checkIn, params.checkOut);
+
+  let totalPrice: number;
+  if (params.pricingPeriod === 'day') {
+    totalPrice = days * params.price;
+  } else {
+    totalPrice = months * params.price;
+  }
+
+  return {
+    totalPrice: Math.round(totalPrice * 100) / 100,
+    days,
+    months,
+  };
+};
+
+/**
+ * Validate booking dates
+ */
+export const validateBookingDates = (
+  checkIn: Date | string,
+  checkOut: Date | string
+): { valid: boolean; error?: string } => {
+  const checkInDate = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
+
+  if (isNaN(checkInDate.getTime())) {
+    return { valid: false, error: 'Invalid check-in date' };
+  }
+
+  if (isNaN(checkOutDate.getTime())) {
+    return { valid: false, error: 'Invalid check-out date' };
+  }
+
+  if (checkOutDate < checkInDate) {
+    return { valid: false, error: 'Check-out date must be after check-in date' };
+  }
+
+  return { valid: true };
+};
+
 
 export const getToken = (): string | null => {
   return localStorage.getItem("token") || sessionStorage.getItem("token");

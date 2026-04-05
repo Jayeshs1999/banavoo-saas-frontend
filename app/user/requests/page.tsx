@@ -38,6 +38,12 @@ interface Booking {
     email: string;
     pgName: string;
   } | null;
+  bedPrice?: number;
+  pricingPeriod?: "day" | "month";
+  priceBreakdown?: {
+    unitCount: number;
+    unitLabel: string;
+  };
 }
 
 export default function UserRequests() {
@@ -246,6 +252,15 @@ export default function UserRequests() {
                         ₹{booking.totalPrice.toLocaleString()}
                       </span>
                     </p>
+                    {booking.priceBreakdown && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        (
+                        {booking.bedPrice
+                          ? `₹${booking.bedPrice} × ${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
+                          : `${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`}
+                        )
+                      </p>
+                    )}
                     <p className="text-sm text-gray-600">
                       <span className="font-semibold">
                         {t("userRequests.payment")}:
