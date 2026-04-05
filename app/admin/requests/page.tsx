@@ -41,6 +41,10 @@ interface Booking {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  // Enriched fields from backend
+  roomName?: string;
+  bedNumber?: number | string;
+  bedPrice?: number;
 }
 
 export default function AdminRequests() {
@@ -281,6 +285,12 @@ export default function AdminRequests() {
                   <div>
                     <p className="text-sm text-gray-500">Booking Details</p>
                     <p className="font-medium">
+                      Room: {booking.roomName || booking.roomId}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Bed: #{booking.bedNumber || booking.bedId}
+                    </p>
+                    <p className="text-sm text-gray-600">
                       Join: {formatDate(booking.joinDate)}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -380,6 +390,18 @@ export default function AdminRequests() {
                   >
                     {selectedBooking.status}
                   </span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Room</p>
+                  <p className="font-medium">
+                    {selectedBooking.roomName || selectedBooking.roomId}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Bed</p>
+                  <p className="font-medium">
+                    #{selectedBooking.bedNumber || selectedBooking.bedId}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Tenant Name</p>
