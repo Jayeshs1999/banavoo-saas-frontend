@@ -32,6 +32,12 @@ interface Booking {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  adminContact?: {
+    name: string;
+    phone: string;
+    email: string;
+    pgName: string;
+  } | null;
 }
 
 export default function UserRequests() {
@@ -249,6 +255,17 @@ export default function UserRequests() {
                   </div>
                 </div>
 
+                {booking.adminContact && (
+                  <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-semibold">
+                        {t("userRequests.adminContact")}:
+                      </span>{" "}
+                      {booking.adminContact.name} - {booking.adminContact.phone}
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center pt-4 border-t">
                   <p className="text-sm text-gray-500">
                     {t("userRequests.requestedOn")}:{" "}
@@ -272,10 +289,15 @@ export default function UserRequests() {
                         {t("userRequests.cancel")}
                       </Button>
                     )}
-                    {booking.status === "approved" && (
+                    {(booking.status === "pending" ||
+                      booking.status === "approved") && (
                       <Button
                         size="sm"
-                        onClick={() => handleCall("9876543210")}
+                        onClick={() =>
+                          handleCall(
+                            booking.adminContact?.phone || "9876543210",
+                          )
+                        }
                       >
                         {t("userRequests.callAdmin")}
                       </Button>
