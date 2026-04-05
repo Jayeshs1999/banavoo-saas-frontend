@@ -201,8 +201,8 @@ export default function PGDetails() {
               <Button onClick={handleBook} disabled={getAvailableBeds() === 0}>
                 {getAvailableBeds() > 0
                   ? pg.onlinePayment
-                    ? t("booking.bookOnline")
-                    : t("booking.sendRequest")
+                    ? t("userDashboard.bookOnline")
+                    : t("userDashboard.sendRequest")
                   : t("userDashboard.fullyOccupied")}
               </Button>
             )}
