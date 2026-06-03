@@ -62,12 +62,12 @@ export default function Home() {
       </div>
 
       {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-10 animate-grid-move"></div>
+      <div className="absolute inset-0  bg-[url('../public/bg-pg.jpg')] opacity-50"></div>
 
       <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col justify-center relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl secondary-foreground mb-4 bungee-spice-regular">
+          <h1 className="text-4xl secondary-foreground mb-4 uncial-antiqua-regular">
             {t("home.welcomeTitle")}
           </h1>
           <p className="secondary-foreground text-lg mb-6 poiret-one-regular font-bold">
