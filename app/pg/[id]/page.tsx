@@ -388,10 +388,21 @@ export default function PGDetails() {
                     {room.beds.map((bed, index) => (
                       <div
                         key={bed._id}
+                        onClick={() => {
+                          if (!bed.allocated) {
+                            if (currentUser) {
+                              router.push(`/user/booking?pgId=${pgId}`);
+                            } else {
+                              router.push("/user/login");
+                            }
+                          }
+                        }}
                         className={`p-2 border rounded text-center ${
                           bed.allocated
-                            ? "bg-red-100 border-red-300"
-                            : "bg-green-100 border-green-300"
+                            ? "bg-red-100 border-red-300 cursor-not-allowed"
+                            : currentUser
+                            ? "bg-green-100 border-green-300 cursor-pointer hover:bg-green-200 hover:shadow-md transition-all"
+                            : "bg-green-100 border-green-300 cursor-pointer"
                         }`}
                       >
                         <div className="font-semibold">

@@ -147,9 +147,9 @@ export default function UserRequests() {
           <Link href="/user/dashboard">
             <Button variant="outline">{t("common.back")}</Button>
           </Link>
-          <Button onClick={logout} variant="outline">
+          {/* <Button onClick={logout} variant="outline">
             {t("common.logout")}
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -281,15 +281,16 @@ export default function UserRequests() {
                   </div>
                 )}
 
-                <div className="flex justify-between items-center pt-4 border-t">
+                <div className="flex flex-col gap-3 pt-4 border-t sm:flex-row sm:justify-between sm:items-center">
                   <p className="text-sm text-gray-500">
                     {t("userRequests.requestedOn")}:{" "}
                     {formatDate(booking.createdAt)}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2 items-center">
                     <Button
                       variant="outline"
                       size="sm"
+                      className="w-full sm:w-auto"
                       onClick={() => handleViewBooking(booking._id)}
                     >
                       {t("common.view")}
@@ -298,7 +299,7 @@ export default function UserRequests() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600"
+                        className="text-red-600 w-full sm:w-auto"
                         onClick={() => handleCancelBooking(booking._id)}
                       >
                         {t("userRequests.cancel")}
@@ -308,6 +309,7 @@ export default function UserRequests() {
                       booking.status === "approved") && (
                       <Button
                         size="sm"
+                        className="w-full sm:w-auto"
                         onClick={() =>
                           handleCall(
                             booking.adminContact?.phone || "9876543210",
@@ -318,7 +320,7 @@ export default function UserRequests() {
                       </Button>
                     )}
                     {booking.status === "approved" && (
-                      <p className="text-sm text-gray-500 self-center">
+                      <p className="text-sm text-gray-500">
                         {t("userRequests.validity")}: 2 hours
                       </p>
                     )}

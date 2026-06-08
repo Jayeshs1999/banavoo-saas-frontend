@@ -167,7 +167,7 @@ export default function AdminRequests() {
           </p>
         </div>
         <Button variant="outline" onClick={() => router.back()}>
-          ← {t("common.back")}
+          {t("common.back")}
         </Button>
       </div>
 
@@ -333,12 +333,12 @@ export default function AdminRequests() {
                 )}
 
                 {booking.status === "pending" && (
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                       onClick={() =>
                         handleUpdateStatus(booking._id, "approved")
                       }
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                     >
                       ✓ Approve
                     </Button>
@@ -347,13 +347,14 @@ export default function AdminRequests() {
                         handleUpdateStatus(booking._id, "rejected")
                       }
                       variant="outline"
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-red-600 border-red-300 hover:bg-red-50 w-full sm:w-auto"
                     >
                       ✗ Reject
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => setSelectedBooking(booking)}
+                      className="w-full sm:w-auto"
                     >
                       View Details
                     </Button>
@@ -361,10 +362,11 @@ export default function AdminRequests() {
                 )}
 
                 {booking.status !== "pending" && (
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                       variant="outline"
                       onClick={() => setSelectedBooking(booking)}
+                      className="w-full sm:w-auto"
                     >
                       View Details
                     </Button>

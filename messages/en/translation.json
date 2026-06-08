@@ -308,7 +308,7 @@
     "characters": "characters",
     "totalPrice": "Total Price",
     "submitting": "Submitting...",
-    "submitRequest": "Submit Booking Request",
+    "submitRequest": "Submit Request",
     "requestSubmitted": "Request Submitted!",
     "waitingForApproval": "Your booking request is waiting for admin approval.",
     "redirecting": "Redirecting to your requests",
@@ -329,6 +329,7 @@
     "callAdmin": "Call PG Admin",
     "validity": "Validity",
     "confirmCancel": "Are you sure you want to cancel this booking request?",
-    "bookingDetails": "Booking Details"
+    "bookingDetails": "Booking Details",
+    "adminContact": "Admin Contact"
   }
 }
