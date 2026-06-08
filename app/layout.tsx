@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     title: "Kumbhakarn.in - ",
     description:
       "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
-    images: ["/logo1.png"],
+    images: ["/kumbhakarn-logo.svg"],
     creator: "@sthals_in",
   },
 

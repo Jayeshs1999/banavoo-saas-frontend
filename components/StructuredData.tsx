@@ -15,7 +15,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           name: "STHALS.IN",
           alternateName: "PGWala",
           url: "https://www.sthals.in",
-          logo: "https://www.sthals.in/logo1.png",
+          logo: "https://www.sthals.in/kumbhakarn-logo.svg",
           description:
             "Find and manage PG accommodations with ease. STHALS.IN connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
           foundingDate: "2026",
@@ -61,8 +61,8 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           description:
             "PG accommodation management platform connecting students and professionals with quality accommodations.",
           url: "https://www.sthals.in",
-          logo: "https://www.sthals.in/logo1.png",
-          image: "https://www.sthals.in/logo1.png",
+          logo: "https://www.sthals.in/kumbhakarn-logo.svg",
+          image: "https://www.sthals.in/kumbhakarn-logo.svg",
           priceRange: "$$",
           address: {
             "@type": "PostalAddress",
