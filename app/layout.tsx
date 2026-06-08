@@ -54,10 +54,10 @@ export const metadata: Metadata = {
     siteName: "Kumbhakarn.in",
     images: [
       {
-        url: "/kumbhakarn-logo.svg",
+        url: "/logo2.png",
         width: 1200,
         height: 630,
-        alt: "Kumbhakarn.in - PG Accommodation Management",
+        alt: "Kumbhakarn.in - Book Bed Online or Manage PG Accommodations with Ease",
       },
     ],
   },
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     title: "Kumbhakarn.in - ",
     description:
       "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
-    images: ["/kumbhakarn-logo.svg"],
+    images: ["/logo2.png"],
     creator: "@sthals_in",
   },
 
