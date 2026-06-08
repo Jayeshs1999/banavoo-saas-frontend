@@ -200,10 +200,10 @@ export default function UserDashboard() {
                     <img
                       src={pg.photos[0]}
                       alt={pg.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-[darkorange]">
+                    <div className="absolute bottom-0 left-0 right-0 p-2">
                       <h3 className="text-white text-xl font-bold drop-shadow-lg ">
                         {pg.name}
                       </h3>
@@ -229,7 +229,7 @@ export default function UserDashboard() {
                         No Image
                       </span>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-[darkorange]">
+                    <div className="absolute bottom-0 left-0 right-0 p-2">
                       <h3 className="text-white text-xl font-bold drop-shadow-lg">
                         {pg.name}
                       </h3>

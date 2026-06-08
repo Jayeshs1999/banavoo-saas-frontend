@@ -19,11 +19,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "STHALS.IN - PG Accommodation Management",
-    template: "%s | STHALS.IN",
+    default: "Kumbhakarn.in - Book bed online and Manage PG Accommodations with Ease",
+    template: "%s | Kumbhakarn.in",
   },
   description:
-    "Find and manage PG accommodations with ease. STHALS.IN connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
+    "Find and book your bed online. Kumbhakarn.in connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
   keywords: [
     "PG accommodation",
     "paying guest",
@@ -33,26 +33,31 @@ export const metadata: Metadata = {
     "accommodation finder",
     "PG near me",
     "student housing India",
+    "online bed booking",
+    "book bed online",
+    "book my bed",
+    "bed booking",
+    "online bed"
   ],
-  authors: [{ name: "STHALS.IN Team" }],
-  creator: "STHALS.IN",
-  publisher: "STHALS.IN",
+  authors: [{ name: "Jayesh Sevatkar" }],
+  creator: "Kumbhakarn.in",
+  publisher: "Kumbhakarn.in",
 
   // Open Graph / Facebook
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://www.sthals.in",
-    title: "STHALS.IN - PG Accommodation Management",
+    title: "Kumbhakarn.in - PG Accommodation Management",
     description:
       "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
-    siteName: "STHALS.IN",
+    siteName: "Kumbhakarn.in",
     images: [
       {
-        url: "/logo1.png",
+        url: "/kumbhakarn-logo.svg",
         width: 1200,
         height: 630,
-        alt: "STHALS.IN - PG Accommodation Management",
+        alt: "Kumbhakarn.in - PG Accommodation Management",
       },
     ],
   },
@@ -60,7 +65,7 @@ export const metadata: Metadata = {
   // Twitter
   twitter: {
     card: "summary_large_image",
-    title: "STHALS.IN - PG Accommodation Management",
+    title: "Kumbhakarn.in - ",
     description:
       "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
     images: ["/logo1.png"],
@@ -163,7 +168,7 @@ export default function RootLayout({
         <I18nProvider>
           <ClientAuthProvider>
             <Header />
-            <main className="flex-grow">{children}</main>
+            <main className="flex-grow pt-17">{children}</main>
             <Footer />
           </ClientAuthProvider>
         </I18nProvider>
