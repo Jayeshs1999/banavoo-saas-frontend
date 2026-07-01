@@ -31,14 +31,14 @@
     "confirm": "पुष्टि करें",
     "required": "आवश्यक",
     "optional": "वैकल्पिक",
-     "clear": "Clear",
+    "clear": "Clear",
     "day": "day",
     "days": "days",
     "month": "month",
     "months": "months"
   },
   "header": {
-    "title": "Kumbhakarn.in",
+    "title": "Bedwale.in",
     "home": "होम",
     "createPGs": "PG बनाएं",
     "managePGs": "PG प्रबंधित करें",
@@ -49,7 +49,7 @@
     "logout": "लॉग आउट"
   },
   "home": {
-    "welcomeTitle": "Kumbhakarn.in में आपका स्वागत है",
+    "welcomeTitle": "Bedwale.in में आपका स्वागत है",
     "welcomeSubtitle": "PG खोजें या अपने PG व्यवसाय का प्रबंधन करें",
     "trustedBy": "1000+ PG मालिकों द्वारा विश्वसनीय",
     "adminPortal": {
@@ -237,8 +237,8 @@
     "businessHours": "व्यापारिक घंटे: सोमवार - शनिवार, सुबह 9:00 - शाम 6:00"
   },
   "about": {
-    "title": "Kumbhakarn.in के बारे में",
-    "description": "Kumbhakarn.in में आपका स्वागत है, आपका व्यापक PG (Paying Guest) accommodation management solution। हम छात्रों और पेशेवरों को गुणवत्तापूर्ण PG accommodations से जोड़ते हैं जबकि PG मालिकों को शक्तिशाली management tools देकर सशक्त बनाते हैं।",
+    "title": "Bedwale.in के बारे में",
+    "description": "Bedwale.in में आपका स्वागत है, आपका व्यापक PG (Paying Guest) accommodation management solution। हम छात्रों और पेशेवरों को गुणवत्तापूर्ण PG accommodations से जोड़ते हैं जबकि PG मालिकों को शक्तिशाली management tools देकर सशक्त बनाते हैं।",
     "mission": "हमारा मिशन",
     "missionDesc": "PG accommodation industry में क्रांति लाने के लिए एक seamless platform प्रदान करना जो tenants को quality living spaces से जोड़ता है जबकि PG मालिकों को modern management tools देकर efficient operations के लिए सशक्त बनाता है।",
     "vision": "हमारी दृष्टि",
@@ -262,7 +262,7 @@
     "techFeature4": "सभी devices के लिए Responsive design",
     "techFeature5": "Scalable backend architecture",
     "commitment": "हमारी प्रतिबद्धता",
-    "commitmentDesc": "Kumbhakarn.in पर, हम सभी के लिए PG accommodation experience को बेहतर बनाने के लिए प्रतिबद्ध हैं। चाहे आप एक छात्र हों जो आरामदायक जगह तलाश रहा है या एक PG मालक जो अपने व्यवसाय का प्रबंधन कर रहा है, हमारा platform आपके सफर को आसान बनाने के लिए डिज़ाइन किया गया है। हम accommodation market की बदलती जरूरतों को पूरा करने के लिए अपनी services में लगातार सुधार कर रहे हैं।"
+    "commitmentDesc": "Bedwale.in पर, हम सभी के लिए PG accommodation experience को बेहतर बनाने के लिए प्रतिबद्ध हैं। चाहे आप एक छात्र हों जो आरामदायक जगह तलाश रहा है या एक PG मालक जो अपने व्यवसाय का प्रबंधन कर रहा है, हमारा platform आपके सफर को आसान बनाने के लिए डिज़ाइन किया गया है। हम accommodation market की बदलती जरूरतों को पूरा करने के लिए अपनी services में लगातार सुधार कर रहे हैं।"
   },
   "errors": {
     "required": "यह फ़ील्ड आवश्यक है",
@@ -272,7 +272,7 @@
     "somethingWentWrong": "कुछ गलत हो गया",
     "tryAgain": "कृपया पुनः प्रयास करें"
   },
-    "userDashboard": {
+  "userDashboard": {
     "welcome": "Welcome",
     "findYourPerfectPG": "Find your perfect PG accommodation",
     "myRequests": "My Requests",

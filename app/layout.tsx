@@ -19,11 +19,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kumbhakarn.in - Book bed online and Manage PG Accommodations with Ease",
-    template: "%s | Kumbhakarn.in",
+    default:
+      "Bedwale.in - Book bed online and Manage PG Accommodations with Ease",
+    template: "%s | Bedwale.in",
   },
   description:
-    "Find and book your bed online. Kumbhakarn.in connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
+    "Find and book your bed online. Bedwale.in connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
   keywords: [
     "PG accommodation",
     "paying guest",
@@ -37,27 +38,27 @@ export const metadata: Metadata = {
     "book bed online",
     "book my bed",
     "bed booking",
-    "online bed"
+    "online bed",
   ],
   authors: [{ name: "Jayesh Sevatkar" }],
-  creator: "Kumbhakarn.in",
-  publisher: "Kumbhakarn.in",
+  creator: "Bedwale.in",
+  publisher: "Bedwale.in",
 
   // Open Graph / Facebook
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://www.sthals.in",
-    title: "Kumbhakarn.in - PG Accommodation Management",
+    title: "Bedwale.in - PG Accommodation Management",
     description:
       "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
-    siteName: "Kumbhakarn.in",
+    siteName: "Bedwale.in",
     images: [
       {
-        url: "/logo2.png",
+        url: "/logo3.png",
         width: 1200,
         height: 630,
-        alt: "Kumbhakarn.in - Book Bed Online or Manage PG Accommodations with Ease",
+        alt: "Bedwale.in - Book Bed Online or Manage PG Accommodations with Ease",
       },
     ],
   },
@@ -65,10 +66,10 @@ export const metadata: Metadata = {
   // Twitter
   twitter: {
     card: "summary_large_image",
-    title: "Kumbhakarn.in - ",
+    title: "Bedwale.in - ",
     description:
       "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
-    images: ["/logo2.png"],
+    images: ["/logo3.png"],
     creator: "@sthals_in",
   },
 

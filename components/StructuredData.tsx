@@ -12,10 +12,10 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         return {
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "Kumbhakarn.in",
+          name: "Bedwale.in",
           alternateName: "PGWala",
           url: "https://www.sthals.in",
-          logo: "https://www.sthals.in/logo2.png",
+          logo: "https://www.sthals.in/logo3.png",
           description:
             "Find and manage PG accommodations with ease. STHALS.IN connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
           foundingDate: "2026",
@@ -61,8 +61,8 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           description:
             "PG accommodation management platform connecting students and professionals with quality accommodations.",
           url: "https://www.sthals.in",
-          logo: "https://www.sthals.in/logo2.png",
-          image: "https://www.sthals.in/logo2.png",
+          logo: "https://www.sthals.in/logo3.png",
+          image: "https://www.sthals.in/logo3.png",
           priceRange: "$$",
           address: {
             "@type": "PostalAddress",

@@ -31,17 +31,17 @@ export default function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-background text-foreground shadow-md">
-      <div className="container mx-auto px-4 py-[3px] flex justify-between items-center">
+      <div className="container mx-auto px-4 py-[17px] flex justify-between items-center">
         <div className="flex gap-2 justify-center items-center">
           <Image
-            src={ "/kumbhakarn-logo.svg" }
-            alt="Kumbhakarn.in Logo"
-            width={98}
+            src={"/logo3.png"}
+            alt="Bedwale.in Logo"
+            width={120}
             height={40}
             className="object-contain"
             priority
           />
-        {/* <Link href="/" className="uncial-antiqua-regular text-[25px] font-bold">
+          {/* <Link href="/" className="uncial-antiqua-regular text-[25px] font-bold">
           {t("header.title")}
         </Link> */}
         </div>
