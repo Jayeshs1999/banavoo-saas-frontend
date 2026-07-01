@@ -62,15 +62,15 @@ export default function Home() {
       </div>
 
       {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0  bg-[url('../public/bg-pg.jpg')] opacity-50"></div>
+      <div className="absolute inset-0  bg-[url('../public/bg-pg.jpg')] "></div>
 
       <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col justify-center relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl secondary-foreground mb-4 uncial-antiqua-regular">
+          <h1 className="text-primary-foreground text-[50px] mb-4 uncial-antiqua-regular">
             {t("home.welcomeTitle")}
           </h1>
-          <p className="secondary-foreground text-lg mb-6 poiret-one-regular font-bold">
+          <p className="text-primary-foreground text-lg mb-6 poiret-one-regular font-bold">
             {t("home.welcomeSubtitle")}
           </p>
           <CardBadge variant="primary" className="mt-4">
@@ -152,22 +152,28 @@ export default function Home() {
           <Card variant="glass" className="p-8 backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-3xl font-bold text-blue-600">1000+</div>
-                <div className="text-gray-600">{t("home.stats.pgOwners")}</div>
+                <div className="text-3xl font-bold text-blue-400">1000+</div>
+                <div className="text-primary-foreground">
+                  {t("home.stats.pgOwners")}
+                </div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-green-600">5000+</div>
-                <div className="text-gray-600">
+                <div className="text-3xl font-bold text-green-400">5000+</div>
+                <div className="text-primary-foreground">
                   {t("home.stats.managedRooms")}
                 </div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-purple-600">99.9%</div>
-                <div className="text-gray-600">{t("home.stats.uptime")}</div>
+                <div className="text-primary-foreground">
+                  {t("home.stats.uptime")}
+                </div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-orange-600">24/7</div>
-                <div className="text-gray-600">{t("home.stats.support")}</div>
+                <div className="text-3xl font-bold text-orange-400">24/7</div>
+                <div className="text-primary-foreground">
+                  {t("home.stats.support")}
+                </div>
               </div>
             </div>
           </Card>
@@ -175,7 +181,9 @@ export default function Home() {
 
         {/* Footer Message */}
         <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">{t("home.footerMessage")}</p>
+          <p className="text-primary-foreground text-sm">
+            {t("home.footerMessage")}
+          </p>
         </div>
       </div>
     </div>
