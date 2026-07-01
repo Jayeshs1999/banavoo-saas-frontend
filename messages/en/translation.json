@@ -38,7 +38,7 @@
     "months": "months"
   },
   "header": {
-    "title": "Kumbhakarn.in",
+    "title": "Bedwale.in",
     "home": "Home",
     "createPGs": "Create PGs",
     "managePGs": "Manage PGs",
@@ -49,7 +49,7 @@
     "logout": "Logout"
   },
   "home": {
-    "welcomeTitle": "Welcome to Kumbhakarn.in",
+    "welcomeTitle": "Welcome to Bedwale.in",
     "welcomeSubtitle": "Find your perfect PG, Book bed online or manage your PG business",
     "trustedBy": "Trusted by 1000+ PG Owners",
     "adminPortal": {
@@ -237,8 +237,8 @@
     "businessHours": "Business hours: Monday - Saturday, 9:00 AM - 6:00 PM"
   },
   "about": {
-    "title": "About Kumbhakarn.in",
-    "description": "Welcome to Kumbhakarn.in, your comprehensive solution for PG (Paying Guest) accommodation management. We connect students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
+    "title": "About Bedwale.in",
+    "description": "Welcome to Bedwale.in, your comprehensive solution for PG (Paying Guest) accommodation management. We connect students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
     "mission": "Our Mission",
     "missionDesc": "To revolutionize the PG accommodation industry by providing a seamless platform that connects tenants with quality living spaces while empowering PG owners with modern management tools for efficient operations.",
     "vision": "Our Vision",
