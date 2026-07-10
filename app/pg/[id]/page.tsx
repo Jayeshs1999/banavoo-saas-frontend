@@ -388,15 +388,17 @@ export default function PGDetails() {
                     {room.beds.map((bed, index) => (
                       <div
                         key={bed._id}
-                        onClick={() => {
-                          if (!bed.allocated) {
-                            if (currentUser) {
-                              router.push(`/user/booking?pgId=${pgId}`);
-                            } else {
-                              router.push("/user/login");
+                          onClick={() => {
+                            if (!bed.allocated) {
+                              if (currentUser) {
+                                router.push(
+                                  `/user/booking?pgId=${pgId}&roomId=${room._id}&bedId=${bed._id}`
+                                );
+                              } else {
+                                router.push("/user/login");
+                              }
                             }
-                          }
-                        }}
+                          }}
                         className={`p-2 border rounded text-center ${
                           bed.allocated
                             ? "bg-red-100 border-red-300 cursor-not-allowed"

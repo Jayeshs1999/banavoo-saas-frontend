@@ -32,7 +32,15 @@ export default function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-background text-foreground shadow-md">
       <div className="container mx-auto px-4 py-[17px] flex justify-between items-center">
-        <div className="flex gap-2 justify-center items-center">
+        <div className="flex gap-2 justify-center items-center cursor-pointer" 
+        onClick={(e)=>{
+          e.stopPropagation();
+          e.preventDefault();
+          if(!data?.user?.role) {
+            router.push("/");
+          }
+        } }
+        >
           <Image
             src={"/logo3.png"}
             alt="Bedwale.in Logo"

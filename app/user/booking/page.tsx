@@ -41,6 +41,8 @@ function BookingForm() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const pgId = searchParams.get("pgId");
+  const preselectedRoomId = searchParams.get("roomId") || "";
+  const preselectedBedId = searchParams.get("bedId") || "";
 
   const [pg, setPG] = useState<PG | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,10 +50,10 @@ function BookingForm() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const [selectedRoom, setSelectedRoom] = useState<string>("");
-  const [selectedBed, setSelectedBed] = useState<string>("");
+  const [selectedRoom, setSelectedRoom] = useState<string>(preselectedRoomId);
+  const [selectedBed, setSelectedBed] = useState<string>(preselectedBedId);
   const [joinDate, setJoinDate] = useState<string>("");
-  const [stayDays, setStayDays] = useState<number>(30);
+  const [stayDays, setStayDays] = useState<string>("30");
   const [notes, setNotes] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
 
@@ -70,6 +72,22 @@ function BookingForm() {
       const response = await pgAPI.getPGPublic(pgId!);
       if (response.success) {
         setPG(response.data);
+        // Apply URL-preselected room/bed only if they are valid and available
+        if (preselectedRoomId && preselectedBedId) {
+          const pgData = response.data;
+          const room = pgData.structure.find(
+            (r: any) => r._id === preselectedRoomId
+          );
+          if (room) {
+            const bed = room.beds.find(
+              (b: any) => b._id === preselectedBedId && !b.allocated
+            );
+            if (bed) {
+              setSelectedRoom(preselectedRoomId);
+              setSelectedBed(preselectedBedId);
+            }
+          }
+        }
       } else {
         setError("Failed to load PG details");
       }
@@ -102,7 +120,7 @@ function BookingForm() {
     const pricingPeriod = getSelectedRoomPricingPeriod();
     const checkInDate = new Date(joinDate);
     const checkOutDate = new Date(checkInDate);
-    checkOutDate.setDate(checkOutDate.getDate() + stayDays);
+    checkOutDate.setDate(checkOutDate.getDate() + Number(stayDays));
 
     const { totalPrice } = calculatePrice({
       checkIn: checkInDate,
@@ -118,7 +136,7 @@ function BookingForm() {
     const pricingPeriod = getSelectedRoomPricingPeriod();
     const checkInDate = new Date(joinDate);
     const checkOutDate = new Date(checkInDate);
-    checkOutDate.setDate(checkOutDate.getDate() + stayDays);
+    checkOutDate.setDate(checkOutDate.getDate() + Number(stayDays));
 
     const { days, months } = calculatePrice({
       checkIn: checkInDate,
@@ -136,7 +154,7 @@ function BookingForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRoom || !selectedBed || !joinDate || !stayDays) {
+    if (!selectedRoom || !selectedBed || !joinDate || !Number(stayDays)) {
       setError("Please fill in all required fields");
       return;
     }
@@ -149,7 +167,7 @@ function BookingForm() {
         roomId: selectedRoom,
         bedId: selectedBed,
         joinDate: new Date(joinDate).toISOString(),
-        stayDays,
+        stayDays: Number(stayDays),
         notes,
         paymentMethod,
       });
@@ -382,9 +400,13 @@ function BookingForm() {
                     <input
                       type="number"
                       value={stayDays}
-                      onChange={(e) =>
-                        setStayDays(parseInt(e.target.value) || 1)
-                      }
+                      onChange={(e) => setStayDays(e.target.value)}
+                      onBlur={(e) => {
+                        const n = parseInt(e.target.value);
+                        if (!n || n < 1) setStayDays("1");
+                        else if (n > 365) setStayDays("365");
+                        else setStayDays(String(n));
+                      }}
                       min={1}
                       max={365}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
