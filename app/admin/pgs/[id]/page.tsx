@@ -25,6 +25,7 @@ interface PG {
     pricingPeriod: "day" | "month";
   }>;
   onlinePayment: boolean;
+  isPrivate: boolean;
   location: {
     subcity: string;
     city: string;
@@ -165,7 +166,14 @@ export default function PGDetails() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div className="flex justify-between w-full md:w-auto">
           <div>
-            <h1 className="text-3xl font-bold">{pg.name}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">{pg.name}</h1>
+              {pg.isPrivate && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700 border border-gray-400">
+                  🔒 Private
+                </span>
+              )}
+            </div>
             <p className="text-gray-600 mt-2">
               {t("pgDetails.created")}:{" "}
               {new Date(pg.createdAt).toLocaleDateString()}

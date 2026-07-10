@@ -38,6 +38,7 @@ export interface PG {
   photos: string[];
   structure: Room[];
   onlinePayment: boolean;
+  isPrivate: boolean;
   location: {
     subcity: string;
     city: string;

@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 const pgSchema = z.object({
   name: z.string().min(1, "PG Name is required"),
   onlinePayment: z.boolean(),
+  isPrivate: z.boolean(),
 });
 
 type PGForm = z.infer<typeof pgSchema>;
@@ -52,6 +53,7 @@ export default function EditPG() {
     resolver: zodResolver(pgSchema),
     defaultValues: {
       onlinePayment: false,
+      isPrivate: false,
     },
   });
 
@@ -74,6 +76,7 @@ export default function EditPG() {
         // Set form values
         setValue("name", pgData.name);
         setValue("onlinePayment", pgData.onlinePayment);
+        setValue("isPrivate", pgData.isPrivate || false);
 
         // Set location
         setLocation({
@@ -257,6 +260,7 @@ export default function EditPG() {
         photos: photos,
         structure: transformedStructure,
         onlinePayment: data.onlinePayment,
+        isPrivate: data.isPrivate,
         location: {
           subcity: location.subcity.trim(),
           city: location.city.trim(),
@@ -389,6 +393,20 @@ export default function EditPG() {
                 />
                 {t("createPG.enableOnlinePayment")}
               </label>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  {...register("isPrivate")}
+                  type="checkbox"
+                  className="mr-2"
+                />
+                <span className="font-medium">Make this PG Private</span>
+              </label>
+              <p className="text-sm text-gray-500 mt-1 ml-6">
+                Private PGs are only visible to you (admin). Users will not see this PG on the public listing.
+              </p>
             </div>
           </CardContent>
         </Card>
