@@ -139,6 +139,7 @@ export const dummyPGs: PG[] = [
     adminId: 'admin1',
     name: 'Green Valley PG',
     photos: ['/pg1-1.jpg', '/pg1-2.jpg'],
+    isPrivate:false,
     structure: [
       {
         id: 'room1',
