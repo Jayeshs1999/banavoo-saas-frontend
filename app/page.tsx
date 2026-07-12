@@ -119,9 +119,9 @@ export default function Home() {
           >
             <CardHeader>
               <CardTitle icon={<Users className="w-8 h-8 text-purple-500" />}>
-                User Portal
+                { t('home.userPortal.title') }
               </CardTitle>
-              <CardBadge variant="success">Get Started Today</CardBadge>
+              <CardBadge variant="success">For users and pg / dormitory searches</CardBadge>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-6 text-lg">

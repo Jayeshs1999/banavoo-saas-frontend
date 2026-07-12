@@ -53,15 +53,15 @@
     "welcomeSubtitle": "Find your perfect PG, Book bed online or manage your PG business",
     "trustedBy": "Trusted by 1000+ PG Owners",
     "adminPortal": {
-      "title": "PG Admin Portal",
+      "title": "I am PG / Dormitory Owner",
       "subtitle": "For PG Owners & Managers",
       "description": "Access your PG management dashboard to view bookings, manage rooms, and handle tenant requests.",
-      "loginButton": "Login as Admin",
+      "loginButton": "Login as Pg Owner",
       "feature1": "Manage multiple PGs",
       "feature2": "Real-time analytics"
     },
     "userPortal": {
-      "title": "User Portal",
+      "title": "I want to book a bed",
       "subtitle": "Coming Soon",
       "description": "Find the perfect PG that fits your lifestyle and your budget. Smart living starts with the right PG.",
       "loginButton": "Login as User - Coming Soon",
