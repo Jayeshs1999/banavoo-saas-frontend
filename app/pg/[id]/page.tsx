@@ -444,33 +444,7 @@ export default function PGDetails() {
         </Card>
       </div>
 
-      {/* Admin Information */}
-      {pg.adminId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("pgDetails.adminInfo")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <span className="font-semibold">{t("pgDetails.admin")}:</span>
-                <p className="text-gray-600 mt-1">
-                  {pg.adminId.ownerName ||
-                    pg.adminId.pgName ||
-                    pg.adminId.email ||
-                    t("pgDetails.unknownAdmin")}
-                </p>
-              </div>
-              <div>
-                <span className="font-semibold">Email:</span>
-                <p className="text-gray-600 mt-1">{pg.adminId.email}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Amenities */}
+       {/* Amenities */}
       {(() => {
         const a = pg.amenities;
         if (!a) return null;
@@ -598,6 +572,32 @@ export default function PGDetails() {
           </Card>
         );
       })()}
+
+      {/* Admin Information */}
+      {pg.adminId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("pgDetails.adminInfo")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="font-semibold">{t("pgDetails.admin")}:</span>
+                <p className="text-gray-600 mt-1">
+                  {pg.adminId.ownerName ||
+                    pg.adminId.pgName ||
+                    pg.adminId.email ||
+                    t("pgDetails.unknownAdmin")}
+                </p>
+              </div>
+              <div>
+                <span className="font-semibold">Email:</span>
+                <p className="text-gray-600 mt-1">{pg.adminId.email}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Full-screen Image Viewer */}
       <ImageViewer
