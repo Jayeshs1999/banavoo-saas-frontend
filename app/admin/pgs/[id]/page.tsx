@@ -9,6 +9,21 @@ import { useAuth } from "@/app/context/AuthContext";
 import { pgAPI } from "@/services/api";
 import { useTranslation } from "react-i18next";
 
+interface Amenities {
+  smokingAllowed?: boolean; drinkingAllowed?: boolean; cookingAllowed?: boolean;
+  nonVegAllowed?: boolean; guestsAllowed?: boolean; petsAllowed?: boolean;
+  acAvailable?: boolean; fanAvailable?: boolean; fridgeAvailable?: boolean;
+  washingMachineAvailable?: boolean; tvAvailable?: boolean; wifiAvailable?: boolean;
+  inverterAvailable?: boolean;
+  attachedBathroom?: boolean; attachedToilet?: boolean;
+  sharedBathrooms?: number; sharedToilets?: number; geyserAvailable?: boolean;
+  lockerAvailable?: boolean; cctvAvailable?: boolean; securityGuard?: boolean; mainGateLock?: boolean;
+  twoWheelerParking?: boolean; fourWheelerParking?: boolean;
+  breakfastAvailable?: boolean; lunchAvailable?: boolean; dinnerAvailable?: boolean; messAvailable?: boolean;
+  gallaryAvailable?: boolean; gymAvailable?: boolean; studyRoomAvailable?: boolean;
+  powerBackup?: boolean; housekeepingAvailable?: boolean; bikeRental?: boolean;
+}
+
 interface PG {
   _id: string;
   name: string;
@@ -26,6 +41,7 @@ interface PG {
   }>;
   onlinePayment: boolean;
   isPrivate: boolean;
+  amenities?: Amenities;
   location: {
     subcity: string;
     city: string;
@@ -416,6 +432,132 @@ export default function PGDetails() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Amenities */}
+      {(() => {
+        const a = pg.amenities;
+        if (!a) return null;
+
+        const groups: { title: string; items: { label: string; value: boolean }[]; nums?: { label: string; value: number }[] }[] = [
+          {
+            title: "House Rules",
+            items: [
+              { label: "Smoking Allowed",  value: !!a.smokingAllowed },
+              { label: "Drinking Allowed", value: !!a.drinkingAllowed },
+              { label: "Cooking Allowed",  value: !!a.cookingAllowed },
+              { label: "Non-Veg Allowed",  value: a.nonVegAllowed !== false },
+              { label: "Guests Allowed",   value: !!a.guestsAllowed },
+              { label: "Pets Allowed",     value: !!a.petsAllowed },
+            ],
+          },
+          {
+            title: "Appliances & Comfort",
+            items: [
+              { label: "AC",              value: !!a.acAvailable },
+              { label: "Fan",             value: a.fanAvailable !== false },
+              { label: "Refrigerator",    value: !!a.fridgeAvailable },
+              { label: "Washing Machine", value: !!a.washingMachineAvailable },
+              { label: "TV",              value: !!a.tvAvailable },
+              { label: "Wi-Fi",           value: !!a.wifiAvailable },
+              { label: "Inverter",        value: !!a.inverterAvailable },
+            ],
+          },
+          {
+            title: "Bathroom & Toilet",
+            items: [
+              { label: "Attached Bathroom", value: !!a.attachedBathroom },
+              { label: "Attached Toilet",   value: !!a.attachedToilet },
+              { label: "Geyser",            value: !!a.geyserAvailable },
+            ],
+            nums: [
+              { label: "Shared Bathrooms", value: a.sharedBathrooms ?? 0 },
+              { label: "Shared Toilets",   value: a.sharedToilets   ?? 0 },
+            ],
+          },
+          {
+            title: "Security & Storage",
+            items: [
+              { label: "Locker",         value: !!a.lockerAvailable },
+              { label: "CCTV",           value: !!a.cctvAvailable },
+              { label: "Security Guard", value: !!a.securityGuard },
+              { label: "Main Gate Lock", value: !!a.mainGateLock },
+            ],
+          },
+          {
+            title: "Parking",
+            items: [
+              { label: "Two-Wheeler Parking",  value: !!a.twoWheelerParking },
+              { label: "Four-Wheeler Parking", value: !!a.fourWheelerParking },
+            ],
+          },
+          {
+            title: "Food",
+            items: [
+              { label: "Breakfast",    value: !!a.breakfastAvailable },
+              { label: "Lunch",        value: !!a.lunchAvailable },
+              { label: "Dinner",       value: !!a.dinnerAvailable },
+              { label: "Mess/Canteen", value: !!a.messAvailable },
+            ],
+          },
+          {
+            title: "Other Facilities",
+            items: [
+              { label: "Gallery/Balcony", value: !!a.gallaryAvailable },
+              { label: "Gym",             value: !!a.gymAvailable },
+              { label: "Study Room",      value: !!a.studyRoomAvailable },
+              { label: "Power Backup",    value: !!a.powerBackup },
+              { label: "Housekeeping",    value: !!a.housekeepingAvailable },
+              { label: "Bike Rental",     value: !!a.bikeRental },
+            ],
+          },
+        ];
+
+        const hasAny = groups.some(
+          (g) => g.items.some((i) => i.value) || g.nums?.some((n) => n.value > 0),
+        );
+        if (!hasAny) return null;
+
+        return (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Amenities &amp; House Rules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-5">
+                {groups.map((group) => (
+                  <div key={group.title}>
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      {group.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {group.items.map((item) => (
+                        <span
+                          key={item.label}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                            item.value
+                              ? "bg-green-50 text-green-700 border-green-200"
+                              : "bg-red-50 text-red-600 border-red-200"
+                          }`}
+                        >
+                          {item.value ? "✓" : "✗"} {item.label}
+                        </span>
+                      ))}
+                      {(group.nums ?? []).map((item) => (
+                        <span
+                          key={item.label}
+                          className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                        >
+                          {item.label}: {item.value}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Full-screen Image Viewer */}
       <ImageViewer

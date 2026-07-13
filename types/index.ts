@@ -31,6 +31,50 @@ export interface User {
   role: string;
 }
 
+export interface Amenities {
+  // House Rules
+  smokingAllowed: boolean;
+  drinkingAllowed: boolean;
+  cookingAllowed: boolean;
+  nonVegAllowed: boolean;
+  guestsAllowed: boolean;
+  petsAllowed: boolean;
+  // Appliances & Comfort
+  acAvailable: boolean;
+  fanAvailable: boolean;
+  fridgeAvailable: boolean;
+  washingMachineAvailable: boolean;
+  tvAvailable: boolean;
+  wifiAvailable: boolean;
+  inverterAvailable: boolean;
+  // Bathroom / Toilet
+  attachedBathroom: boolean;
+  attachedToilet: boolean;
+  sharedBathrooms: number;
+  sharedToilets: number;
+  geyserAvailable: boolean;
+  // Storage & Security
+  lockerAvailable: boolean;
+  cctvAvailable: boolean;
+  securityGuard: boolean;
+  mainGateLock: boolean;
+  // Parking
+  twoWheelerParking: boolean;
+  fourWheelerParking: boolean;
+  // Food
+  breakfastAvailable: boolean;
+  lunchAvailable: boolean;
+  dinnerAvailable: boolean;
+  messAvailable: boolean;
+  // Other
+  gallaryAvailable: boolean;
+  gymAvailable: boolean;
+  studyRoomAvailable: boolean;
+  powerBackup: boolean;
+  housekeepingAvailable: boolean;
+  bikeRental: boolean;
+}
+
 export interface PG {
   id: string;
   adminId: string;
@@ -39,6 +83,7 @@ export interface PG {
   structure: Room[];
   onlinePayment: boolean;
   isPrivate: boolean;
+  amenities?: Partial<Amenities>;
   location: {
     subcity: string;
     city: string;

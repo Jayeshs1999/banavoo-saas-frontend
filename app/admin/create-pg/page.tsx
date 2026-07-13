@@ -8,7 +8,7 @@ import * as z from "zod";
 import { Button } from "@/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import StateDropdown from "@/components/StateDropdown";
-import { PG, Room } from "../../../types";
+import { PG, Room, Amenities } from "../../../types";
 import { generateId } from "../../../utils";
 import { pgAPI, uploadAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,21 @@ const pgSchema = z.object({
 
 type PGForm = z.infer<typeof pgSchema>;
 
+const DEFAULT_AMENITIES: Amenities = {
+  smokingAllowed: false, drinkingAllowed: false, cookingAllowed: false,
+  nonVegAllowed: true, guestsAllowed: false, petsAllowed: false,
+  acAvailable: false, fanAvailable: true, fridgeAvailable: false,
+  washingMachineAvailable: false, tvAvailable: false, wifiAvailable: false,
+  inverterAvailable: false,
+  attachedBathroom: false, attachedToilet: false,
+  sharedBathrooms: 0, sharedToilets: 0, geyserAvailable: false,
+  lockerAvailable: false, cctvAvailable: false, securityGuard: false, mainGateLock: false,
+  twoWheelerParking: false, fourWheelerParking: false,
+  breakfastAvailable: false, lunchAvailable: false, dinnerAvailable: false, messAvailable: false,
+  gallaryAvailable: false, gymAvailable: false, studyRoomAvailable: false,
+  powerBackup: false, housekeepingAvailable: false, bikeRental: false,
+};
+
 export default function CreatePG() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [currentRoom, setCurrentRoom] = useState("");
@@ -30,6 +45,15 @@ export default function CreatePG() {
   const [roomError, setRoomError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [amenities, setAmenities] = useState<Amenities>({ ...DEFAULT_AMENITIES });
+
+  const toggleAmenity = (key: keyof Amenities) => {
+    setAmenities((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+  const setAmenityNum = (key: keyof Amenities, val: number) => {
+    setAmenities((prev) => ({ ...prev, [key]: val }));
+  };
+
   const [location, setLocation] = useState({
     subcity: "",
     city: "",
@@ -198,6 +222,7 @@ export default function CreatePG() {
         structure: transformedStructure,
         onlinePayment: data.onlinePayment,
         isPrivate: data.isPrivate,
+        amenities,
         location: {
           subcity: location.subcity.trim(),
           city: location.city.trim(),
@@ -585,6 +610,160 @@ export default function CreatePG() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Amenities */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Amenities &amp; House Rules</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+
+            {/* House Rules */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">House Rules</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["smokingAllowed",  "🚬 Smoking Allowed"],
+                  ["drinkingAllowed", "🍺 Drinking Allowed"],
+                  ["cookingAllowed",  "🍳 Cooking Allowed"],
+                  ["nonVegAllowed",   "🍗 Non-Veg Allowed"],
+                  ["guestsAllowed",   "👥 Guests Allowed"],
+                  ["petsAllowed",     "🐾 Pets Allowed"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Appliances & Comfort */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Appliances &amp; Comfort</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["acAvailable",             "❄️ AC"],
+                  ["fanAvailable",            "💨 Fan"],
+                  ["fridgeAvailable",         "🧊 Refrigerator"],
+                  ["washingMachineAvailable", "🫧 Washing Machine"],
+                  ["tvAvailable",             "📺 TV"],
+                  ["wifiAvailable",           "📶 Wi-Fi"],
+                  ["inverterAvailable",       "🔋 Inverter / Power Backup"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Bathroom & Toilet */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Bathroom &amp; Toilet</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["attachedBathroom", "🚿 Attached Bathroom"],
+                  ["attachedToilet",   "🚽 Attached Toilet"],
+                  ["geyserAvailable",  "🔥 Geyser / Water Heater"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Shared Bathrooms (count)</label>
+                  <input type="number" min={0} max={20} value={amenities.sharedBathrooms}
+                    onChange={(e) => setAmenityNum("sharedBathrooms", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Shared Toilets (count)</label>
+                  <input type="number" min={0} max={20} value={amenities.sharedToilets}
+                    onChange={(e) => setAmenityNum("sharedToilets", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Security & Storage */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Security &amp; Storage</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["lockerAvailable", "🔒 Locker"],
+                  ["cctvAvailable",   "📷 CCTV"],
+                  ["securityGuard",   "💂 Security Guard"],
+                  ["mainGateLock",    "🚪 Main Gate Lock"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Parking */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Parking</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["twoWheelerParking",  "🛵 Two-Wheeler Parking"],
+                  ["fourWheelerParking", "🚗 Four-Wheeler Parking"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Food */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Food</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["breakfastAvailable", "🍳 Breakfast"],
+                  ["lunchAvailable",     "🍱 Lunch"],
+                  ["dinnerAvailable",    "🍽️ Dinner"],
+                  ["messAvailable",      "🏠 Mess / Canteen"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Other Facilities */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Other Facilities</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["gallaryAvailable",      "🏗️ Gallery / Balcony"],
+                  ["gymAvailable",          "🏋️ Gym"],
+                  ["studyRoomAvailable",    "📚 Study Room"],
+                  ["powerBackup",           "⚡ Power Backup"],
+                  ["housekeepingAvailable", "🧹 Housekeeping"],
+                  ["bikeRental",            "🚲 Bike Rental"],
+                ] as [keyof Amenities, string][]).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" checked={!!amenities[key]} onChange={() => toggleAmenity(key)} className="w-4 h-4 rounded" />
+                    <span className="text-sm">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
           </CardContent>
         </Card>
 
