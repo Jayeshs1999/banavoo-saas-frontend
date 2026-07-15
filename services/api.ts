@@ -1,8 +1,8 @@
 // API Service for Dormitory Management System
 
-const API_BASE =  'https://dormitory-backend-5rda.onrender.com/api';
+// const API_BASE =  'https://dormitory-backend-5rda.onrender.com/api';
 // const API_BASE =  'https://doormitory-backend.store/api'
-// const API_BASE =  'http://localhost:5000/api';
+const API_BASE =  'http://localhost:5000/api';
 // Hrllo
 
 // Helper function to get auth token
@@ -355,6 +355,23 @@ export const bookingAPI = {
   cancelBooking: async (bookingId: string) => {
     return apiRequest(`/bookings/${bookingId}/cancel`, {
       method: 'PUT',
+    });
+  },
+
+  createPaymentOrder: async (bookingId: string) => {
+    return apiRequest(`/bookings/${bookingId}/create-payment-order`, {
+      method: 'POST',
+    });
+  },
+
+  verifyPayment: async (bookingId: string, data: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => {
+    return apiRequest(`/bookings/${bookingId}/verify-payment`, {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 };

@@ -266,6 +266,23 @@ export default function UserRequests() {
                         {t("userRequests.payment")}:
                       </span>{" "}
                       {booking.paymentMethod}
+                      {booking.paymentMethod === "online" && (
+                        <span
+                          className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            booking.paymentStatus === "paid"
+                              ? "bg-green-100 text-green-700"
+                              : booking.paymentStatus === "failed"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {booking.paymentStatus === "paid"
+                            ? "✓ Paid"
+                            : booking.paymentStatus === "failed"
+                            ? "✗ Failed"
+                            : "⏳ Pending"}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

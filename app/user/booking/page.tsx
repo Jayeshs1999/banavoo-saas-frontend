@@ -35,6 +35,18 @@ interface PG {
   };
 }
 
+// Load Razorpay script dynamically
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) { resolve(true); return; }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 function BookingForm() {
   const { currentUser } = useAuth();
   const router = useRouter();
@@ -49,6 +61,7 @@ function BookingForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const [selectedRoom, setSelectedRoom] = useState<string>(preselectedRoomId);
   const [selectedBed, setSelectedBed] = useState<string>(preselectedBedId);
@@ -162,7 +175,8 @@ function BookingForm() {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await bookingAPI.createBooking({
+      // Step 1: Create the booking record (always)
+      const bookingRes = await bookingAPI.createBooking({
         pgId: pgId!,
         roomId: selectedRoom,
         bedId: selectedBed,
@@ -172,19 +186,85 @@ function BookingForm() {
         paymentMethod,
       });
 
-      if (response.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push("/user/requests");
-        }, 2000);
-      } else {
-        setError(response.message || "Failed to create booking");
+      if (!bookingRes.success) {
+        setError(bookingRes.message || "Failed to create booking");
+        return;
       }
+
+      // Step 2: If cash payment, done
+      if (paymentMethod === "cash") {
+        setSuccess(true);
+        setTimeout(() => router.push("/user/requests"), 2000);
+        return;
+      }
+
+      // Step 3: Online payment — load Razorpay and open checkout
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setError("Failed to load payment gateway. Please try again.");
+        return;
+      }
+
+      const orderRes = await bookingAPI.createPaymentOrder(bookingRes.data._id);
+      if (!orderRes.success) {
+        setError(orderRes.message || "Failed to initiate payment");
+        return;
+      }
+
+      const { orderId, amount, currency, keyId } = orderRes.data;
+
+      const options = {
+        key: keyId,
+        amount,
+        currency,
+        name: pg!.name,
+        description: `Booking for ${pg!.name}`,
+        order_id: orderId,
+        prefill: {
+          name: currentUser
+            ? `${currentUser.firstName} ${currentUser.lastName || ""}`.trim()
+            : "",
+          email: currentUser?.email || "",
+          contact: currentUser?.mobile || "",
+        },
+        theme: { color: "#3b82f6" },
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await bookingAPI.verifyPayment(bookingRes.data._id, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            if (verifyRes.success) {
+              setPaymentSuccess(true);
+              setSuccess(true);
+              setTimeout(() => router.push("/user/requests"), 3000);
+            } else {
+              setError("Payment verification failed. Please contact support.");
+            }
+          } catch {
+            setError("Payment verification failed. Please contact support.");
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmitting(false);
+            setError("Payment was cancelled. Your booking request is saved. You can pay later from My Requests.");
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+      // Don't setSubmitting(false) here — wait for handler/ondismiss
+      return;
+
     } catch (err: any) {
       console.error("Booking error:", err);
       setError(err.message || "Failed to create booking");
     } finally {
-      setSubmitting(false);
+      // Only clear submitting for cash or errors; online waits for Razorpay callbacks
+      if (paymentMethod === "cash") setSubmitting(false);
     }
   };
 
@@ -218,10 +298,12 @@ function BookingForm() {
           <CardContent className="text-center py-8">
             <div className="text-green-500 text-6xl mb-4">✓</div>
             <h2 className="text-2xl font-bold mb-2">
-              {t("booking.requestSubmitted")}
+              {paymentSuccess ? "Payment Successful!" : t("booking.requestSubmitted")}
             </h2>
             <p className="text-gray-600 mb-4">
-              {t("booking.waitingForApproval")}
+              {paymentSuccess
+                ? "Your payment is confirmed and booking is approved. You're all set!"
+                : t("booking.waitingForApproval")}
             </p>
             <p className="text-sm text-gray-500">
               {t("booking.redirecting")}...
@@ -489,8 +571,8 @@ function BookingForm() {
                     className="flex-1"
                   >
                     {submitting
-                      ? t("booking.submitting")
-                      : t("booking.submitRequest")}
+                      ? (paymentMethod === "online" ? "Opening Payment..." : t("booking.submitting"))
+                      : (paymentMethod === "online" ? "Pay Now ₹" + calculateTotal().toLocaleString() : t("booking.submitRequest"))}
                   </Button>
                   <Link href="/user/dashboard">
                     <Button variant="outline">{t("common.cancel")}</Button>
