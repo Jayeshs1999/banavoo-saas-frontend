@@ -1,8 +1,8 @@
 // API Service for Dormitory Management System
 
-// const API_BASE =  'https://dormitory-backend-5rda.onrender.com/api';
+const API_BASE =  'https://dormitory-backend-5rda.onrender.com/api';
 // const API_BASE =  'https://doormitory-backend.store/api'
-const API_BASE =  'http://localhost:5000/api';
+// const API_BASE =  'http://localhost:5000/api';
 // Hrllo
 
 // Helper function to get auth token
@@ -250,6 +250,14 @@ export const pgAPI = {
     return apiRequest(`/pgs/${pgId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  },
+
+  // Toggle PG private/public visibility
+  togglePrivacy: async (pgId: string, isPrivate: boolean) => {
+    return apiRequest(`/pgs/${pgId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ isPrivate }),
     });
   },
 

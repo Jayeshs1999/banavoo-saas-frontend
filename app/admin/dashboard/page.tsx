@@ -238,12 +238,18 @@ export default function AdminDashboard() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
             <Card variant="glass" className="p-6 backdrop-blur-xl text-center">
               <div className="text-3xl font-bold text-blue-600">
                 {pgs.length}
               </div>
               <div className="text-gray-600">{t("dashboard.totalPGs")}</div>
+            </Card>
+            <Card variant="glass" className="p-6 backdrop-blur-xl text-center">
+              <div className="text-3xl font-bold text-gray-600">
+                {pgs.filter((pg: any) => pg.isPrivate).length}
+              </div>
+              <div className="text-gray-600">🔒 Private PGs</div>
             </Card>
             <Card variant="glass" className="p-6 backdrop-blur-xl text-center">
               <div className="text-3xl font-bold text-green-600">

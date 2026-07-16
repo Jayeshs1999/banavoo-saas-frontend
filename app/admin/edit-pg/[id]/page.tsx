@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +13,8 @@ import { PG, Room, Amenities } from "../../../../types";
 import { generateId } from "../../../../utils";
 import { pgAPI, uploadAPI } from "@/services/api";
 import { useTranslation } from "react-i18next";
+
+const MapPicker = dynamic(() => import("@/components/MapPicker"), { ssr: false });
 
 const pgSchema = z.object({
   name: z.string().min(1, "PG Name is required"),
@@ -66,6 +69,8 @@ export default function EditPG() {
     state: "",
     country: "India",
     pin: "",
+    lat: undefined as number | undefined,
+    lng: undefined as number | undefined,
   });
 
   const {
@@ -109,6 +114,8 @@ export default function EditPG() {
           state: pgData.location?.state || "",
           country: pgData.location?.country || "India",
           pin: pgData.location?.pin || "",
+          lat: pgData.location?.lat ?? undefined,
+          lng: pgData.location?.lng ?? undefined,
         });
 
         // Set photos
@@ -333,6 +340,9 @@ export default function EditPG() {
           state: location.state.trim(),
           country: location.country.trim() || "India",
           pin: location.pin?.trim(),
+          ...(location.lat !== undefined && location.lng !== undefined
+            ? { lat: location.lat, lng: location.lng }
+            : {}),
         },
       };
 
@@ -571,6 +581,19 @@ export default function EditPG() {
                   placeholder="Enter country"
                 />
               </div>
+            </div>
+
+            {/* Map Picker */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                📍 Pin Location on Map <span className="text-gray-400 font-normal">(optional — helps users find you)</span>
+              </label>
+              <MapPicker
+                lat={location.lat}
+                lng={location.lng}
+                addressHint={[location.subcity, location.city, location.state, "India"].filter(Boolean).join(", ")}
+                onChange={({ lat, lng }) => setLocation((prev) => ({ ...prev, lat, lng }))}
+              />
             </div>
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { Button, ShareButton } from "@/components";
@@ -8,6 +9,8 @@ import ImageViewer from "@/components/ImageViewer";
 import { useAuth } from "@/app/context/AuthContext";
 import { pgAPI } from "@/services/api";
 import { useTranslation } from "react-i18next";
+
+const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
 interface Amenities {
   smokingAllowed?: boolean; drinkingAllowed?: boolean; cookingAllowed?: boolean;
@@ -48,6 +51,8 @@ interface PG {
     state: string;
     country: string;
     pin: string;
+    lat?: number;
+    lng?: number;
   };
   adminId: {
     _id: string;
@@ -70,6 +75,8 @@ export default function PGDetails() {
   const [error, setError] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  {/* Toggle to private/public pg */}
+  // const [privacyLoading, setPrivacyLoading] = useState(false);
 
   useEffect(() => {
     if (pgId) {
@@ -99,6 +106,22 @@ export default function PGDetails() {
   const handleEdit = () => {
     router.push(`/admin/edit-pg/${pgId}`);
   };
+
+  {/* Toggle to private/public pg */}
+  // const handleTogglePrivacy = async () => {
+  //   if (!pg) return;
+  //   setPrivacyLoading(true);
+  //   try {
+  //     const response = await pgAPI.togglePrivacy(pgId, !pg.isPrivate);
+  //     if (response.success) {
+  //       setPG({ ...pg, isPrivate: !pg.isPrivate });
+  //     }
+  //   } catch (err: any) {
+  //     console.error("Failed to toggle privacy:", err);
+  //   } finally {
+  //     setPrivacyLoading(false);
+  //   }
+  // };
 
   const handleBack = () => {
     router.push("/admin/dashboard");
@@ -215,7 +238,24 @@ export default function PGDetails() {
               size="sm"
             />
           </div>
-
+          {/* Toggle to private/public pg */}
+          {/* <button
+            onClick={handleTogglePrivacy}
+            disabled={privacyLoading}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border transition-colors disabled:opacity-50 ${
+              pg.isPrivate
+                ? "bg-gray-100 border-gray-400 text-gray-700 hover:bg-gray-200"
+                : "bg-green-50 border-green-400 text-green-700 hover:bg-green-100"
+            }`}
+          >
+            {privacyLoading ? (
+              <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : pg.isPrivate ? (
+              "🔒 Private — Make Public"
+            ) : (
+              "🌐 Public — Make Private"
+            )}
+          </button> */}
           <Button
             onClick={handleEdit}
             className="bg-blue-500 hover:bg-blue-700"
@@ -383,6 +423,17 @@ export default function PGDetails() {
                   {pg.onlinePayment ? t("common.yes") : t("common.no")}
                 </span>
               </div>
+
+              {/* Map — only shown if location coordinates are saved */}
+              {pg.location?.lat && pg.location?.lng && (
+                <div className="pt-2">
+                  <MapView
+                    lat={pg.location.lat}
+                    lng={pg.location.lng}
+                    label={`${pg.name} — ${pg.location.subcity}, ${pg.location.city}`}
+                  />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

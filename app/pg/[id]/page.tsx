@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Button, ShareButton } from "@/components";
@@ -9,6 +10,8 @@ import ImageViewer from "@/components/ImageViewer";
 import { pgAPI } from "../../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
+
+const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
 interface Amenities {
   smokingAllowed?: boolean; drinkingAllowed?: boolean; cookingAllowed?: boolean;
@@ -48,6 +51,8 @@ interface PG {
     state: string;
     country: string;
     pin: string;
+    lat?: number;
+    lng?: number;
   };
   adminId?: {
     _id: string;
@@ -378,6 +383,17 @@ export default function PGDetails() {
                   {pg.onlinePayment ? t("common.yes") : t("common.no")}
                 </span>
               </div>
+
+              {/* Map — only shown if location coordinates are saved */}
+              {pg.location?.lat && pg.location?.lng && (
+                <div className="pt-2">
+                  <MapView
+                    lat={pg.location.lat}
+                    lng={pg.location.lng}
+                    label={`${pg.name} — ${pg.location.subcity}, ${pg.location.city}`}
+                  />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
