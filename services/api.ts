@@ -282,19 +282,34 @@ export const pgAPI = {
   },
 
   // Public endpoints (no auth required)
-  getAllPGsPublic: async () => {
-    const url = `${API_BASE}/pgs/public`;
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  /**
+   * Fetch public PGs with server-side filtering + pagination.
+   * Returns { success, data, pagination: { page, limit, total, totalPages, hasMore } }
+   */
+  getAllPGsPublic: async (params: {
+    page?:          number;
+    limit?:         number;
+    search?:        string;
+    city?:          string;
+    subcity?:       string;
+    state?:         string;
+    minPrice?:      string;
+    maxPrice?:      string;
+    onlinePayment?: boolean;
+    availableOnly?: boolean;
+    amenities?:     string;   // comma-separated amenity keys
+    sortBy?:        string;
+  } = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== "" && v !== false) qs.append(k, String(v));
     });
-
+    const url = `${API_BASE}/pgs/public${qs.toString() ? `?${qs}` : ""}`;
+    const response = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
-
     return await response.json();
   },
 
