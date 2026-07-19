@@ -6,229 +6,350 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components";
+import StateDropdown from "@/components/StateDropdown";
 import { useAuth } from "../../context/AuthContext";
 
+/* ── Schema ── */
 const registerSchema = z
   .object({
-    firstName: z.string().min(1, "First Name is required"),
-    lastName: z.string().min(1, "Last Name is required"),
-    email: z.string().email("Invalid email address"),
-    mobile: z.string().min(10, "Mobile number must be at least 10 digits"),
-    address: z.string().min(1, "Address is required"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    firstName:       z.string().min(1, "First name is required"),
+    lastName:        z.string().min(1, "Last name is required"),
+    email:           z.string().email("Enter a valid email address"),
+    mobile:          z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+    area:            z.string().min(1, "Area / flat no. is required"),
+    landmark:        z.string().min(1, "Landmark is required"),
+    city:            z.string().min(1, "City is required"),
+    pincode:         z.string().regex(/^\d{6}$/, "Pincode must be exactly 6 digits"),
+    state:           z.string().min(1, "State is required"),
+    password:        z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
-export default function UserRegister() {
-  const [error, setError] = useState("");
-  const router = useRouter();
-  const { registerUser } = useAuth();
+/* ── Steps ── */
+const STEPS = ["Your Details", "Set Password"];
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterForm>({
-    resolver: zodResolver(registerSchema),
-  });
+/* ── Shared styles ── */
+const INPUT =
+  "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors placeholder:text-gray-400";
+
+/* ── Field wrapper ── */
+function F({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      {children}
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
+  );
+}
+
+/* ── Stepper ── */
+function Stepper({ step }: { step: number }) {
+  return (
+    <div className="flex items-center justify-center gap-0 mb-8">
+      {STEPS.map((label, i) => (
+        <div key={i} className="flex items-center">
+          <div className="flex flex-col items-center">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
+              i < step    ? "bg-green-600 border-green-600 text-white"
+            : i === step  ? "bg-white border-green-600 text-green-600"
+            :               "bg-white border-gray-300 text-gray-400"
+            }`}>
+              {i < step ? "✓" : i + 1}
+            </div>
+            <span className={`text-xs mt-1 font-medium hidden sm:block ${i === step ? "text-green-600" : "text-gray-400"}`}>
+              {label}
+            </span>
+          </div>
+          {i < STEPS.length - 1 && (
+            <div className={`h-0.5 w-12 sm:w-20 mx-1 mb-5 transition-colors ${i < step ? "bg-green-600" : "bg-gray-200"}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Main ── */
+export default function UserRegister() {
+  const router = useRouter();
+  const { registerUser, loading, error: authError, clearError } = useAuth();
+
+  const [step,          setStep]          = useState(0);
+  const [selectedState, setSelectedState] = useState("");
+  const [showPw,        setShowPw]        = useState(false);
+  const [showConfirm,   setShowConfirm]   = useState(false);
+  const [submitError,   setSubmitError]   = useState("");
+
+  const { register, handleSubmit, setValue, trigger, formState: { errors } } =
+    useForm<RegisterForm>({ resolver: zodResolver(registerSchema) });
+
+  /* Step field groups */
+  const STEP_FIELDS = [
+    ["firstName", "lastName", "email", "mobile", "area", "landmark", "city", "pincode", "state"] as const,
+    ["password", "confirmPassword"] as const,
+  ];
+
+  const goNext = async () => {
+    const valid = await trigger(STEP_FIELDS[step] as Parameters<typeof trigger>[0]);
+    if (valid) setStep(s => s + 1);
+  };
+  const goBack = () => setStep(s => s - 1);
 
   const onSubmit = async (data: RegisterForm) => {
+    clearError();
+    setSubmitError("");
     try {
+      // Flatten structured address fields into a single string for the backend
+      const address = `${data.area}, ${data.landmark}, ${data.city} - ${data.pincode}, ${data.state}`;
       const success = await registerUser({
         firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        mobile: data.mobile,
-        address: data.address,
-        password: data.password,
-        role: "user",
+        lastName:  data.lastName,
+        email:     data.email,
+        mobile:    data.mobile,
+        address,
+        password:  data.password,
+        role:      "user",
       });
       if (success) {
         router.push("/user/dashboard");
       } else {
-        setError("Registration failed. Please try again.");
+        setSubmitError("Registration failed. Please try again.");
       }
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
+    } catch (err: unknown) {
+      setSubmitError((err as Error).message || "Registration failed");
     }
   };
 
+  const displayError = submitError || authError || "";
+
   return (
-    <div className="relative min-h-screen bg-[url('../public/bg-pg.jpg')] bg-cover bg-center">
-      <div className="absolute inset-0 bg-black opacity-40"></div>
-      <div className="container mx-auto px-4 py-8 flex flex-col justify-center items-center relative z-10 min-h-screen">
-        <div className="container mx-auto px-4 py-8 max-w-lg">
-          <Card className="bg-background">
-            <CardHeader>
-              <CardTitle>Register as User</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    First Name
-                  </label>
-                  <input
-                    {...register("firstName")}
-                    type="text"
-                    id="firstName"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.firstName && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.firstName.message}
-                    </p>
-                  )}
+    <div className="min-h-screen flex">
+      {/* ── Left branding panel ── */}
+      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col justify-between bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 p-10 text-white">
+        <div>
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl font-bold">🏠</div>
+            <span className="text-xl font-bold tracking-tight">BedWale.in</span>
+          </div>
+          <h1 className="text-4xl font-extrabold leading-tight mb-4">
+            Find a PG that<br />feels like home
+          </h1>
+          <p className="text-green-100 text-base leading-relaxed max-w-sm">
+            Create your free account and start browsing hundreds of verified PGs in your city — with real photos, pricing and instant booking.
+          </p>
+        </div>
+
+        {/* How it works */}
+        <div className="space-y-4">
+          <p className="text-sm font-semibold text-green-200 uppercase tracking-wide">It takes 2 steps</p>
+          {[
+            { n: "1", t: "Fill in your contact & home address" },
+            { n: "2", t: "Set a secure password & you're in" },
+          ].map(({ n, t }) => (
+            <div key={n} className="flex items-center gap-3 text-sm text-green-100">
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">{n}</div>
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Right form panel ── */}
+      <div className="flex-1 flex flex-col justify-center items-center bg-gray-50 px-6 py-10 overflow-y-auto">
+        <div className="w-full max-w-lg">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-8">
+            <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white text-lg">🏠</div>
+            <span className="text-lg font-bold text-gray-800">BedWale.in</span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Create your account</h2>
+          <p className="text-sm text-gray-500 mb-6">Step {step + 1} of {STEPS.length} — {STEPS[step]}</p>
+
+          <Stepper step={step} />
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
+            {/* ── Step 0: Personal details + address ── */}
+            {step === 0 && (
+              <>
+                <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-3 text-sm text-green-800 mb-2">
+                  Tell us who you are and where you currently live.
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    {...register("lastName")}
-                    type="text"
-                    id="lastName"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.lastName && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.lastName.message}
-                    </p>
-                  )}
+                {/* Name row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <F label="First Name" error={errors.firstName?.message}>
+                    <input {...register("firstName")} type="text" placeholder="Rahul" className={INPUT} />
+                  </F>
+                  <F label="Last Name" error={errors.lastName?.message}>
+                    <input {...register("lastName")} type="text" placeholder="Sharma" className={INPUT} />
+                  </F>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Email
-                  </label>
-                  <input
-                    {...register("email")}
-                    type="email"
-                    id="email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.email.message}
-                    </p>
-                  )}
+                <F label="Email Address" error={errors.email?.message}>
+                  <input {...register("email")} type="email" placeholder="you@example.com" autoComplete="email" className={INPUT} />
+                </F>
+
+                <F label="Mobile Number" error={errors.mobile?.message}>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">+91</span>
+                    <input
+                      {...register("mobile")}
+                      type="tel"
+                      maxLength={10}
+                      placeholder="9876543210"
+                      className={`${INPUT} pl-12`}
+                    />
+                  </div>
+                </F>
+
+                {/* Address section */}
+                <div className="pt-1">
+                  <p className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-1.5">
+                    <span>📍</span> Current Address
+                  </p>
+                  <div className="space-y-4">
+                    <F label="Flat / House No. / Area" error={errors.area?.message}>
+                      <input {...register("area")} type="text" placeholder="e.g. 3B, Sunrise Apartments" className={INPUT} />
+                    </F>
+
+                    <F label="Landmark" error={errors.landmark?.message}>
+                      <input {...register("landmark")} type="text" placeholder="e.g. Near City Mall" className={INPUT} />
+                    </F>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <F label="City" error={errors.city?.message}>
+                        <input {...register("city")} type="text" placeholder="Pune" className={INPUT} />
+                      </F>
+                      <F label="Pincode" error={errors.pincode?.message}>
+                        <input {...register("pincode")} type="text" maxLength={6} placeholder="411001" className={INPUT} />
+                      </F>
+                    </div>
+
+                    <F label="State" error={errors.state?.message}>
+                      <StateDropdown
+                        value={selectedState}
+                        onChange={(val) => {
+                          setSelectedState(val);
+                          setValue("state", val, { shouldValidate: true });
+                        }}
+                        placeholder="Select your state"
+                        required
+                      />
+                    </F>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── Step 1: Password ── */}
+            {step === 1 && (
+              <>
+                <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-3 text-sm text-green-800 mb-2">
+                  Choose a strong password to keep your account secure.
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="mobile"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Mobile Number
-                  </label>
-                  <input
-                    {...register("mobile")}
-                    type="tel"
-                    id="mobile"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.mobile && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.mobile.message}
-                    </p>
-                  )}
-                </div>
+                <F label="Password" error={errors.password?.message}>
+                  <div className="relative">
+                    <input
+                      {...register("password")}
+                      type={showPw ? "text" : "password"}
+                      placeholder="Min. 6 characters"
+                      className={`${INPUT} pr-14`}
+                    />
+                    <button type="button" onClick={() => setShowPw(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600 font-medium">
+                      {showPw ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </F>
 
-                <div>
-                  <label
-                    htmlFor="address"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Address
-                  </label>
-                  <textarea
-                    {...register("address")}
-                    id="address"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.address && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.address.message}
-                    </p>
-                  )}
-                </div>
+                <F label="Confirm Password" error={errors.confirmPassword?.message}>
+                  <div className="relative">
+                    <input
+                      {...register("confirmPassword")}
+                      type={showConfirm ? "text" : "password"}
+                      placeholder="Re-enter your password"
+                      className={`${INPUT} pr-14`}
+                    />
+                    <button type="button" onClick={() => setShowConfirm(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600 font-medium">
+                      {showConfirm ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </F>
 
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Password
-                  </label>
-                  <input
-                    {...register("password")}
-                    type="password"
-                    id="password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
+                <p className="text-xs text-gray-400 text-center leading-relaxed">
+                  By creating an account you agree to our{" "}
+                  <span className="text-green-600 cursor-pointer hover:underline">Terms of Service</span>.
+                </p>
+              </>
+            )}
 
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Confirm Password
-                  </label>
-                  <input
-                    {...register("confirmPassword")}
-                    type="password"
-                    id="confirmPassword"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
-
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-
-                <Button type="submit" className="w-full">
-                  Register
-                </Button>
-              </form>
-
-              <div className="mt-4 text-center">
-                <Link
-                  href="/user/login"
-                  className="text-blue-500 hover:underline"
-                >
-                  Already have an account? Login
-                </Link>
+            {/* Error banner */}
+            {displayError && (
+              <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+                <span className="mt-0.5 flex-shrink-0">⚠️</span>
+                <span>{displayError}</span>
               </div>
-            </CardContent>
-          </Card>
+            )}
+
+            {/* Navigation */}
+            <div className={`flex gap-3 pt-1 ${step > 0 ? "justify-between" : "justify-end"}`}>
+              {step > 0 && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                >
+                  ← Back
+                </button>
+              )}
+
+              {step < STEPS.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  Next →
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Creating account…
+                    </span>
+                  ) : "Create Account"}
+                </button>
+              )}
+            </div>
+          </form>
+
+          {/* Footer */}
+          <p className="mt-6 text-center text-sm text-gray-500">
+            Already have an account?{" "}
+            <Link href="/user/login" className="text-green-600 font-medium hover:underline">
+              Sign in →
+            </Link>
+          </p>
+          <p className="mt-2 text-center text-xs text-gray-400">
+            Are you a PG owner?{" "}
+            <Link href="/admin/register" className="text-blue-500 hover:underline">Register as admin</Link>
+          </p>
         </div>
       </div>
     </div>
