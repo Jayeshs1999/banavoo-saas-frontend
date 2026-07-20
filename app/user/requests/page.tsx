@@ -336,11 +336,11 @@ export default function UserRequests() {
                         {t("userRequests.callAdmin")}
                       </Button>
                     )}
-                    {booking.status === "approved" && (
+                    {/* {booking.status === "approved" && (
                       <p className="text-sm text-gray-500">
                         {t("userRequests.validity")}: 2 hours
                       </p>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </CardContent>
