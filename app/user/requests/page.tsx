@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { useAuth } from "../../context/AuthContext";
 import { bookingAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
+import { MessageSquare } from "lucide-react";
 
 interface Booking {
   _id: string;
@@ -299,50 +300,56 @@ export default function UserRequests() {
                 )}
 
                 <div className="flex flex-col gap-3 pt-4 border-t sm:flex-row sm:justify-between sm:items-center">
-                  <p className="text-sm text-gray-500">
-                    {t("userRequests.requestedOn")}:{" "}
-                    {formatDate(booking.createdAt)}
-                  </p>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      onClick={() => handleViewBooking(booking._id)}
-                    >
-                      {t("common.view")}
-                    </Button>
-                    {booking.status === "pending" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 w-full sm:w-auto"
-                        onClick={() => handleCancelBooking(booking._id)}
-                      >
-                        {t("userRequests.cancel")}
-                      </Button>
-                    )}
-                    {(booking.status === "pending" ||
-                      booking.status === "approved") && (
-                      <Button
-                        size="sm"
-                        className="w-full sm:w-auto"
-                        onClick={() =>
-                          handleCall(
-                            booking.adminContact?.phone || "9876543210",
-                          )
-                        }
-                      >
-                        {t("userRequests.callAdmin")}
-                      </Button>
-                    )}
-                    {/* {booking.status === "approved" && (
-                      <p className="text-sm text-gray-500">
-                        {t("userRequests.validity")}: 2 hours
-                      </p>
-                    )} */}
-                  </div>
-                </div>
+                   <p className="text-sm text-gray-500">
+                     {t("userRequests.requestedOn")}:{" "}
+                     {formatDate(booking.createdAt)}
+                   </p>
+                   <div className="flex flex-wrap gap-2 items-center">
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       className="w-full sm:w-auto"
+                       onClick={() => handleViewBooking(booking._id)}
+                     >
+                       {t("common.view")}
+                     </Button>
+                     {booking.status === "pending" && (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         className="text-red-600 w-full sm:w-auto"
+                         onClick={() => handleCancelBooking(booking._id)}
+                       >
+                         {t("userRequests.cancel")}
+                       </Button>
+                     )}
+                     {(booking.status === "pending" ||
+                       booking.status === "approved") && (
+                       <Button
+                         size="sm"
+                         className="w-full sm:w-auto"
+                         onClick={() =>
+                           handleCall(
+                             booking.adminContact?.phone || "9876543210",
+                           )
+                         }
+                       >
+                         {t("userRequests.callAdmin")}
+                       </Button>
+                     )}
+                     {/* Chat with PG Owner button — always visible */}
+                     <Link href={`/user/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
+                       >
+                         <MessageSquare size={14} />
+                         Chat with Owner
+                       </Button>
+                     </Link>
+                   </div>
+                 </div>
               </CardContent>
             </Card>
           ))

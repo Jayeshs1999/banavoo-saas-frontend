@@ -488,3 +488,31 @@ export const contactAPI = {
     });
   },
 };
+
+// Chat API
+export const chatAPI = {
+  // Get messages for a booking (optionally only messages after a given ISO date)
+  getMessages: async (bookingId: string, after?: string) => {
+    const qs = after ? `?after=${encodeURIComponent(after)}` : '';
+    return apiRequest(`/chat/${bookingId}/messages${qs}`);
+  },
+
+  // Send a message in a booking thread
+  sendMessage: async (bookingId: string, text: string) => {
+    return apiRequest(`/chat/${bookingId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    });
+  },
+
+  // Get all conversations for the current user/admin
+  getConversations: async () => {
+    return apiRequest('/chat/conversations');
+  },
+
+  // Get unread message count for the current user/admin
+  getUnreadCount: async () => {
+    return apiRequest('/chat/unread-count');
+  },
+};
+
