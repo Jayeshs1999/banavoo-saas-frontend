@@ -424,24 +424,53 @@ export const uploadAPI = {
 
 
 export const superAdminAPI = {
-  // Get dashboard data
-  getSUperAdminDashboardInfo: async () => {
+  // Platform KPI stats (no pagination)
+  getDashboard: async () => {
     return apiRequest('/super-admin/dashboard');
   },
 
-  // Get admin list
-  getAdminList: async () => {
-    return apiRequest(`/super-admin/admins`);
+  // Paginated + searchable PG owners
+  getAdmins: async (params: { page?: number; limit?: number; search?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page)   qs.set('page',   String(params.page));
+    if (params.limit)  qs.set('limit',  String(params.limit));
+    if (params.search) qs.set('search', params.search);
+    return apiRequest(`/super-admin/admins${qs.toString() ? '?' + qs : ''}`);
   },
 
-  // Get PG list
-  getPGList: async () => {
-    return apiRequest(`/super-admin/pgs`);
+  // Paginated + searchable PGs with occupancy
+  getPGs: async (params: { page?: number; limit?: number; search?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page)   qs.set('page',   String(params.page));
+    if (params.limit)  qs.set('limit',  String(params.limit));
+    if (params.search) qs.set('search', params.search);
+    return apiRequest(`/super-admin/pgs${qs.toString() ? '?' + qs : ''}`);
   },
 
-  // Get PG list
-  getLocationList: async () => {
-    return apiRequest(`/super-admin/location-stats`);
+  // Location stats (search only, no pagination)
+  getLocations: async (params: { search?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.search) qs.set('search', params.search);
+    return apiRequest(`/super-admin/location-stats${qs.toString() ? '?' + qs : ''}`);
+  },
+
+  // Paginated + searchable users
+  getUsers: async (params: { page?: number; limit?: number; search?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page)   qs.set('page',   String(params.page));
+    if (params.limit)  qs.set('limit',  String(params.limit));
+    if (params.search) qs.set('search', params.search);
+    return apiRequest(`/super-admin/users${qs.toString() ? '?' + qs : ''}`);
+  },
+
+  // Paginated + searchable bookings (also returns aggregate stats)
+  getBookings: async (params: { page?: number; limit?: number; search?: string; status?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page)   qs.set('page',   String(params.page));
+    if (params.limit)  qs.set('limit',  String(params.limit));
+    if (params.search) qs.set('search', params.search);
+    if (params.status) qs.set('status', params.status);
+    return apiRequest(`/super-admin/bookings${qs.toString() ? '?' + qs : ''}`);
   },
 };
 
