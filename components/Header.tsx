@@ -2,249 +2,354 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { Menu, X, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LogOut, Menu, X } from "lucide-react";
 import { getAuthData, useAuth } from "@/app/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { chatAPI, bookingAPI } from "@/services/api";
 
-export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useAuth();
-  const { t } = useTranslation();
+/* ─── tiny red pill badge ─────────────────────────────────────────────────── */
+function Badge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-bold leading-none">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
 
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const data = getAuthData();
-  const router = useRouter();
+/* ─── single nav link ─────────────────────────────────────────────────────── */
+function NavLink({
+  href,
+  children,
+  onClick,
+  mobile = false,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  mobile?: boolean;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
 
-  const handleLogout = () => {
-    logout();
-    router.push("/admin/login");
-  };
-
-  const handleUserLogout = () => {
-    logout();
-    router.push("/user/login");
-  };
+  if (mobile) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        className={`flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+          isActive
+            ? "bg-primary/10 text-primary font-semibold"
+            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+        }`}
+      >
+        {children}
+      </Link>
+    );
+  }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 bg-background text-foreground shadow-md">
-      <div className="container mx-auto px-4 py-[17px] flex justify-between items-center">
-        <div className="flex gap-2 justify-center items-center cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            if (!data?.user?.role) {
-              router.push("/");
-            }
-          }}
-        >
-          <Image
-            src={"/logo3.png"}
-            alt="Bedwale.in Logo"
-            width={120}
-            height={40}
-            className="object-contain"
-            priority
-          />
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`relative flex items-center text-sm font-medium transition-colors pb-0.5 ${
+        isActive
+          ? "text-primary after:absolute after:bottom-[-18px] after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full"
+          : "text-gray-600 hover:text-primary"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN HEADER
+═══════════════════════════════════════════════════════════════════════════ */
+export default function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [unreadMsgs, setUnreadMsgs]         = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  const { logout } = useAuth();
+  const { t } = useTranslation();
+  const data = getAuthData();
+  const router = useRouter();
+  const role = data?.user?.role as string | undefined;
+
+  const toggleMenu = () => setIsOpen((v) => !v);
+
+  const handleLogout = () => { logout(); router.push("/admin/login"); };
+  const handleUserLogout = () => { logout(); router.push("/user/login"); };
+
+  /* ── poll unread messages ── */
+  useEffect(() => {
+    if (role !== "admin" && role !== "user") return;
+    let alive = true;
+    const poll = () =>
+      chatAPI.getUnreadCount()
+        .then((r) => { if (alive) setUnreadMsgs(r?.unreadCount ?? 0); })
+        .catch(() => {});
+    poll();
+    const id = setInterval(poll, 15_000);
+    return () => { alive = false; clearInterval(id); };
+  }, [role]);
+
+  /* ── poll pending requests count ── */
+  useEffect(() => {
+    if (role !== "admin" && role !== "user") return;
+    let alive = true;
+    const poll = async () => {
+      try {
+        if (role === "admin") {
+          const res = await bookingAPI.getAdminBookings();
+          if (!alive) return;
+          const pending = (res.data ?? []).filter((b: { status: string }) => b.status === "pending").length;
+          setPendingRequests(pending);
+        } else {
+          const res = await bookingAPI.getMyBookings();
+          if (!alive) return;
+          const pending = (res.data ?? []).filter((b: { status: string }) => b.status === "pending").length;
+          setPendingRequests(pending);
+        }
+      } catch { /* silent */ }
+    };
+    poll();
+    const id = setInterval(poll, 30_000);
+    return () => { alive = false; clearInterval(id); };
+  }, [role]);
+
+  /* ── avatar initials ── */
+  const avatarLabel =
+    role === "admin"
+      ? (data?.user?.ownerName ?? data?.user?.pgName ?? "A")[0].toUpperCase()
+      : role === "user"
+      ? (data?.user?.firstName ?? "U")[0].toUpperCase()
+      : null;
+
+  const displayName =
+    role === "admin"
+      ? data?.user?.ownerName ?? "Admin"
+      : role === "user"
+      ? `${data?.user?.firstName ?? ""} ${data?.user?.lastName ?? ""}`.trim() || "User"
+      : null;
+
+  /* ── request / messages hrefs ── */
+  const requestsHref = role === "admin" ? "/admin/requests" : "/user/requests";
+  const messagesHref = role === "admin" ? "/admin/messages" : "/user/messages";
+
+  return (
+    <>
+      <header className="fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+
+          {/* ── Logo ── */}
+          <div
+            className="flex items-center shrink-0 cursor-pointer"
+            onClick={() => { if (!role) router.push("/"); }}
+          >
+            <Image
+              src="/logo3.png"
+              alt="Bedwale.in"
+              width={120}
+              height={40}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* ── Desktop nav ── */}
+          <nav className="hidden md:flex items-center gap-6">
+            <NavLink href="/">{t("header.home")}</NavLink>
+
+            {role === "admin" && <>
+              <NavLink href="/admin/create-pg">{t("header.createPGs")}</NavLink>
+              <NavLink href="/dashboard">{t("header.managePGs")}</NavLink>
+              <NavLink href={requestsHref}>
+                {t("header.viewRequests")}
+                <Badge count={pendingRequests} />
+              </NavLink>
+              <NavLink href={messagesHref}>
+                Messages
+                <Badge count={unreadMsgs} />
+              </NavLink>
+            </>}
+
+            {role === "user" && <>
+              <NavLink href={requestsHref}>
+                {t("userDashboard.myRequests")}
+                <Badge count={pendingRequests} />
+              </NavLink>
+              <NavLink href={messagesHref}>
+                Messages
+                <Badge count={unreadMsgs} />
+              </NavLink>
+            </>}
+
+            <NavLink href="/about">{t("header.about")}</NavLink>
+            <NavLink href="/contact">{t("header.contact")}</NavLink>
+
+            {role === "admin" && (
+              <NavLink href="/admin/profile">{t("header.viewProfile")}</NavLink>
+            )}
+            {role === "user" && (
+              <NavLink href="/user/profile">{t("userDashboard.profile")}</NavLink>
+            )}
+          </nav>
+
+          {/* ── Right slot: lang + avatar/logout OR hamburger ── */}
+          <div className="flex items-center gap-2">
+            {/* Language — desktop only */}
+            <div className="hidden md:flex">
+              <LanguageSwitcher />
+            </div>
+
+            {/* Logged-in user chip (desktop) */}
+            {role && avatarLabel && (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                  <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    {avatarLabel}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate">
+                    {displayName}
+                  </span>
+                </div>
+                <button
+                  onClick={role === "user" ? handleUserLogout : handleLogout}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-500 border border-red-200 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut size={15} />
+                  {t("header.logout")}
+                </button>
+              </div>
+            )}
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={toggleMenu}
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Mobile drawer overlay ── */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* ── Mobile drawer ── */}
+      <div
+        className={`md:hidden fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col
+          transition-transform duration-250 ease-in-out
+          ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 shrink-0">
+          <Image src="/logo3.png" alt="Bedwale.in" width={100} height={32} className="object-contain" />
+          <button
+            onClick={() => setIsOpen(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <X size={20} className="text-gray-500" />
+          </button>
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-4 items-center">
-          <Link href="/" className="hover:text-primary">
+        {/* User chip in drawer */}
+        {role && avatarLabel && (
+          <div className="mx-4 mt-4 flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 shrink-0">
+            <span className="w-10 h-10 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center shrink-0">
+              {avatarLabel}
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
+              <p className="text-[11px] text-gray-400 truncate">{data?.user?.email ?? ""}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Nav links */}
+        <nav className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+          <NavLink href="/" onClick={() => setIsOpen(false)} mobile>
             {t("header.home")}
-          </Link>
-          {data?.user?.role === "admin" && (
-            <Link href="/admin/create-pg" className="hover:text-primary">
+          </NavLink>
+
+          {role === "admin" && <>
+            <NavLink href="/admin/create-pg" onClick={() => setIsOpen(false)} mobile>
               {t("header.createPGs")}
-            </Link>
-          )}
-          {data?.user?.role === "admin" && (
-            <Link href="/dashboard" className="hover:text-primary">
+            </NavLink>
+            <NavLink href="/dashboard" onClick={() => setIsOpen(false)} mobile>
               {t("header.managePGs")}
-            </Link>
-          )}
-          {data?.user?.role === "admin" && (
-            <Link href="/admin/requests" className="hover:text-primary">
-              {t("header.viewRequests")}
-            </Link>
-          )}
-          {data?.user?.role === "admin" && (
-            <Link href="/admin/messages" className="hover:text-primary">
-              Messages
-            </Link>
-          )}
+            </NavLink>
+            <NavLink href={requestsHref} onClick={() => setIsOpen(false)} mobile>
+              <span className="flex-1">{t("header.viewRequests")}</span>
+              <Badge count={pendingRequests} />
+            </NavLink>
+            <NavLink href={messagesHref} onClick={() => setIsOpen(false)} mobile>
+              <span className="flex-1">Messages</span>
+              <Badge count={unreadMsgs} />
+            </NavLink>
+          </>}
 
-          {data?.user?.role === "user" && (
-            <Link href="/user/requests" className="hover:text-primary">
-              {t("userDashboard.myRequests")}
-            </Link>
-          )}
-          {data?.user?.role === "user" && (
-            <Link href="/user/messages" className="hover:text-primary">
-              Messages
-            </Link>
-          )}
+          {role === "user" && <>
+            <NavLink href={requestsHref} onClick={() => setIsOpen(false)} mobile>
+              <span className="flex-1">{t("userDashboard.myRequests")}</span>
+              <Badge count={pendingRequests} />
+            </NavLink>
+            <NavLink href={messagesHref} onClick={() => setIsOpen(false)} mobile>
+              <span className="flex-1">Messages</span>
+              <Badge count={unreadMsgs} />
+            </NavLink>
+          </>}
 
-          <Link href="/about" className="hover:text-primary">
+          <NavLink href="/about" onClick={() => setIsOpen(false)} mobile>
             {t("header.about")}
-          </Link>
-          <Link href="/contact" className="hover:text-primary">
+          </NavLink>
+          <NavLink href="/contact" onClick={() => setIsOpen(false)} mobile>
             {t("header.contact")}
-          </Link>
-          {data?.user?.role === "admin" && (
-            <Link href="/admin/profile" className="hover:text-primary">
+          </NavLink>
+
+          {role === "admin" && (
+            <NavLink href="/admin/profile" onClick={() => setIsOpen(false)} mobile>
               {t("header.viewProfile")}
-            </Link>
+            </NavLink>
           )}
-
-          {data?.user?.role === "user" && (
-            <Link href="/user/profile" className="hover:text-primary">
+          {role === "user" && (
+            <NavLink href="/user/profile" onClick={() => setIsOpen(false)} mobile>
               {t("userDashboard.profile")}
-            </Link>
-          )}
-
-          <LanguageSwitcher />
-          {data?.user?.role && (
-            <button
-              onClick={() =>
-                data?.user?.role === "user"
-                  ? handleUserLogout()
-                  : handleLogout()
-              }
-              className="flex items-center gap-2 bg-primary text-primary-foreground cursor-pointer px-4 py-2 rounded transition"
-            >
-              <LogOut size={18} />
-              {t("header.logout")}
-            </button>
+            </NavLink>
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
-        <button onClick={toggleMenu} className="md:hidden flex items-center">
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile Navigation */}
-      {isOpen && (
-        <nav className="md:hidden bg-primary-dark bg-opacity-95 px-4 py-4 space-y-3 flex flex-col">
-          <Link
-            href="/"
-            className="hover:text-primary block py-2"
-            onClick={toggleMenu}
-          >
-            {t("header.home")}
-          </Link>
-          {data?.user?.role === "admin" && (
-            <Link
-              href="/admin/create-pg"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              {t("header.createPGs")}
-            </Link>
-          )}
-          {data?.user?.role === "admin" && (
-            <Link
-              href="/dashboard"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              {t("header.managePGs")}
-            </Link>
-          )}
-          {data?.user?.role === "admin" && (
-            <Link
-              href="/admin/requests"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              {t("header.viewRequests")}
-            </Link>
-          )}
-          {data?.user?.role === "admin" && (
-            <Link
-              href="/admin/messages"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              Messages
-            </Link>
-          )}
-
-          {data?.user?.role === "user" && (
-            <Link
-              href="/user/requests"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              {t("userDashboard.myRequests")}
-            </Link>
-          )}
-          {data?.user?.role === "user" && (
-            <Link
-              href="/user/messages"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              Messages
-            </Link>
-          )}
-
-          <Link
-            href="/about"
-            className="hover:text-primary block py-2"
-            onClick={toggleMenu}
-          >
-            {t("header.about")}
-          </Link>
-          <Link
-            href="/contact"
-            className="hover:text-primary block py-2"
-            onClick={toggleMenu}
-          >
-            {t("header.contact")}
-          </Link>
-          {data?.user?.role === "admin" && (
-            <Link
-              href="/admin/profile"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              {t("header.viewProfile")}
-            </Link>
-          )}
-
-          {data?.user?.role === "user" && (
-            <Link
-              href="/user/profile"
-              className="hover:text-primary block py-2"
-              onClick={toggleMenu}
-            >
-              {t("userDashboard.profile")}
-            </Link>
-          )}
-
-          <div className="py-2">
+        {/* Drawer footer: language + logout */}
+        <div className="px-4 pb-6 pt-3 border-t border-gray-100 space-y-2 shrink-0">
+          <div className="px-1">
             <LanguageSwitcher />
           </div>
-          {data?.user?.role && (
+          {role && (
             <button
-              onClick={() =>
-                data?.user?.role === "user"
-                  ? handleUserLogout()
-                  : handleLogout()
-              }
-              className="flex items-center gap-2 bg-primary text-primary-foreground cursor-pointer px-4 py-2 rounded transition w-full justify-center"
+              onClick={() => {
+                setIsOpen(false);
+                role === "user" ? handleUserLogout() : handleLogout();
+              }}
+              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 border border-red-200 hover:bg-red-50 transition-colors"
             >
-              <LogOut size={18} />
+              <LogOut size={16} />
               {t("header.logout")}
             </button>
           )}
-        </nav>
-      )}
-    </header>
+        </div>
+      </div>
+    </>
   );
 }

@@ -169,7 +169,7 @@ export default function RootLayout({
         <I18nProvider>
           <ClientAuthProvider>
             <Header />
-            <main className="flex-grow pt-17">{children}</main>
+            <main className="flex-grow pt-[64px]">{children}</main>
             <Footer />
           </ClientAuthProvider>
         </I18nProvider>
