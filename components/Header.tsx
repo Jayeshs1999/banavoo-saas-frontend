@@ -11,7 +11,6 @@ import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { logout } = useAuth();
   const { t } = useTranslation();
 
@@ -32,14 +31,14 @@ export default function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-background text-foreground shadow-md">
       <div className="container mx-auto px-4 py-[17px] flex justify-between items-center">
-        <div className="flex gap-2 justify-center items-center cursor-pointer" 
-        onClick={(e)=>{
-          e.stopPropagation();
-          e.preventDefault();
-          if(!data?.user?.role) {
-            router.push("/");
-          }
-        } }
+        <div className="flex gap-2 justify-center items-center cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (!data?.user?.role) {
+              router.push("/");
+            }
+          }}
         >
           <Image
             src={"/logo3.png"}
@@ -49,9 +48,6 @@ export default function Header() {
             className="object-contain"
             priority
           />
-          {/* <Link href="/" className="uncial-antiqua-regular text-[25px] font-bold">
-          {t("header.title")}
-        </Link> */}
         </div>
 
         {/* Desktop Navigation */}
@@ -74,10 +70,20 @@ export default function Header() {
               {t("header.viewRequests")}
             </Link>
           )}
+          {data?.user?.role === "admin" && (
+            <Link href="/admin/messages" className="hover:text-primary">
+              Messages
+            </Link>
+          )}
 
           {data?.user?.role === "user" && (
             <Link href="/user/requests" className="hover:text-primary">
               {t("userDashboard.myRequests")}
+            </Link>
+          )}
+          {data?.user?.role === "user" && (
+            <Link href="/user/messages" className="hover:text-primary">
+              Messages
             </Link>
           )}
 
@@ -158,6 +164,15 @@ export default function Header() {
               {t("header.viewRequests")}
             </Link>
           )}
+          {data?.user?.role === "admin" && (
+            <Link
+              href="/admin/messages"
+              className="hover:text-primary block py-2"
+              onClick={toggleMenu}
+            >
+              Messages
+            </Link>
+          )}
 
           {data?.user?.role === "user" && (
             <Link
@@ -166,6 +181,15 @@ export default function Header() {
               onClick={toggleMenu}
             >
               {t("userDashboard.myRequests")}
+            </Link>
+          )}
+          {data?.user?.role === "user" && (
+            <Link
+              href="/user/messages"
+              className="hover:text-primary block py-2"
+              onClick={toggleMenu}
+            >
+              Messages
             </Link>
           )}
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components";
 import {
   Card,
@@ -12,6 +13,7 @@ import {
 import { bookingAPI } from "../../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import { MessageSquare } from "lucide-react";
 
 interface Booking {
   _id: string;
@@ -333,7 +335,7 @@ export default function AdminRequests() {
                 )}
 
                 {booking.status === "pending" && (
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-wrap gap-3 sm:flex-row">
                     <Button
                       onClick={() =>
                         handleUpdateStatus(booking._id, "approved")
@@ -358,11 +360,21 @@ export default function AdminRequests() {
                     >
                       View Details
                     </Button>
+                    {/* Chat with tenant */}
+                    <Link href={`/admin/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
+                      >
+                        <MessageSquare size={14} />
+                        Chat with Tenant
+                      </Button>
+                    </Link>
                   </div>
                 )}
 
                 {booking.status !== "pending" && (
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-wrap gap-3 sm:flex-row">
                     <Button
                       variant="outline"
                       onClick={() => setSelectedBooking(booking)}
@@ -370,6 +382,16 @@ export default function AdminRequests() {
                     >
                       View Details
                     </Button>
+                    {/* Chat with tenant */}
+                    <Link href={`/admin/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
+                      >
+                        <MessageSquare size={14} />
+                        Chat with Tenant
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </CardContent>
