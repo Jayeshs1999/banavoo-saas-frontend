@@ -20,25 +20,43 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default:
-      "Bedwale.in - Book bed online and Manage PG Accommodations with Ease",
+      "Bedwale.in - Find & Book PG Accommodation Online | Pune & India",
     template: "%s | Bedwale.in",
   },
   description:
-    "Find and book your bed online. Bedwale.in connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
+    "Find and book PG rooms, shared beds and dormitories near you. Bedwale.in connects students and working professionals with affordable PG accommodation in Pune, Mumbai and across India. PG owners — manage rooms, beds and payments online.",
   keywords: [
+    // Core
     "PG accommodation",
     "paying guest",
-    "student housing",
-    "PG management",
-    "room sharing",
-    "accommodation finder",
-    "PG near me",
-    "student housing India",
-    "online bed booking",
+    "book PG online",
     "book bed online",
-    "book my bed",
-    "bed booking",
-    "online bed",
+    "PG near me",
+    // City-specific
+    "PG in Pune",
+    "PG in Mumbai",
+    "PG Kothrud",
+    "PG Hadapsar",
+    "PG near Fergusson College Pune",
+    "PG near SIT Pune",
+    // Audience
+    "student housing India",
+    "PG for working professionals",
+    "girls PG Pune",
+    "boys PG Pune",
+    // Budget
+    "cheap PG Pune",
+    "affordable PG under 5000",
+    // Dormitory / hostel
+    "dormitory near Pune university",
+    "hostel for working professionals Pune",
+    // PG owner tools
+    "PG management software India",
+    "online PG billing system",
+    "manage PG tenants app",
+    // General
+    "room sharing",
+    "bed booking India",
   ],
   authors: [{ name: "Jayesh Sevatkar" }],
   creator: "Bedwale.in",
@@ -48,17 +66,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://www.sthals.in",
-    title: "Bedwale.in - PG Accommodation Management",
+    url: "https://www.bedwale.in",
+    title: "Bedwale.in - Find & Book PG Accommodation Online",
     description:
-      "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
+      "Find and book PG rooms, shared beds and dormitories near you. Affordable PG accommodation for students and working professionals across India.",
     siteName: "Bedwale.in",
     images: [
       {
-        url: "/logo3.png",
+        url: "https://www.bedwale.in/logo3.png",
         width: 1200,
         height: 630,
-        alt: "Bedwale.in - Book Bed Online or Manage PG Accommodations with Ease",
+        alt: "Bedwale.in - Find and Book PG Accommodation Online",
       },
     ],
   },
@@ -66,14 +84,14 @@ export const metadata: Metadata = {
   // Twitter
   twitter: {
     card: "summary_large_image",
-    title: "Bedwale.in - ",
+    title: "Bedwale.in - Find & Book PG Accommodation Online",
     description:
-      "Find and manage PG accommodations with ease. Quality accommodations for students and professionals.",
-    images: ["/logo3.png"],
-    creator: "@sthals_in",
+      "Find and book PG rooms, shared beds and dormitories near you. Affordable PG for students and professionals across India.",
+    images: ["https://www.bedwale.in/logo3.png"],
+    creator: "@bedwale_in",
   },
 
-  // Additional meta tags
+  // Robots
   robots: {
     index: true,
     follow: true,
@@ -86,15 +104,15 @@ export const metadata: Metadata = {
     },
   },
 
-  // Verification tags (optional - remove if not needed)
+  // Verification — replace with real codes from Google/Bing Search Console
+  // See: https://search.google.com/search-console  (copy the "content" value from the meta tag)
   verification: {
-    google: "your-google-verification-code",
-    yandex: "your-yandex-verification-code",
+    google: "YNB6glhaxjWTiuV4WzthwSxT7QVcEa3ehAZPOckjnFI",
   },
 
   // Canonical URL
   alternates: {
-    canonical: "https://www.sthals.in",
+    canonical: "https://www.bedwale.in",
   },
 
   // Icons
@@ -107,13 +125,6 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    other: [
-      {
-        rel: "mask-icon",
-        url: "/safari-pinned-tab.svg",
-        color: "#000000",
-      },
-    ],
   },
 
   // Theme color
@@ -123,16 +134,14 @@ export const metadata: Metadata = {
   ],
 
   // Application name
-  applicationName: "STHALS.IN",
+  applicationName: "Bedwale.in",
 
-  // Additional structured data can be added here
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "STHALS.IN",
+    "apple-mobile-web-app-title": "Bedwale.in",
     "format-detection": "telephone=no",
     "msapplication-TileColor": "#da532c",
-    "msapplication-config": "/browserconfig.xml",
   },
 };
 

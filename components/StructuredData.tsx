@@ -1,11 +1,9 @@
-import Script from "next/script";
-
 interface StructuredDataProps {
   type: "Organization" | "WebSite" | "LocalBusiness";
-  data: any;
+  data?: Record<string, unknown>;
 }
 
-export default function StructuredData({ type, data }: StructuredDataProps) {
+export default function StructuredData({ type }: StructuredDataProps) {
   const getStructuredData = () => {
     switch (type) {
       case "Organization":
@@ -13,16 +11,15 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "Bedwale.in",
-          alternateName: "PGWala",
-          url: "https://www.sthals.in",
-          logo: "https://www.sthals.in/logo3.png",
+          url: "https://www.bedwale.in",
+          logo: "https://www.bedwale.in/logo3.png",
           description:
-            "Find and manage PG accommodations with ease. STHALS.IN connects students and professionals with quality PG accommodations while empowering PG owners with powerful management tools.",
-          foundingDate: "2026",
+            "Bedwale.in connects students and professionals with quality PG accommodations across India, while empowering PG owners with powerful management tools.",
+          foundingDate: "2025",
           sameAs: [
-            "https://www.facebook.com/sthals.in",
-            "https://www.instagram.com/sthals.in",
-            "https://twitter.com/sthals_in",
+            "https://www.facebook.com/bedwale.in",
+            "https://www.instagram.com/bedwale.in",
+            "https://twitter.com/bedwale_in",
           ],
           contactPoint: {
             "@type": "ContactPoint",
@@ -44,11 +41,11 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         return {
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "STHALS.IN",
-          url: "https://www.sthals.in",
+          name: "Bedwale.in",
+          url: "https://www.bedwale.in",
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://www.sthals.in/search?q={search_term_string}",
+            target: "https://www.bedwale.in/search?q={search_term_string}",
             "query-input": "required name=search_term_string",
           },
         };
@@ -57,19 +54,19 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         return {
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
-          name: "STHALS.IN",
+          name: "Bedwale.in",
           description:
-            "PG accommodation management platform connecting students and professionals with quality accommodations.",
-          url: "https://www.sthals.in",
-          logo: "https://www.sthals.in/logo3.png",
-          image: "https://www.sthals.in/logo3.png",
-          priceRange: "$$",
+            "PG accommodation platform connecting students and professionals with quality PG rooms and beds across Pune and India.",
+          url: "https://www.bedwale.in",
+          logo: "https://www.bedwale.in/logo3.png",
+          image: "https://www.bedwale.in/logo3.png",
+          priceRange: "₹₹",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "123 PG Street",
-            addressLocality: "City",
-            addressRegion: "State",
-            postalCode: "123456",
+            streetAddress: "Anil Sadan, Gokhalenagar",
+            addressLocality: "Pune",
+            addressRegion: "Maharashtra",
+            postalCode: "411016",
             addressCountry: "IN",
           },
           contactPoint: {
@@ -78,11 +75,11 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
             contactType: "Customer Support",
             availableLanguage: ["English", "Hindi"],
           },
-          openingHours: ["Mo-Su 09:00-18:00"],
+          openingHours: ["Mo-Su 09:00-21:00"],
           sameAs: [
-            "https://www.facebook.com/sthals.in",
-            "https://www.instagram.com/sthals.in",
-            "https://twitter.com/sthals_in",
+            "https://www.facebook.com/bedwale.in",
+            "https://www.instagram.com/bedwale.in",
+            "https://twitter.com/bedwale_in",
           ],
         };
 
@@ -98,12 +95,10 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
   }
 
   return (
-    <Script
+    <script
       id={`structured-data-${type}`}
       type="application/ld+json"
-      strategy="afterInteractive"
-    >
-      {JSON.stringify(structuredData)}
-    </Script>
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+    />
   );
 }
