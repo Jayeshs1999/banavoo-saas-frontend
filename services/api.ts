@@ -142,6 +142,20 @@ export const authAPI = {
     });
   },
 
+  forgotPassword: async (email: string) => {
+    return apiRequest('/admins/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  resetPassword: async (email: string, otp: string, newPassword: string) => {
+    return apiRequest('/admins/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword }),
+    });
+  },
+
   logout: async () => {
     // Clear token from localStorage
     if (typeof window !== 'undefined') {
@@ -191,6 +205,34 @@ export const userAPI = {
     return apiRequest('/users/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  },
+
+  sendEmailOtp: async (email: string) => {
+    return apiRequest('/users/send-email-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  verifyEmailOtp: async (email: string, otp: string) => {
+    return apiRequest('/users/verify-email-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  },
+
+  forgotPassword: async (email: string) => {
+    return apiRequest('/users/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  resetPassword: async (email: string, otp: string, newPassword: string) => {
+    return apiRequest('/users/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword }),
     });
   },
 
