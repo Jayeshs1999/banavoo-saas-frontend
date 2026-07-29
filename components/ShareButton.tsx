@@ -32,7 +32,7 @@ export default function ShareButton({
   const baseUrl =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://sthals.in";
+      : "https://bedwale.in";
   const pgUrl = `${baseUrl}/pg/${pgId}`;
 
   // Generate share text

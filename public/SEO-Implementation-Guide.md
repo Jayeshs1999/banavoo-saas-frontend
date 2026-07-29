@@ -1,8 +1,8 @@
-# SEO Implementation Guide for STHALS.IN
+# SEO Implementation Guide for Bedwale.in
 
 ## Overview
 
-This document outlines the comprehensive SEO and social media optimization implemented for your STHALS.IN website.
+This document outlines the comprehensive SEO and social media optimization implemented for your Bedwale.in website.
 
 ## ✅ Completed Implementations
 
@@ -20,8 +20,8 @@ This document outlines the comprehensive SEO and social media optimization imple
 
 - **Type**: Website
 - **Locale**: en_IN (India)
-- **URL**: https://www.sthals.in
-- **Title**: "STHALS.IN - PG Accommodation Management"
+- **URL**: https://www.bedwale.in
+- **Title**: "Bedwale.in - PG Accommodation Management"
 - **Description**: Optimized for social sharing
 - **Image**: Uses your logo1.png (1200x630 recommended size)
 
@@ -31,7 +31,7 @@ This document outlines the comprehensive SEO and social media optimization imple
 - **Title**: Consistent with Open Graph
 - **Description**: Optimized for Twitter sharing
 - **Image**: Uses logo1.png
-- **Creator**: @sthals_in
+- **Creator**: @bedwale_in
 
 ### 3. Structured Data (Schema.org)
 
@@ -116,9 +116,9 @@ Update the social media URLs in `StructuredData.tsx`:
 
 ```typescript
 sameAs: [
-  "https://www.facebook.com/sthals.in",
-  "https://www.instagram.com/sthals.in",
-  "https://twitter.com/sthals_in",
+  "https://www.facebook.com/bedwale.in",
+  "https://www.instagram.com/bedwale.in",
+  "https://twitter.com/bedwale_in",
 ];
 ```
 

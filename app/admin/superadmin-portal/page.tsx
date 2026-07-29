@@ -662,7 +662,7 @@ export default function SuperAdminPortal() {
             </div>
             <div className="leading-tight">
               <p className="text-sm font-bold text-gray-900 leading-none">Super Admin</p>
-              <p className="text-[10px] text-gray-400">STHALS.IN</p>
+              <p className="text-[10px] text-gray-400">Bedwale.in</p>
             </div>
           </div>
         </div>
@@ -730,7 +730,7 @@ export default function SuperAdminPortal() {
             })}
           </nav>
           <div className="p-4 border-t border-gray-100">
-            <p className="text-[10px] text-gray-400 text-center">STHALS.IN · Super Admin</p>
+            <p className="text-[10px] text-gray-400 text-center">Bedwale.in · Super Admin</p>
           </div>
         </aside>
 

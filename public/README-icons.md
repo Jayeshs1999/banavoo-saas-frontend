@@ -1,4 +1,4 @@
-# Icon Requirements for STHALS.IN
+# Icon Requirements for Bedwale.in
 
 To complete the SEO and social media optimization, you need to create the following icon files:
 

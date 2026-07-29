@@ -38,7 +38,7 @@
     "months": "months"
   },
   "header": {
-    "title": "STHALS.IN",
+    "title": "Bedwale.in",
     "home": "होम",
     "createPGs": "PG तयार करा",
     "managePGs": "PG व्यवस्थापित करा",
@@ -49,7 +49,7 @@
     "logout": "लॉग आउट"
   },
   "home": {
-    "welcomeTitle": "STHALS.IN मध्ये आपले स्वागत आहे",
+    "welcomeTitle": "Bedwale.in मध्ये आपले स्वागत आहे",
     "welcomeSubtitle": "तुमच PG accommodation शोधा किंवा तुमच्या PG व्यवसायाचे व्यवस्थापन करा",
     "trustedBy": "1000+ PG मालकांद्वारे विश्वासार्ह",
     "adminPortal": {
@@ -237,8 +237,8 @@
     "businessHours": "व्यवसाय तास: सोमवार - शनिवार, सकाळी 9:00 - संध्याकाळी 6:00"
   },
   "about": {
-    "title": "STHALS.IN बद्दल",
-    "description": "STHALS.IN मध्ये आपले स्वागत आहे, तुमचे संपूर्ण PG (Paying Guest) accommodation management solution. आम्ही विद्यार्थी आणि व्यावसायिकांना गुणवत्तापूर्ण PG accommodations सोबत जोडतो तर PG मालकांना शक्तिशाली management tools देऊन सक्षम करतो.",
+    "title": "Bedwale.in बद्दल",
+    "description": "Bedwale.in मध्ये आपले स्वागत आहे, तुमचे संपूर्ण PG (Paying Guest) accommodation management solution. आम्ही विद्यार्थी आणि व्यावसायिकांना गुणवत्तापूर्ण PG accommodations सोबत जोडतो तर PG मालकांना शक्तिशाली management tools देऊन सक्षम करतो.",
     "mission": "आमचे मिशन",
     "missionDesc": "PG accommodation industry मध्ये क्रांती करण्यासाठी एक seamless platform प्रदान करणे जे tenants ला quality living spaces सोबत जोडते तर PG मालकांना modern management tools देऊन efficient operations साठी सक्षम करते.",
     "vision": "आमचे व्हिजन",
@@ -262,7 +262,7 @@
     "techFeature4": "सर्व devices साठी Responsive design",
     "techFeature5": "Scalable backend architecture",
     "commitment": "आमची वचनबद्धता",
-    "commitmentDesc": "STHALS.IN वर, आम्ही प्रत्येकासाठी PG accommodation experience चांगले करण्यासाठी वचनबद्ध आहोत. तुम्ही विद्यार्थी असाल किंवा PG मालक, आमचा platform तुमच्या प्रवासाचे सोपे करण्यासाठी डिझाइन केला आहे. आम्ही accommodation market च्या evolving needs पूर्ण करण्यासाठी आमच्या services मध्ये सतत सुधारणा करत आहोत."
+    "commitmentDesc": "Bedwale.in वर, आम्ही प्रत्येकासाठी PG accommodation experience चांगले करण्यासाठी वचनबद्ध आहोत. तुम्ही विद्यार्थी असाल किंवा PG मालक, आमचा platform तुमच्या प्रवासाचे सोपे करण्यासाठी डिझाइन केला आहे. आम्ही accommodation market च्या evolving needs पूर्ण करण्यासाठी आमच्या services मध्ये सतत सुधारणा करत आहोत."
   },
   "errors": {
     "required": "हे फील्ड आवश्यक आहे",
