@@ -423,6 +423,13 @@ export const bookingAPI = {
     });
   },
 
+  rescheduleBooking: async (bookingId: string, joinDate: string) => {
+    return apiRequest(`/bookings/${bookingId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify({ joinDate }),
+    });
+  },
+
   createPaymentOrder: async (bookingId: string) => {
     return apiRequest(`/bookings/${bookingId}/create-payment-order`, {
       method: 'POST',
