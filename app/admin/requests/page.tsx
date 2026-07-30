@@ -3,29 +3,18 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components";
 import { PageSpinner } from "@/components/Spinner";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../components/Card";
 import { bookingAPI } from "../../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Calendar, BedDouble, User, CreditCard, Clock, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
 interface Booking {
   _id: string;
   pgId: {
     _id: string;
     name: string;
-    location: {
-      subcity: string;
-      city: string;
-      state: string;
-    };
+    location: { subcity: string; city: string; state: string };
   };
   userId: {
     _id: string;
@@ -44,506 +33,402 @@ interface Booking {
   notes: string;
   createdAt: string;
   updatedAt: string;
-  // Enriched fields from backend
   roomName?: string;
   bedNumber?: number | string;
   bedPrice?: number;
   pricingPeriod?: "day" | "month";
-  priceBreakdown?: {
-    unitCount: number;
-    unitLabel: string;
-  };
+  priceBreakdown?: { unitCount: number; unitLabel: string };
 }
+
+const STATUS_CONFIG = {
+  pending:   { label: "Pending",   bg: "bg-amber-50",  text: "text-amber-700",  border: "border-amber-200",  dot: "bg-amber-400"  },
+  approved:  { label: "Approved",  bg: "bg-green-50",  text: "text-green-700",  border: "border-green-200",  dot: "bg-green-500"  },
+  rejected:  { label: "Rejected",  bg: "bg-red-50",    text: "text-red-700",    border: "border-red-200",    dot: "bg-red-500"    },
+  cancelled: { label: "Cancelled", bg: "bg-gray-50",   text: "text-gray-600",   border: "border-gray-200",   dot: "bg-gray-400"   },
+} as const;
 
 export default function AdminRequests() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { currentAdmin } = useAuth();
+  useAuth();
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<
-    "all" | "pending" | "approved" | "rejected"
-  >("pending");
+  const [bookings, setBookings]             = useState<Booking[]>([]);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState<string | null>(null);
+  const [filter, setFilter]                 = useState<"all" | "pending" | "approved" | "rejected">("pending");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [expandedId, setExpandedId]         = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  useEffect(() => { fetchBookings(); }, []);
 
   const fetchBookings = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await bookingAPI.getAdminBookings();
-      if (response.success) {
-        setBookings(response.data);
-      } else {
-        setError("Failed to load booking requests");
-      }
-    } catch (err: any) {
-      console.error("Error fetching bookings:", err);
-      setError(err.message || "Failed to load booking requests");
+      if (response.success) setBookings(response.data);
+      else setError("Failed to load booking requests");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load booking requests");
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const handleUpdateStatus = async (
-    bookingId: string,
-    status: "approved" | "rejected",
-  ) => {
-    if (!confirm(`Are you sure you want to ${status} this booking?`)) {
-      return;
-    }
-
+  const handleUpdateStatus = async (bookingId: string, status: "approved" | "rejected") => {
+    if (!confirm(`Are you sure you want to ${status} this booking?`)) return;
     try {
       const response = await bookingAPI.updateBookingStatus(bookingId, status);
       if (response.success) {
-        // Update local state
-        setBookings(
-          bookings.map((b) => (b._id === bookingId ? { ...b, status } : b)),
-        );
+        setBookings(bookings.map((b) => (b._id === bookingId ? { ...b, status } : b)));
         setSelectedBooking(null);
       } else {
         setError(response.message || `Failed to ${status} booking`);
       }
-    } catch (err: any) {
-      console.error("Error updating booking:", err);
-      setError(err.message || `Failed to ${status} booking`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : `Failed to ${status} booking`);
     }
   };
 
-  const filteredBookings = bookings.filter((booking) => {
-    if (filter === "all") return true;
-    return booking.status === filter;
-  });
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-yellow-100 text-yellow-800";
-    }
-  };
+  const filteredBookings = bookings.filter((b) => filter === "all" || b.status === filter);
 
   const stats = {
-    total: bookings.length,
-    pending: bookings.filter((b) => b.status === "pending").length,
+    total:    bookings.length,
+    pending:  bookings.filter((b) => b.status === "pending").length,
     approved: bookings.filter((b) => b.status === "approved").length,
     rejected: bookings.filter((b) => b.status === "rejected").length,
   };
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
-          <PageSpinner />
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <PageSpinner />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="sm:text-2xl md:text-3xl font-bold">
-            {t("requests.title")}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Manage booking requests for your PGs
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => router.back()}>
-          {t("common.back")}
-        </Button>
-      </div>
+    <div className="min-h-screen ">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold text-blue-600">
-              {stats.total}
-            </div>
-            <div className="text-sm text-gray-600">Total Requests</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold text-yellow-600">
-              {stats.pending}
-            </div>
-            <div className="text-sm text-gray-600">Pending</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold text-green-600">
-              {stats.approved}
-            </div>
-            <div className="text-sm text-gray-600">Approved</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold text-red-600">
-              {stats.rejected}
-            </div>
-            <div className="text-sm text-gray-600">Rejected</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md mb-6">
-          <p>{error}</p>
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              {t("requests.title")}
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">Manage booking requests for your PGs</p>
+          </div>
           <button
-            onClick={fetchBookings}
-            className="mt-2 underline hover:text-red-900"
+            onClick={() => router.back()}
+            className="shrink-0 text-sm px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
           >
-            Retry
+            ← Back
           </button>
         </div>
-      )}
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2 mb-6 border-b">
-        {["all", "pending", "approved", "rejected"].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilter(status as any)}
-            className={`px-4 py-2 font-medium capitalize border-b-2 transition-colors ${
-              filter === status
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            {status}
-          </button>
-        ))}
-      </div>
-
-      {/* Bookings List */}
-      {filteredBookings.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="text-6xl mb-4">📭</div>
-            <h3 className="text-xl font-semibold mb-2">No bookings found</h3>
-            <p className="text-gray-600">
-              {filter === "pending"
-                ? "No pending booking requests at the moment"
-                : `No ${filter} bookings`}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredBookings.map((booking) => (
-            <Card
-              key={booking._id}
-              className="hover:shadow-md transition-shadow"
-            >
-              <CardHeader>
-                <CardTitle className="flex justify-between items-start">
-                  <div>
-                    <span className="text-lg font-semibold">
-                      {booking.pgId?.name || "Unknown PG"}
-                    </span>
-                    <span
-                      className={`ml-3 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(booking.status)}`}
-                    >
-                      {booking.status}
-                    </span>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {formatDate(booking.createdAt)}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Tenant</p>
-                    <p className="font-medium">
-                      {booking.userId?.firstName} {booking.userId?.lastName}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {booking.userId?.email}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {booking.userId?.mobile}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Booking Details</p>
-                    <p className="font-medium">
-                      Room: {booking.roomName || booking.roomId}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Bed: #{booking.bedNumber || booking.bedId}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Join: {formatDate(booking.joinDate)}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Stay: {booking.stayDays}{" "}
-                      {booking.stayDays === 1 ? "day" : "days"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Payment: {booking.paymentMethod}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Amount</p>
-                    <p className="text-xl font-bold text-blue-600">
-                      ₹{booking.totalPrice.toLocaleString()}
-                    </p>
-                    {booking.priceBreakdown && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        (
-                        {booking.bedPrice
-                          ? `₹${booking.bedPrice} × ${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
-                          : `${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`}
-                        )
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {booking.notes && (
-                  <div className="bg-gray-50 p-3 rounded mb-4">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Notes:</span>{" "}
-                      {booking.notes}
-                    </p>
-                  </div>
-                )}
-
-                {/* Expired join date warning — admin cannot approve until user reschedules */}
-                {booking.status === "pending" &&
-                  new Date(booking.joinDate) < new Date() && (
-                    <div className="mb-3 rounded-md border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-                      <span className="font-semibold">⚠ Join date has expired.</span>{" "}
-                      The tenant&apos;s requested join date is in the past. You cannot
-                      approve this booking. Please ask the tenant to reschedule or
-                      cancel it via their Requests page, or reject it below.
-                    </div>
-                  )}
-
-                {booking.status === "pending" && (
-                  <div className="flex flex-wrap gap-3 sm:flex-row">
-                    <Button
-                      onClick={() =>
-                        handleUpdateStatus(booking._id, "approved")
-                      }
-                      disabled={new Date(booking.joinDate) < new Date()}
-                      className="bg-green-600 hover:bg-green-700 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      ✓ Approve
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        handleUpdateStatus(booking._id, "rejected")
-                      }
-                      variant="outline"
-                      className="text-red-600 border-red-300 hover:bg-red-50 w-full sm:w-auto"
-                    >
-                      ✗ Reject
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedBooking(booking)}
-                      className="w-full sm:w-auto"
-                    >
-                      View Details
-                    </Button>
-                    {/* Chat with tenant */}
-                    <Link href={`/admin/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
-                      <Button
-                        variant="outline"
-                        className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
-                      >
-                        <MessageSquare size={14} />
-                        Chat with Tenant
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-
-                {booking.status !== "pending" && (
-                  <div className="flex flex-wrap gap-3 sm:flex-row">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedBooking(booking)}
-                      className="w-full sm:w-auto"
-                    >
-                      View Details
-                    </Button>
-                    {/* Chat with tenant */}
-                    <Link href={`/admin/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
-                      <Button
-                        variant="outline"
-                        className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
-                      >
-                        <MessageSquare size={14} />
-                        Chat with Tenant
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        {/* ── Stats Grid ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "Total",    value: stats.total,    color: "text-primary",      bg: "bg-purple-50",  border: "border-purple-100" },
+            { label: "Pending",  value: stats.pending,  color: "text-amber-600",    bg: "bg-amber-50",   border: "border-amber-100"  },
+            { label: "Approved", value: stats.approved, color: "text-green-600",    bg: "bg-green-50",   border: "border-green-100"  },
+            { label: "Rejected", value: stats.rejected, color: "text-red-600",      bg: "bg-red-50",     border: "border-red-100"    },
+          ].map((s) => (
+            <div key={s.label} className={`${s.bg} border ${s.border} rounded-2xl p-4 flex flex-col gap-1`}>
+              <span className={`text-2xl sm:text-3xl font-bold ${s.color}`}>{s.value}</span>
+              <span className="text-xs text-gray-500 font-medium">{s.label}</span>
+            </div>
           ))}
         </div>
-      )}
 
-      {/* Booking Detail Modal */}
-      {selectedBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>Booking Details</span>
-                <button
-                  onClick={() => setSelectedBooking(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+        {/* ── Error ── */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <div>
+              <p>{error}</p>
+              <button onClick={fetchBookings} className="mt-1 underline font-medium hover:text-red-900">Retry</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Filter Tabs ── */}
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-full sm:w-fit overflow-x-auto">
+          {(["all", "pending", "approved", "rejected"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium capitalize whitespace-nowrap transition-all ${
+                filter === s
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {s}
+              {s !== "all" && (
+                <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                  filter === s ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-500"
+                }`}>
+                  {s === "pending" ? stats.pending : s === "approved" ? stats.approved : stats.rejected}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Booking Cards ── */}
+        {filteredBookings.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-2xl py-16 flex flex-col items-center gap-3 text-center px-4">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-3xl">📭</div>
+            <h3 className="font-semibold text-gray-800">No bookings found</h3>
+            <p className="text-sm text-gray-500">
+              {filter === "pending" ? "No pending requests at the moment" : `No ${filter} bookings`}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredBookings.map((booking) => {
+              const sc = STATUS_CONFIG[booking.status];
+              const isExpired = booking.status === "pending" && new Date(booking.joinDate) < new Date();
+              const isExpanded = expandedId === booking._id;
+
+              return (
+                <div
+                  key={booking._id}
+                  className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
-                  ×
-                </button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">PG Name</p>
-                  <p className="font-medium">{selectedBooking.pgId?.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <span
-                    className={`px-2 py-1 rounded text-sm ${getStatusColor(selectedBooking.status)}`}
-                  >
-                    {selectedBooking.status}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Room</p>
-                  <p className="font-medium">
-                    {selectedBooking.roomName || selectedBooking.roomId}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Bed</p>
-                  <p className="font-medium">
-                    #{selectedBooking.bedNumber || selectedBooking.bedId}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Tenant Name</p>
-                  <p className="font-medium">
-                    {selectedBooking.userId?.firstName}{" "}
-                    {selectedBooking.userId?.lastName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium">{selectedBooking.userId?.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Mobile</p>
-                  <p className="font-medium">
-                    {selectedBooking.userId?.mobile}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Join Date</p>
-                  <p className="font-medium">
-                    {formatDate(selectedBooking.joinDate)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Stay Duration</p>
-                  <p className="font-medium">{selectedBooking.stayDays} days</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Total Amount</p>
-                  <p className="font-bold text-lg text-blue-600">
-                    ₹{selectedBooking.totalPrice.toLocaleString()}
-                  </p>
-                  {selectedBooking.priceBreakdown && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      (
-                      {selectedBooking.bedPrice
-                        ? `₹${selectedBooking.bedPrice} × ${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
-                        : `${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`}
-                      )
-                    </p>
+                  {/* ── Card Top ── */}
+                  <div className="p-4 sm:p-5">
+
+                    {/* Row 1: PG name + status + date */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <span className="font-semibold text-gray-900 text-base truncate">
+                          {booking.pgId?.name || "Unknown PG"}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${sc.bg} ${sc.text} ${sc.border}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                          {sc.label}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{fmt(booking.createdAt)}</span>
+                    </div>
+
+                    {/* Row 2: key info chips */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <InfoChip icon={<User size={12} />}
+                        text={`${booking.userId?.firstName} ${booking.userId?.lastName}`} />
+                      <InfoChip icon={<BedDouble size={12} />}
+                        text={`${booking.roomName || "Room"} · Bed #${booking.bedNumber || booking.bedId}`} />
+                      <InfoChip icon={<Calendar size={12} />}
+                        text={`Join ${fmt(booking.joinDate)}`} />
+                      <InfoChip icon={<Clock size={12} />}
+                        text={`${booking.stayDays} ${booking.stayDays === 1 ? "day" : "days"}`} />
+                      <InfoChip icon={<CreditCard size={12} />}
+                        text={`₹${booking.totalPrice.toLocaleString()} · ${booking.paymentMethod}`}
+                        highlight />
+                    </div>
+
+                    {/* Expired warning */}
+                    {isExpired && (
+                      <div className="mb-3 flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5 text-xs text-orange-800">
+                        <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                        <span><strong>Join date expired.</strong> Ask the tenant to reschedule, or reject below.</span>
+                      </div>
+                    )}
+
+                    {/* Notes */}
+                    {booking.notes && (
+                      <div className="mb-3 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-xs text-gray-600">
+                        <span className="font-medium text-gray-700">Note: </span>{booking.notes}
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {booking.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateStatus(booking._id, "approved")}
+                            disabled={isExpired}
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            ✓ Approve
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStatus(booking._id, "rejected")}
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium transition-colors"
+                          >
+                            ✗ Reject
+                          </button>
+                        </>
+                      )}
+                      <Link
+                        href={`/admin/chat?bookingId=${booking._id}`}
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 text-sm font-medium transition-colors"
+                      >
+                        <MessageSquare size={14} />
+                        Chat
+                      </Link>
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : booking._id)}
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium transition-colors"
+                      >
+                        Details
+                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ── Expanded Details ── */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 bg-gray-50 px-4 sm:px-5 py-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+                        <DetailRow label="PG Name"       value={booking.pgId?.name} />
+                        <DetailRow label="Location"      value={[booking.pgId?.location?.subcity, booking.pgId?.location?.city].filter(Boolean).join(", ") || "—"} />
+                        <DetailRow label="Tenant"        value={`${booking.userId?.firstName} ${booking.userId?.lastName}`} />
+                        <DetailRow label="Email"         value={booking.userId?.email} small />
+                        <DetailRow label="Mobile"        value={booking.userId?.mobile} />
+                        <DetailRow label="Room"          value={booking.roomName || booking.roomId} />
+                        <DetailRow label="Bed"           value={`#${booking.bedNumber || booking.bedId}`} />
+                        <DetailRow label="Join Date"     value={fmt(booking.joinDate)} />
+                        <DetailRow label="Stay"          value={`${booking.stayDays} days`} />
+                        <DetailRow label="Payment"       value={booking.paymentMethod} capitalize />
+                        <DetailRow label="Requested on"  value={fmt(booking.createdAt)} />
+                        <DetailRow
+                          label="Total"
+                          value={`₹${booking.totalPrice.toLocaleString()}`}
+                          sub={booking.priceBreakdown
+                            ? booking.bedPrice
+                              ? `₹${booking.bedPrice} × ${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
+                              : `${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
+                            : undefined}
+                          highlight
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Payment Method</p>
-                  <p className="font-medium capitalize">
-                    {selectedBooking.paymentMethod}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Requested On</p>
-                  <p className="font-medium">
-                    {formatDate(selectedBooking.createdAt)}
-                  </p>
-                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Detail Modal (kept for backward compat, triggered from selectedBooking) ── */}
+      {selectedBooking && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+          onClick={() => setSelectedBooking(null)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* modal handle (mobile) */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
+            </div>
+            <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-gray-100">
+              <h2 className="font-semibold text-gray-900">Booking Details</h2>
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <DetailRow label="PG Name"      value={selectedBooking.pgId?.name} />
+                <DetailRow label="Status"       value={STATUS_CONFIG[selectedBooking.status].label} />
+                <DetailRow label="Room"         value={selectedBooking.roomName || selectedBooking.roomId} />
+                <DetailRow label="Bed"          value={`#${selectedBooking.bedNumber || selectedBooking.bedId}`} />
+                <DetailRow label="Tenant"       value={`${selectedBooking.userId?.firstName} ${selectedBooking.userId?.lastName}`} />
+                <DetailRow label="Email"        value={selectedBooking.userId?.email} small />
+                <DetailRow label="Mobile"       value={selectedBooking.userId?.mobile} />
+                <DetailRow label="Join Date"    value={fmt(selectedBooking.joinDate)} />
+                <DetailRow label="Stay"         value={`${selectedBooking.stayDays} days`} />
+                <DetailRow label="Payment"      value={selectedBooking.paymentMethod} capitalize />
+                <DetailRow label="Requested on" value={fmt(selectedBooking.createdAt)} />
+                <DetailRow
+                  label="Total"
+                  value={`₹${selectedBooking.totalPrice.toLocaleString()}`}
+                  sub={selectedBooking.priceBreakdown
+                    ? selectedBooking.bedPrice
+                      ? `₹${selectedBooking.bedPrice} × ${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
+                      : `${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
+                    : undefined}
+                  highlight
+                />
               </div>
 
               {selectedBooking.notes && (
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Notes:</span>{" "}
-                    {selectedBooking.notes}
-                  </p>
+                <div className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-600">
+                  <span className="font-medium text-gray-700">Notes: </span>{selectedBooking.notes}
                 </div>
               )}
 
               {selectedBooking.status === "pending" && (
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    onClick={() => {
-                      handleUpdateStatus(selectedBooking._id, "approved");
-                    }}
-                    className="bg-green-600 hover:bg-green-700 flex-1"
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => handleUpdateStatus(selectedBooking._id, "approved")}
+                    className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors"
                   >
-                    Approve Booking
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      handleUpdateStatus(selectedBooking._id, "rejected");
-                    }}
-                    variant="outline"
-                    className="text-red-600 border-red-300 hover:bg-red-50 flex-1"
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleUpdateStatus(selectedBooking._id, "rejected")}
+                    className="flex-1 py-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold transition-colors"
                   >
-                    Reject Booking
-                  </Button>
+                    Reject
+                  </button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Small reusable sub-components ─────────────────────── */
+
+function InfoChip({ icon, text, highlight = false }: { icon: React.ReactNode; text: string; highlight?: boolean }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium ${
+      highlight
+        ? "bg-primary/8 text-primary border border-primary/15"
+        : "bg-gray-100 text-gray-600"
+    }`}>
+      {icon}
+      {text}
+    </span>
+  );
+}
+
+function DetailRow({
+  label, value, sub, highlight = false, small = false, capitalize = false,
+}: {
+  label: string;
+  value?: string;
+  sub?: string;
+  highlight?: boolean;
+  small?: boolean;
+  capitalize?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+      <p className={`font-medium leading-snug ${highlight ? "text-primary" : "text-gray-800"} ${small ? "text-xs" : "text-sm"} ${capitalize ? "capitalize" : ""}`}>
+        {value || "—"}
+      </p>
+      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
     </div>
   );
 }
