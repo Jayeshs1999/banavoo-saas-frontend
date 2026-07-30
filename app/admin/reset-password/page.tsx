@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authAPI } from "../../../services/api";
+import Spinner from "@/components/Spinner";
 
 const INPUT =
   "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder:text-gray-400";
@@ -292,7 +293,7 @@ function ResetPasswordForm() {
                   className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm">
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <Spinner size="sm" variant="white" />
                       Resetting…
                     </span>
                   ) : "Reset Password →"}
@@ -332,7 +333,7 @@ export default function AdminResetPassword() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
+        <Spinner size="lg" />
       </div>
     }>
       <ResetPasswordForm />

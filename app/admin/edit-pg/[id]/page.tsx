@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components";
+import { PageSpinner } from "@/components/Spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import StateDropdown from "@/components/StateDropdown";
 import { PG, Room, Amenities } from "../../../../types";
@@ -389,7 +390,7 @@ export default function EditPG() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <PageSpinner />
         </div>
       </div>
     );

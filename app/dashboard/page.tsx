@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageSpinner } from "@/components/Spinner";
 import {
   Button,
   Card,
@@ -83,7 +84,7 @@ export default function Dashboard() {
 
         {loading ? (
           <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <PageSpinner />
           </div>
         ) : pgs.length === 0 ? (
           <div className="text-center py-12 text-gray-500">

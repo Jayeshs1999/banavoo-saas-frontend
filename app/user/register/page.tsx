@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import StateDropdown from "@/components/StateDropdown";
+import Spinner from "@/components/Spinner";
 import { useAuth } from "../../context/AuthContext";
 
 /* ── Schema ── */
@@ -330,7 +331,7 @@ export default function UserRegister() {
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <Spinner size="sm" variant="white" />
                       Creating account…
                     </span>
                   ) : "Create Account"}

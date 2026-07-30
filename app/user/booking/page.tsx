@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components";
+import Spinner from "@/components/Spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { useAuth } from "../../context/AuthContext";
 import { pgAPI, bookingAPI } from "../../../services/api";
@@ -45,15 +46,6 @@ function loadRazorpayScript(): Promise<boolean> {
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
-}
-
-function Spinner({ size = "lg" }: { size?: "sm" | "lg" }) {
-  const dim = size === "sm" ? "h-6 w-6" : "h-10 w-10";
-  return (
-    <div
-      className={`animate-spin rounded-full ${dim} border-2 border-gray-200 border-t-primary`}
-    />
-  );
 }
 
 function BookingForm() {
@@ -346,7 +338,7 @@ function BookingForm() {
                 : t("booking.waitingForApproval")}
             </p>
             <p className="text-sm text-gray-400 flex items-center justify-center gap-1.5">
-              <Spinner size="sm" />
+              <Spinner size="md" />
               {t("booking.redirecting")}…
             </p>
           </CardContent>
@@ -758,7 +750,7 @@ function BookingForm() {
                   >
                     {submitting ? (
                       <span className="flex items-center justify-center gap-2">
-                        <Spinner size="sm" />
+                        <Spinner size="md" />
                         {paymentMethod === "online"
                           ? "Opening Payment…"
                           : t("booking.submitting")}
@@ -789,7 +781,7 @@ export default function UserBooking() {
     <Suspense
       fallback={
         <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-primary" />
+          <Spinner size="xl" />
         </div>
       }
     >

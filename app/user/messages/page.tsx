@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { chatAPI } from "@/services/api";
+import { PageSpinner } from "@/components/Spinner";
 
 interface Conversation {
   bookingId: string;
@@ -52,7 +53,7 @@ export default function UserMessagesPage() {
 
       {loading && (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
+          <PageSpinner />
         </div>
       )}
 

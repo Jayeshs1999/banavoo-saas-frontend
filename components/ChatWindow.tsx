@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Spinner from "@/components/Spinner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { chatAPI } from "@/services/api";
@@ -122,7 +123,7 @@ export default function ChatWindow({ bookingId, myRole, backHref }: ChatWindowPr
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -245,7 +246,7 @@ export default function ChatWindow({ bookingId, myRole, backHref }: ChatWindowPr
           className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {sending ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <Spinner size="sm" variant="white" />
           ) : (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

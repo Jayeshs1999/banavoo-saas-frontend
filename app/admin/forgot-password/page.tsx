@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { authAPI } from "../../../services/api";
+import Spinner from "@/components/Spinner";
 
 const INPUT =
   "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder:text-gray-400";
@@ -107,7 +108,7 @@ export default function AdminForgotPassword() {
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <Spinner size="sm" variant="white" />
                       Sending code…
                     </span>
                   ) : "Send Reset Code →"}

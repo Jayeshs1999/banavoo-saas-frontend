@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ChatWindow from "@/components/ChatWindow";
+import { PageSpinner } from "@/components/Spinner";
 
 function ChatPage() {
   const params = useSearchParams();
@@ -33,7 +34,7 @@ export default function AdminChatPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
+        <PageSpinner />
       </div>
     }>
       <ChatPage />

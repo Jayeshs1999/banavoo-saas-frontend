@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components";
+import { PageSpinner } from "@/components/Spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { useAuth } from "../../../context/AuthContext";
 import { bookingAPI, pgAPI } from "../../../../services/api";
@@ -150,7 +151,7 @@ export default function BookingDetails() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+          <PageSpinner />
         </div>
       </div>
     );

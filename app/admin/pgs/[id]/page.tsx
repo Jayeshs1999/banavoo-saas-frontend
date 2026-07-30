@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { Button, ShareButton } from "@/components";
+import { PageSpinner } from "@/components/Spinner";
 import ImageViewer from "@/components/ImageViewer";
 import { useAuth } from "@/app/context/AuthContext";
 import { pgAPI } from "@/services/api";
@@ -154,7 +155,7 @@ export default function PGDetails() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <PageSpinner />
         </div>
       </div>
     );
@@ -249,7 +250,7 @@ export default function PGDetails() {
             }`}
           >
             {privacyLoading ? (
-              <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <Spinner size="sm" variant="current" />
             ) : pg.isPrivate ? (
               "🔒 Private — Make Public"
             ) : (

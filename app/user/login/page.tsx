@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@/app/context/AuthContext";
+import Spinner from "@/components/Spinner";
 
 /* ── Schema ── */
 const loginSchema = z.object({
@@ -145,7 +146,7 @@ export default function UserLogin() {
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <Spinner size="sm" variant="white" />
                   Signing in…
                 </span>
               ) : "Sign In"}

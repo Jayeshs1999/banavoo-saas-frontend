@@ -7,6 +7,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { superAdminAPI } from "@/services/api";
+import Spinner, { PageSpinner } from "@/components/Spinner";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CONSTANTS
@@ -108,14 +109,6 @@ function useServerTable<TRow, TExtra = undefined>(
 /* ─────────────────────────────────────────────────────────────────────────────
    UI ATOMS
 ───────────────────────────────────────────────────────────────────────────── */
-function Spinner() {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
-    </div>
-  );
-}
-
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14">
@@ -216,7 +209,7 @@ function TableWrapper({
         <p className="text-xs text-gray-400 shrink-0">
           {loading ? (
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-3 h-3 border border-gray-300 border-t-primary rounded-full animate-spin" />
+              <Spinner size="xs" />
               Loading…
             </span>
           ) : (
@@ -244,7 +237,7 @@ function TableWrapper({
             {error ? (
               <tr><td colSpan={columns.length}><ErrorState message={error} onRetry={onRetry} /></td></tr>
             ) : loading ? (
-              <tr><td colSpan={columns.length}><Spinner /></td></tr>
+              <tr><td colSpan={columns.length}><PageSpinner /></td></tr>
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="text-center py-12 text-sm text-gray-400">
@@ -412,7 +405,7 @@ export default function SuperAdminPortal() {
 
   /* OVERVIEW */
   const renderOverview = () => {
-    if (dashLoading) return <Spinner />;
+    if (dashLoading) return <PageSpinner />;
     if (dashError)   return <ErrorState message={dashError} onRetry={fetchDash} />;
     if (!dashData)   return null;
 
@@ -545,7 +538,7 @@ export default function SuperAdminPortal() {
               className="pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg w-52 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
           </div>
-          {locLoading && <span className="text-xs text-gray-400 flex items-center gap-1.5"><span className="w-3 h-3 border border-gray-300 border-t-primary rounded-full animate-spin" />Searching…</span>}
+          {locLoading && <span className="text-xs text-gray-400 flex items-center gap-1.5"><Spinner size="xs" />Searching…</span>}
         </div>
 
         {locError ? <ErrorState message={locError} onRetry={() => fetchLocations(debouncedLocSearch)} /> : (
@@ -560,7 +553,7 @@ export default function SuperAdminPortal() {
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {locLoading ? (
-                  <tr><td colSpan={8}><Spinner /></td></tr>
+                  <tr><td colSpan={8}><PageSpinner /></td></tr>
                 ) : flat.length === 0 ? (
                   <tr><td colSpan={8} className="text-center py-12 text-sm text-gray-400">{locSearch ? `No results for "${locSearch}"` : "No location data."}</td></tr>
                 ) : (
