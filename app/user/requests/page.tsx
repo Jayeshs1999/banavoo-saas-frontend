@@ -55,6 +55,9 @@ export default function UserRequests() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null);
+  const [newJoinDate, setNewJoinDate] = useState<string>("");
+  const [rescheduleError, setRescheduleError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -84,6 +87,42 @@ export default function UserRequests() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const isJoinDateExpired = (joinDate: string) => {
+    return new Date(joinDate) < new Date();
+  };
+
+  const todayStr = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1); // min selectable date is tomorrow
+    return d.toISOString().split("T")[0];
+  };
+
+  const handleReschedule = async (bookingId: string) => {
+    if (!newJoinDate) {
+      setRescheduleError("Please select a new join date.");
+      return;
+    }
+    setRescheduleError(null);
+    try {
+      const response = await bookingAPI.rescheduleBooking(bookingId, newJoinDate);
+      if (response.success) {
+        setBookings(
+          bookings.map((b) =>
+            b._id === bookingId
+              ? { ...b, joinDate: response.data.joinDate, totalPrice: response.data.totalPrice }
+              : b,
+          ),
+        );
+        setReschedulingId(null);
+        setNewJoinDate("");
+      } else {
+        setRescheduleError(response.message || "Failed to reschedule booking");
+      }
+    } catch (err: any) {
+      setRescheduleError(err.message || "Failed to reschedule booking");
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -299,6 +338,55 @@ export default function UserRequests() {
                   </div>
                 )}
 
+                {/* Expired join date warning banner */}
+                {booking.status === "pending" &&
+                  isJoinDateExpired(booking.joinDate) && (
+                    <div className="mb-3 rounded-md border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                      <span className="font-semibold">⚠ Join date has passed.</span>{" "}
+                      Your requested join date is in the past and the admin cannot
+                      approve this booking. Please reschedule it to a future date or
+                      cancel it.
+                    </div>
+                  )}
+
+                {/* Reschedule inline form */}
+                {reschedulingId === booking._id && (
+                  <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 p-4">
+                    <p className="mb-2 text-sm font-semibold text-blue-800">
+                      Select a new join date:
+                    </p>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <input
+                        type="date"
+                        min={todayStr()}
+                        value={newJoinDate}
+                        onChange={(e) => setNewJoinDate(e.target.value)}
+                        className="rounded border border-blue-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => handleReschedule(booking._id)}
+                      >
+                        Confirm Reschedule
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setReschedulingId(null);
+                          setNewJoinDate("");
+                          setRescheduleError(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    {rescheduleError && (
+                      <p className="mt-2 text-xs text-red-600">{rescheduleError}</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-3 pt-4 border-t sm:flex-row sm:justify-between sm:items-center">
                    <p className="text-sm text-gray-500">
                      {t("userRequests.requestedOn")}:{" "}
@@ -313,6 +401,21 @@ export default function UserRequests() {
                      >
                        {t("common.view")}
                      </Button>
+                     {booking.status === "pending" &&
+                       isJoinDateExpired(booking.joinDate) &&
+                       reschedulingId !== booking._id && (
+                         <Button
+                           size="sm"
+                           className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white"
+                           onClick={() => {
+                             setReschedulingId(booking._id);
+                             setNewJoinDate("");
+                             setRescheduleError(null);
+                           }}
+                         >
+                           📅 Reschedule
+                         </Button>
+                       )}
                      {booking.status === "pending" && (
                        <Button
                          variant="outline"
@@ -323,8 +426,10 @@ export default function UserRequests() {
                          {t("userRequests.cancel")}
                        </Button>
                      )}
-                     {(booking.status === "pending" ||
-                       booking.status === "approved") && (
+                     {/* Call Admin — hide when pending booking's join date has expired */}
+                     {(booking.status === "approved" ||
+                       (booking.status === "pending" &&
+                         !isJoinDateExpired(booking.joinDate))) && (
                        <Button
                          size="sm"
                          className="w-full sm:w-auto"
@@ -337,17 +442,22 @@ export default function UserRequests() {
                          {t("userRequests.callAdmin")}
                        </Button>
                      )}
-                     {/* Chat with PG Owner button — always visible */}
-                     <Link href={`/user/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
-                       <Button
-                         size="sm"
-                         variant="outline"
-                         className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
-                       >
-                         <MessageSquare size={14} />
-                         Chat with Owner
-                       </Button>
-                     </Link>
+                     {/* Chat with Owner — hide when pending booking's join date has expired */}
+                     {!(
+                       booking.status === "pending" &&
+                       isJoinDateExpired(booking.joinDate)
+                     ) && (
+                       <Link href={`/user/chat?bookingId=${booking._id}`} className="w-full sm:w-auto">
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className="w-full flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
+                         >
+                           <MessageSquare size={14} />
+                           Chat with Owner
+                         </Button>
+                       </Link>
+                     )}
                    </div>
                  </div>
               </CardContent>

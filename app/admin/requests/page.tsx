@@ -334,13 +334,25 @@ export default function AdminRequests() {
                   </div>
                 )}
 
+                {/* Expired join date warning — admin cannot approve until user reschedules */}
+                {booking.status === "pending" &&
+                  new Date(booking.joinDate) < new Date() && (
+                    <div className="mb-3 rounded-md border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                      <span className="font-semibold">⚠ Join date has expired.</span>{" "}
+                      The tenant&apos;s requested join date is in the past. You cannot
+                      approve this booking. Please ask the tenant to reschedule or
+                      cancel it via their Requests page, or reject it below.
+                    </div>
+                  )}
+
                 {booking.status === "pending" && (
                   <div className="flex flex-wrap gap-3 sm:flex-row">
                     <Button
                       onClick={() =>
                         handleUpdateStatus(booking._id, "approved")
                       }
-                      className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                      disabled={new Date(booking.joinDate) < new Date()}
+                      className="bg-green-600 hover:bg-green-700 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       ✓ Approve
                     </Button>
