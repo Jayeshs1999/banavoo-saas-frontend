@@ -76,7 +76,7 @@ export default function AdminLogin() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-sm font-bold">PG</div>
-            <span className="text-lg font-bold text-gray-800">BedWale.in Admin</span>
+            <span className="text-lg font-bold text-gray-800">PG/Dormitory Owner Login</span>
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Sign in to your account</h2>

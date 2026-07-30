@@ -79,7 +79,7 @@ export default function UserLogin() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white text-lg">🏠</div>
-            <span className="text-lg font-bold text-gray-800">BedWale.in</span>
+            <span className="text-lg font-bold text-gray-800">User Login</span>
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back!</h2>
