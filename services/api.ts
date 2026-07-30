@@ -117,6 +117,21 @@ export const authAPI = {
     });
   },
 
+  /** Pre-registration OTP — no account needed, just checks email is free */
+  sendPreRegOtp: async (email: string) => {
+    return apiRequest('/admins/send-prereg-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  verifyPreRegOtp: async (email: string, otp: string) => {
+    return apiRequest('/admins/verify-prereg-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  },
+
   // Profile Management
   getAdminProfile: async () => {
     return apiRequest('/admins/profile');
@@ -217,6 +232,21 @@ export const userAPI = {
 
   verifyEmailOtp: async (email: string, otp: string) => {
     return apiRequest('/users/verify-email-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  },
+
+  /** Pre-registration OTP — no account needed, just checks email is free */
+  sendPreRegOtp: async (email: string) => {
+    return apiRequest('/users/send-prereg-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  verifyPreRegOtp: async (email: string, otp: string) => {
+    return apiRequest('/users/verify-prereg-otp', {
       method: 'POST',
       body: JSON.stringify({ email, otp }),
     });

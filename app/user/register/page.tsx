@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,7 @@ import * as z from "zod";
 import StateDropdown from "@/components/StateDropdown";
 import Spinner from "@/components/Spinner";
 import { useAuth } from "../../context/AuthContext";
+import { Mail, CheckCircle, ShieldCheck } from "lucide-react";
 
 /* ── Schema ── */
 const registerSchema = z
@@ -77,10 +78,64 @@ function Stepper({ step }: { step: number }) {
   );
 }
 
+/* ── OTP input ── */
+function OtpInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const refs = Array.from({ length: 6 }, () => React.useRef<HTMLInputElement>(null));
+
+  const handleKey = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (value[i]) {
+        onChange(value.slice(0, i) + value.slice(i + 1));
+      } else if (i > 0) {
+        refs[i - 1].current?.focus();
+        onChange(value.slice(0, i - 1) + value.slice(i));
+      }
+    }
+  };
+
+  const handleChange = (i: number, ch: string) => {
+    const digit = ch.replace(/\D/g, "").slice(-1);
+    if (!digit) return;
+    const next = value.slice(0, i) + digit + value.slice(i + 1);
+    onChange(next);
+    if (i < 5) refs[i + 1].current?.focus();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted) { onChange(pasted); refs[Math.min(pasted.length, 5)].current?.focus(); }
+  };
+
+  return (
+    <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <input
+          key={i} ref={refs[i]} type="text" inputMode="numeric" maxLength={1}
+          value={value[i] || ""}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKey(i, e)}
+          onFocus={(e) => e.target.select()}
+          className={`w-10 h-11 text-center text-lg font-bold border-2 rounded-xl focus:outline-none transition-colors bg-white text-gray-900 ${
+            value[i] ? "border-green-500" : "border-gray-200"
+          } focus:border-green-500`}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ── Main ── */
 export default function UserRegister() {
   const router = useRouter();
-  const { registerUser, loading, error: authError, clearError } = useAuth();
+  const {
+    registerUser,
+    sendUserPreRegOtp,
+    verifyUserPreRegOtp,
+    loading,
+    error: authError,
+    clearError,
+  } = useAuth();
 
   const [step,          setStep]          = useState(0);
   const [selectedState, setSelectedState] = useState("");
@@ -88,26 +143,89 @@ export default function UserRegister() {
   const [showConfirm,   setShowConfirm]   = useState(false);
   const [submitError,   setSubmitError]   = useState("");
 
-  const { register, handleSubmit, setValue, trigger, formState: { errors } } =
-    useForm<RegisterForm>({ resolver: zodResolver(registerSchema) });
+  // Email OTP state
+  const [emailVerified,  setEmailVerified]  = useState(false);
+  const [otpSent,        setOtpSent]        = useState(false);
+  const [otpSending,     setOtpSending]     = useState(false);
+  const [otp,            setOtp]            = useState("");
+  const [otpError,       setOtpError]       = useState("");
+  const [otpVerifying,   setOtpVerifying]   = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  /* Step field groups */
+  const {
+    register, handleSubmit, setValue, trigger, watch,
+    formState: { errors },
+  } = useForm<RegisterForm>({ resolver: zodResolver(registerSchema) });
+
+  const emailValue = watch("email") || "";
+
+  /* ── Step field groups ── */
   const STEP_FIELDS = [
     ["firstName", "lastName", "email", "mobile", "area", "landmark", "city", "pincode", "state"] as const,
     ["password", "confirmPassword"] as const,
   ];
 
-  const goNext = async () => {
-    const valid = await trigger(STEP_FIELDS[step] as Parameters<typeof trigger>[0]);
-    if (valid) setStep(s => s + 1);
+  /* ── Resend cooldown ── */
+  const startCooldown = () => {
+    setResendCooldown(60);
+    const id = setInterval(() => {
+      setResendCooldown((c) => { if (c <= 1) { clearInterval(id); return 0; } return c - 1; });
+    }, 1000);
   };
-  const goBack = () => setStep(s => s - 1);
 
+  /* ── Send OTP ── */
+  const handleSendOtp = async () => {
+    const valid = await trigger("email");
+    if (!valid) return;
+
+    setOtpError("");
+    setOtp("");
+    setOtpSending(true);
+    clearError();
+    await sendUserPreRegOtp(emailValue);
+    setOtpSending(false);
+
+    if (!authError) {
+      setOtpSent(true);
+      startCooldown();
+    } else {
+      setOtpError(authError || "Failed to send OTP");
+    }
+  };
+
+  /* ── Verify OTP ── */
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) { setOtpError("Enter the 6-digit code"); return; }
+    setOtpError("");
+    setOtpVerifying(true);
+    const ok = await verifyUserPreRegOtp(emailValue, otp);
+    setOtpVerifying(false);
+    if (ok) {
+      setEmailVerified(true);
+      setOtpSent(false);
+    } else {
+      setOtpError(authError || "Invalid or expired OTP. Try again.");
+    }
+  };
+
+  /* ── Step navigation ── */
+  const goNext = async () => {
+    if (step === 0 && !emailVerified) {
+      setOtpError("Please verify your email before continuing.");
+      return;
+    }
+    const valid = await trigger(STEP_FIELDS[step] as Parameters<typeof trigger>[0]);
+    if (valid) setStep((s) => s + 1);
+  };
+
+  const goBack = () => setStep((s) => s - 1);
+
+  /* ── Final submit ── */
   const onSubmit = async (data: RegisterForm) => {
+    if (!emailVerified) { setSubmitError("Email verification required."); return; }
     clearError();
     setSubmitError("");
     try {
-      // Flatten structured address fields into a single string for the backend
       const address = `${data.area}, ${data.landmark}, ${data.city} - ${data.pincode}, ${data.state}`;
       const success = await registerUser({
         firstName: data.firstName,
@@ -128,7 +246,7 @@ export default function UserRegister() {
     }
   };
 
-  const displayError = submitError || authError || "";
+  const displayError = submitError || "";
 
   return (
     <div className="min-h-screen flex">
@@ -147,11 +265,10 @@ export default function UserRegister() {
           </p>
         </div>
 
-        {/* How it works */}
         <div className="space-y-4">
-          <p className="text-sm font-semibold text-green-200 uppercase tracking-wide">It takes 2 steps</p>
+          <p className="text-sm font-semibold text-green-200 uppercase tracking-wide">How it works</p>
           {[
-            { n: "1", t: "Fill in your contact & home address" },
+            { n: "1", t: "Enter your details & verify your email" },
             { n: "2", t: "Set a secure password & you're in" },
           ].map(({ n, t }) => (
             <div key={n} className="flex items-center gap-3 text-sm text-green-100">
@@ -178,11 +295,11 @@ export default function UserRegister() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-            {/* ── Step 0: Personal details + address ── */}
+            {/* ── Step 0: Personal details + email verify ── */}
             {step === 0 && (
               <>
                 <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-3 text-sm text-green-800 mb-2">
-                  Tell us who you are and where you currently live.
+                  Tell us who you are. You must verify your email before proceeding.
                 </div>
 
                 {/* Name row */}
@@ -194,10 +311,6 @@ export default function UserRegister() {
                     <input {...register("lastName")} type="text" placeholder="Sharma" className={INPUT} />
                   </F>
                 </div>
-
-                <F label="Email Address" error={errors.email?.message}>
-                  <input {...register("email")} type="email" placeholder="you@example.com" autoComplete="email" className={INPUT} />
-                </F>
 
                 <F label="Mobile Number" error={errors.mobile?.message}>
                   <div className="relative">
@@ -211,6 +324,90 @@ export default function UserRegister() {
                     />
                   </div>
                 </F>
+
+                {/* ── Email + inline OTP verify ── */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+
+                  {emailVerified ? (
+                    <div className="flex items-center gap-2 px-4 py-2.5 border border-green-300 bg-green-50 rounded-lg">
+                      <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                      <span className="text-sm text-green-700 font-medium">{emailValue}</span>
+                      <span className="ml-auto text-xs text-green-600 font-semibold">Verified ✓</span>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        {...register("email")}
+                        type="email"
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        disabled={otpSent}
+                        className={`${INPUT} flex-1 disabled:bg-gray-50 disabled:text-gray-500`}
+                      />
+                      <button
+                        type="button"
+                        onClick={otpSent ? undefined : handleSendOtp}
+                        disabled={otpSending || otpSent}
+                        className="shrink-0 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg transition-colors"
+                      >
+                        {otpSending ? <Spinner size="sm" variant="white" /> : "Send OTP"}
+                      </button>
+                    </div>
+                  )}
+                  {errors.email && !emailVerified && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                  )}
+
+                  {/* OTP entry panel */}
+                  {otpSent && !emailVerified && (
+                    <div className="mt-3 p-4 bg-green-50 border border-green-100 rounded-xl space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <Mail className="w-4 h-4 shrink-0" />
+                        <span>Enter the 6-digit code sent to <strong>{emailValue}</strong></span>
+                      </div>
+
+                      <OtpInput value={otp} onChange={setOtp} />
+
+                      {otpError && <p className="text-red-600 text-xs text-center">⚠️ {otpError}</p>}
+
+                      <button
+                        type="button"
+                        onClick={handleVerifyOtp}
+                        disabled={otpVerifying || otp.length !== 6}
+                        className="w-full py-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        {otpVerifying
+                          ? <><Spinner size="sm" variant="white" /> Verifying…</>
+                          : <><CheckCircle size={14} /> Confirm Code</>
+                        }
+                      </button>
+
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <button
+                          type="button"
+                          onClick={() => { setOtpSent(false); setOtp(""); setOtpError(""); }}
+                          className="hover:underline text-gray-400"
+                        >
+                          ← Change email
+                        </button>
+                        {resendCooldown > 0 ? (
+                          <span className="text-gray-400">Resend in {resendCooldown}s</span>
+                        ) : (
+                          <button type="button" onClick={handleSendOtp} disabled={otpSending}
+                            className="text-green-600 font-medium hover:underline disabled:opacity-60">
+                            {otpSending ? "Sending…" : "Resend code"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Nudge if Next is clicked without verifying */}
+                  {otpError === "Please verify your email before continuing." && (
+                    <p className="text-red-600 text-xs mt-1">⚠️ {otpError}</p>
+                  )}
+                </div>
 
                 {/* Address section */}
                 <div className="pt-1">

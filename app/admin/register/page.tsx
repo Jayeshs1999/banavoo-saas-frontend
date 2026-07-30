@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,7 @@ import * as z from "zod";
 import StateDropdown from "@/components/StateDropdown";
 import Spinner from "@/components/Spinner";
 import { useAuth } from "../../context/AuthContext";
+import { Mail, CheckCircle, ShieldCheck } from "lucide-react";
 
 /* ── Schema ─────────────────────────────────────────────────────────────── */
 const registerSchema = z
@@ -35,7 +36,10 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>;
 
 /* ── Step definitions ───────────────────────────────────────────────────── */
-const STEPS = ["PG Details", "Your Address", "Set Password"];
+// Step 0: PG + Contact (includes email OTP inline)
+// Step 1: Address
+// Step 2: Password → submit → dashboard
+const STEPS = ["PG & Verify Email", "Your Address", "Set Password"];
 
 /* ── Shared input style ─────────────────────────────────────────────────── */
 const INPUT =
@@ -79,64 +83,164 @@ function Stepper({ step }: { step: number }) {
   );
 }
 
+/* ── 6-box OTP input ─────────────────────────────────────────────── */
+function OtpInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const refs = Array.from({ length: 6 }, () => React.useRef<HTMLInputElement>(null));
+
+  const handleKey = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (value[i]) {
+        onChange(value.slice(0, i) + value.slice(i + 1));
+      } else if (i > 0) {
+        refs[i - 1].current?.focus();
+        onChange(value.slice(0, i - 1) + value.slice(i));
+      }
+    }
+  };
+
+  const handleChange = (i: number, ch: string) => {
+    const digit = ch.replace(/\D/g, "").slice(-1);
+    if (!digit) return;
+    const next = value.slice(0, i) + digit + value.slice(i + 1);
+    onChange(next);
+    if (i < 5) refs[i + 1].current?.focus();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted) { onChange(pasted); refs[Math.min(pasted.length, 5)].current?.focus(); }
+  };
+
+  return (
+    <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <input
+          key={i} ref={refs[i]} type="text" inputMode="numeric" maxLength={1}
+          value={value[i] || ""}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKey(i, e)}
+          onFocus={(e) => e.target.select()}
+          className={`w-10 h-11 text-center text-lg font-bold border-2 rounded-xl focus:outline-none transition-colors bg-white text-gray-900 ${
+            value[i] ? "border-blue-500" : "border-gray-200"
+          } focus:border-blue-500`}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ── Main ────────────────────────────────────────────────────────────────── */
 export default function AdminRegister() {
   const router = useRouter();
-  const { registerAdmin, loading, error: authError, clearError } = useAuth();
+  const {
+    registerAdmin, sendAdminPreRegOtp, verifyAdminPreRegOtp,
+    loading, error: authError, clearError,
+  } = useAuth();
 
-  const [step,         setStep]         = useState(0);
-  const [selectedState,setSelectedState]= useState("");
-  const [showPw,       setShowPw]       = useState(false);
-  const [showConfirm,  setShowConfirm]  = useState(false);
-  const [submitError,  setSubmitError]  = useState("");
+  const [step,          setStep]          = useState(0);
+  const [selectedState, setSelectedState] = useState("");
+  const [showPw,        setShowPw]        = useState(false);
+  const [showConfirm,   setShowConfirm]   = useState(false);
+  const [submitError,   setSubmitError]   = useState("");
+
+  // Email OTP state
+  const [emailVerified,  setEmailVerified]  = useState(false);
+  const [otpSent,        setOtpSent]        = useState(false);
+  const [otpSending,     setOtpSending]     = useState(false);
+  const [otp,            setOtp]            = useState("");
+  const [otpError,       setOtpError]       = useState("");
+  const [otpVerifying,   setOtpVerifying]   = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const {
-    register,
-    handleSubmit,
-    setValue,
-    trigger,
+    register, handleSubmit, setValue, trigger, watch,
     formState: { errors },
   } = useForm<RegisterForm>({ resolver: zodResolver(registerSchema) });
 
-  /* ── Step navigation ── */
+  const emailValue = watch("email") || "";
+
+  /* ── Step field groups (step 0 excludes email — already verified inline) ── */
   const STEP_FIELDS = [
     ["pgName", "ownerName", "mobile", "email"] as const,
     ["address"] as const,
     ["password", "confirmPassword"] as const,
   ];
 
+  /* ── Resend cooldown timer ── */
+  const startCooldown = () => {
+    setResendCooldown(60);
+    const id = setInterval(() => {
+      setResendCooldown((c) => { if (c <= 1) { clearInterval(id); return 0; } return c - 1; });
+    }, 1000);
+  };
+
+  /* ── Send OTP to entered email ── */
+  const handleSendOtp = async () => {
+    // Validate email field first
+    const valid = await trigger("email");
+    if (!valid) return;
+
+    setOtpError("");
+    setOtp("");
+    setOtpSending(true);
+    clearError();
+    await sendAdminPreRegOtp(emailValue);
+    setOtpSending(false);
+
+    if (!authError) {
+      setOtpSent(true);
+      startCooldown();
+    } else {
+      setOtpError(authError || "Failed to send OTP");
+    }
+  };
+
+  /* ── Verify OTP ── */
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) { setOtpError("Enter the 6-digit code"); return; }
+    setOtpError("");
+    setOtpVerifying(true);
+    const ok = await verifyAdminPreRegOtp(emailValue, otp);
+    setOtpVerifying(false);
+    if (ok) {
+      setEmailVerified(true);
+      setOtpSent(false);
+    } else {
+      setOtpError(authError || "Invalid or expired OTP. Try again.");
+    }
+  };
+
+  /* ── Step navigation ── */
   const goNext = async () => {
+    if (step === 0 && !emailVerified) {
+      setOtpError("Please verify your email before continuing.");
+      return;
+    }
     const valid = await trigger(STEP_FIELDS[step] as Parameters<typeof trigger>[0]);
     if (valid) setStep((s) => s + 1);
   };
 
   const goBack = () => setStep((s) => s - 1);
 
-  /* ── Submit ── */
+  /* ── Final submit ── */
   const onSubmit = async (data: RegisterForm) => {
+    if (!emailVerified) { setSubmitError("Email verification required."); return; }
     clearError();
     setSubmitError("");
     try {
       const success = await registerAdmin({
-        pgName:    data.pgName,
-        ownerName: data.ownerName,
-        mobile:    data.mobile,
-        email:     data.email,
-        address:   data.address,
-        password:  data.password,
-        role: "admin",
+        pgName: data.pgName, ownerName: data.ownerName, mobile: data.mobile,
+        email: data.email, address: data.address, password: data.password, role: "admin",
       });
-      if (success) {
-        router.push("/admin/dashboard");
-      } else {
-        setSubmitError("Registration failed. Please try again.");
-      }
+      if (success) router.push("/admin/dashboard");
+      else setSubmitError("Registration failed. Please try again.");
     } catch (err: unknown) {
       setSubmitError((err as Error).message || "Registration failed");
     }
   };
 
-  const displayError = submitError || authError || "";
+  const displayError = submitError || "";
 
   return (
     <div className="min-h-screen flex">
@@ -154,12 +258,10 @@ export default function AdminRegister() {
             Join hundreds of PG owners who manage their properties, bookings and payments from a single dashboard.
           </p>
         </div>
-
-        {/* Steps summary */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-blue-200 uppercase tracking-wide">How it works</p>
           {[
-            { n: "1", t: "Fill your PG & contact details" },
+            { n: "1", t: "Enter PG details & verify your email" },
             { n: "2", t: "Enter your PG's address" },
             { n: "3", t: "Set a secure password" },
           ].map(({ n, t }) => (
@@ -187,11 +289,11 @@ export default function AdminRegister() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-            {/* ── Step 0: PG + Contact ── */}
+            {/* ── Step 0: PG + Contact + Email verify ── */}
             {step === 0 && (
               <>
                 <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-700 mb-2">
-                  Tell us about your PG and how to contact you.
+                  Tell us about your PG. You must verify your email before proceeding.
                 </div>
 
                 <F label="PG Name" error={errors.pgName?.message}>
@@ -205,19 +307,88 @@ export default function AdminRegister() {
                 <F label="Mobile Number" error={errors.mobile?.message}>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">+91</span>
-                    <input
-                      {...register("mobile")}
-                      type="tel"
-                      maxLength={10}
-                      placeholder="9876543210"
-                      className={`${INPUT} pl-12`}
-                    />
+                    <input {...register("mobile")} type="tel" maxLength={10} placeholder="9876543210" className={`${INPUT} pl-12`} />
                   </div>
                 </F>
 
-                <F label="Email Address" error={errors.email?.message}>
-                  <input {...register("email")} type="email" placeholder="you@yourpg.com" className={INPUT} />
-                </F>
+                {/* ── Email + inline OTP verify ── */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+
+                  {/* Verified badge */}
+                  {emailVerified ? (
+                    <div className="flex items-center gap-2 px-4 py-2.5 border border-green-300 bg-green-50 rounded-lg">
+                      <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                      <span className="text-sm text-green-700 font-medium">{emailValue}</span>
+                      <span className="ml-auto text-xs text-green-600 font-semibold">Verified ✓</span>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        {...register("email")}
+                        type="email"
+                        placeholder="you@yourpg.com"
+                        disabled={otpSent}
+                        className={`${INPUT} flex-1 disabled:bg-gray-50 disabled:text-gray-500`}
+                      />
+                      <button
+                        type="button"
+                        onClick={otpSent ? undefined : handleSendOtp}
+                        disabled={otpSending || otpSent}
+                        className="shrink-0 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg transition-colors"
+                      >
+                        {otpSending ? <Spinner size="sm" variant="white" /> : "Send OTP"}
+                      </button>
+                    </div>
+                  )}
+                  {errors.email && !emailVerified && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                  )}
+
+                  {/* OTP entry panel — shown after OTP sent */}
+                  {otpSent && !emailVerified && (
+                    <div className="mt-3 p-4 bg-blue-50 border border-blue-100 rounded-xl space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-blue-700">
+                        <Mail className="w-4 h-4 shrink-0" />
+                        <span>Enter the 6-digit code sent to <strong>{emailValue}</strong></span>
+                      </div>
+
+                      <OtpInput value={otp} onChange={setOtp} />
+
+                      {otpError && <p className="text-red-600 text-xs text-center">⚠️ {otpError}</p>}
+
+                      <button
+                        type="button"
+                        onClick={handleVerifyOtp}
+                        disabled={otpVerifying || otp.length !== 6}
+                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        {otpVerifying
+                          ? <><Spinner size="sm" variant="white" /> Verifying…</>
+                          : <><CheckCircle size={14} /> Confirm Code</>
+                        }
+                      </button>
+
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <button
+                          type="button"
+                          onClick={() => { setOtpSent(false); setOtp(""); setOtpError(""); }}
+                          className="hover:underline text-gray-400"
+                        >
+                          ← Change email
+                        </button>
+                        {resendCooldown > 0 ? (
+                          <span className="text-gray-400">Resend in {resendCooldown}s</span>
+                        ) : (
+                          <button type="button" onClick={handleSendOtp} disabled={otpSending}
+                            className="text-blue-600 font-medium hover:underline disabled:opacity-60">
+                            {otpSending ? "Sending…" : "Resend code"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
 
@@ -229,21 +400,11 @@ export default function AdminRegister() {
                 </div>
 
                 <F label="Area / Locality" error={errors.address?.area?.message}>
-                  <input
-                    {...register("address.area")}
-                    type="text"
-                    placeholder="e.g. Koregaon Park"
-                    className={INPUT}
-                  />
+                  <input {...register("address.area")} type="text" placeholder="e.g. Koregaon Park" className={INPUT} />
                 </F>
 
                 <F label="Landmark" error={errors.address?.landmark?.message}>
-                  <input
-                    {...register("address.landmark")}
-                    type="text"
-                    placeholder="e.g. Near D-Mart"
-                    className={INPUT}
-                  />
+                  <input {...register("address.landmark")} type="text" placeholder="e.g. Near D-Mart" className={INPUT} />
                 </F>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -251,25 +412,15 @@ export default function AdminRegister() {
                     <input {...register("address.city")} type="text" placeholder="Pune" className={INPUT} />
                   </F>
                   <F label="Pincode" error={errors.address?.pincode?.message}>
-                    <input
-                      {...register("address.pincode")}
-                      type="text"
-                      maxLength={6}
-                      placeholder="411001"
-                      className={INPUT}
-                    />
+                    <input {...register("address.pincode")} type="text" maxLength={6} placeholder="411001" className={INPUT} />
                   </F>
                 </div>
 
                 <F label="State" error={errors.address?.state?.message}>
                   <StateDropdown
                     value={selectedState}
-                    onChange={(val) => {
-                      setSelectedState(val);
-                      setValue("address.state", val, { shouldValidate: true });
-                    }}
-                    placeholder="Select your state"
-                    required
+                    onChange={(val) => { setSelectedState(val); setValue("address.state", val, { shouldValidate: true }); }}
+                    placeholder="Select your state" required
                   />
                 </F>
               </>
@@ -284,12 +435,7 @@ export default function AdminRegister() {
 
                 <F label="Password" error={errors.password?.message}>
                   <div className="relative">
-                    <input
-                      {...register("password")}
-                      type={showPw ? "text" : "password"}
-                      placeholder="Min. 6 characters"
-                      className={`${INPUT} pr-14`}
-                    />
+                    <input {...register("password")} type={showPw ? "text" : "password"} placeholder="Min. 6 characters" className={`${INPUT} pr-14`} />
                     <button type="button" onClick={() => setShowPw(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600 font-medium">
                       {showPw ? "Hide" : "Show"}
@@ -299,12 +445,7 @@ export default function AdminRegister() {
 
                 <F label="Confirm Password" error={errors.confirmPassword?.message}>
                   <div className="relative">
-                    <input
-                      {...register("confirmPassword")}
-                      type={showConfirm ? "text" : "password"}
-                      placeholder="Re-enter password"
-                      className={`${INPUT} pr-14`}
-                    />
+                    <input {...register("confirmPassword")} type={showConfirm ? "text" : "password"} placeholder="Re-enter password" className={`${INPUT} pr-14`} />
                     <button type="button" onClick={() => setShowConfirm(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600 font-medium">
                       {showConfirm ? "Hide" : "Show"}
@@ -312,7 +453,6 @@ export default function AdminRegister() {
                   </div>
                 </F>
 
-                {/* Terms note */}
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
                   By creating an account you agree to our{" "}
                   <span className="text-blue-500 cursor-pointer hover:underline">Terms of Service</span>.
@@ -328,36 +468,26 @@ export default function AdminRegister() {
               </div>
             )}
 
-            {/* ── Navigation buttons ── */}
+            {/* ── Navigation ── */}
             <div className={`flex gap-3 pt-1 ${step > 0 ? "justify-between" : "justify-end"}`}>
               {step > 0 && (
-                <button
-                  type="button"
-                  onClick={goBack}
-                  className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm"
-                >
+                <button type="button" onClick={goBack}
+                  className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm">
                   ← Back
                 </button>
               )}
 
               {step < STEPS.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
-                >
+                <button type="button" onClick={goNext}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm">
                   Next →
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm"
-                >
+                <button type="submit" disabled={loading}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm">
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
-                      <Spinner size="sm" variant="white" />
-                      Creating account…
+                      <Spinner size="sm" variant="white" /> Creating account…
                     </span>
                   ) : "Create Account"}
                 </button>
@@ -365,12 +495,9 @@ export default function AdminRegister() {
             </div>
           </form>
 
-          {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-500">
             Already registered?{" "}
-            <Link href="/admin/login" className="text-blue-600 font-medium hover:underline">
-              Sign in →
-            </Link>
+            <Link href="/admin/login" className="text-blue-600 font-medium hover:underline">Sign in →</Link>
           </p>
           <p className="mt-2 text-center text-xs text-gray-400">
             Looking for a PG?{" "}

@@ -62,6 +62,14 @@ interface AuthContextType {
   sendEmailOtp: (email: string) => Promise<void>;
   verifyEmailOtp: (email: string, otp: string) => Promise<boolean>;
 
+  /** Pre-registration OTP — for admin register flow */
+  sendAdminPreRegOtp: (email: string) => Promise<void>;
+  verifyAdminPreRegOtp: (email: string, otp: string) => Promise<boolean>;
+
+  /** Pre-registration OTP — for user register flow */
+  sendUserPreRegOtp: (email: string) => Promise<void>;
+  verifyUserPreRegOtp: (email: string, otp: string) => Promise<boolean>;
+
   updateCurrentAdmin: (adminData: Partial<PGAdmin>) => void;
   logout: () => void;
   clearError: () => void;
@@ -211,6 +219,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  /* -------------------- PRE-REGISTRATION OTP -------------------- */
+
+  const sendAdminPreRegOtp = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await authAPI.sendPreRegOtp(email);
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyAdminPreRegOtp = async (email: string, otp: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await authAPI.verifyPreRegOtp(email, otp);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Invalid OTP");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendUserPreRegOtp = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await userAPI.sendPreRegOtp(email);
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyUserPreRegOtp = async (email: string, otp: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await userAPI.verifyPreRegOtp(email, otp);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Invalid OTP");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* -------------------- REGISTER -------------------- */
 
   const registerAdmin = async (
@@ -303,6 +365,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         verifyMobileOtp,
         sendEmailOtp,
         verifyEmailOtp,
+        sendAdminPreRegOtp,
+        verifyAdminPreRegOtp,
+        sendUserPreRegOtp,
+        verifyUserPreRegOtp,
         updateCurrentAdmin,
         logout,
         clearError,
