@@ -71,6 +71,7 @@ interface AuthContextType {
   verifyUserPreRegOtp: (email: string, otp: string) => Promise<boolean>;
 
   updateCurrentAdmin: (adminData: Partial<PGAdmin>) => void;
+  updateCurrentUser: (userData: Partial<User>) => void;
   logout: () => void;
   clearError: () => void;
 }
@@ -350,6 +351,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateCurrentUser = (userData: Partial<User>) => {
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...userData };
+      setCurrentUser(updatedUser);
+      setAuthData("user", updatedUser, localStorage.getItem("token") || "");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -370,6 +379,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         sendUserPreRegOtp,
         verifyUserPreRegOtp,
         updateCurrentAdmin,
+        updateCurrentUser,
         logout,
         clearError,
       }}
