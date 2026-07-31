@@ -38,7 +38,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex">
       {/* ── Left panel — branding ── */}
-      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col justify-between bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-10 text-white">
+      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 flex-col justify-between bg-gradient-to-br bg-primary p-10 text-white">
         <div>
           {/* Logo mark */}
           <div className="flex items-center gap-3 mb-12">
@@ -139,7 +139,7 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm"
+              className="w-full py-2.5 bg-primary disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -153,7 +153,7 @@ export default function AdminLogin() {
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-500">
             New PG owner?{" "}
-            <Link href="/admin/register" className="text-blue-600 font-medium hover:underline">
+            <Link href="/admin/register" className="text-primary font-medium hover:underline">
               Register your PG →
             </Link>
           </p>

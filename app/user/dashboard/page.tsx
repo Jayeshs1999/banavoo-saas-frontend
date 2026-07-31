@@ -134,8 +134,8 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-            <svg className="w-16 h-16 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-full h-full bg-gradient-to-br from-green-100 to-teal-100 flex items-center justify-center">
+            <svg className="w-16 h-16 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
@@ -160,7 +160,7 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
       <div className="p-4 flex flex-col flex-1 gap-3">
         {/* Location */}
         <div className="flex items-start gap-1.5 text-sm text-gray-500">
-          <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -174,7 +174,7 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
         {shownAmenities.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {shownAmenities.map((a) => (
-              <span key={a.key} className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">
+              <span key={a.key} className="inline-flex items-center gap-1 text-xs bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full">
                 {a.icon} {a.label}
               </span>
             ))}
@@ -190,7 +190,7 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
           <div>
             <span className="text-xs text-gray-400">from</span>
-            <div className="text-lg font-bold text-blue-600 leading-tight">
+            <div className="text-lg font-bold text-green-600 leading-tight">
               ₹{minPrice.toLocaleString()}
               <span className="text-xs text-gray-400 font-normal ml-0.5">
                 /{pg.structure[0]?.pricingPeriod === "day" ? "day" : "mo"}
@@ -199,7 +199,7 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
           </div>
           <div className="flex flex-col items-end gap-1">
             {pg.onlinePayment && (
-              <span className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 rounded-full">
                 💳 Online Pay
               </span>
             )}
@@ -211,7 +211,7 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
           <button
             onClick={() => onBook(pgId)}
             disabled={availBeds === 0}
-            className="flex-1 py-2 px-3 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 py-2 px-3 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {availBeds === 0 ? "Fully Occupied" : pg.onlinePayment ? "Book Now" : "Send Request"}
           </button>
@@ -399,12 +399,12 @@ export default function UserDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── Hero / Search bar ── */}
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 px-4 py-10">
+      <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-4 py-10">
         <div className="max-w-4xl mx-auto text-center mb-6">
           <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">
             {t("userDashboard.welcome")}, {currentUser.firstName}! 👋
           </h1>
-          <p className="text-blue-200 mt-2 text-base">
+          <p className="text-green-100 mt-2 text-base">
             {t("userDashboard.findYourPerfectPG")}
           </p>
         </div>
@@ -418,7 +418,7 @@ export default function UserDashboard() {
             placeholder="Search by name, city, area…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-10 py-3.5 rounded-xl text-gray-800 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+            className="w-full pl-12 pr-10 py-3.5 rounded-xl text-gray-800 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
           />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">✕</button>
@@ -434,7 +434,7 @@ export default function UserDashboard() {
               onClick={() => setFiltersOpen((v) => !v)}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 filtersOpen || activeFilterCount > 0
-                  ? "bg-blue-600 text-white border-blue-600"
+                  ? "bg-green-600 text-white border-green-600"
                   : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
               }`}
             >
@@ -443,7 +443,7 @@ export default function UserDashboard() {
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="ml-1 bg-white text-blue-600 rounded-full text-xs font-bold w-5 h-5 flex items-center justify-center">
+                <span className="ml-1 bg-white text-green-600 rounded-full text-xs font-bold w-5 h-5 flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -460,7 +460,7 @@ export default function UserDashboard() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -481,13 +481,13 @@ export default function UserDashboard() {
                   placeholder="e.g. Pune"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {allCities.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {allCities.slice(0, 6).map((c) => (
-                      <button key={c} onClick={() => setCity(city === c ? "" : c)}
-                        className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${city === c ? "bg-blue-600 text-white border-blue-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"}`}>
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                 />
+                 {allCities.length > 0 && (
+                   <div className="flex flex-wrap gap-1 mt-1.5">
+                     {allCities.slice(0, 6).map((c) => (
+                       <button key={c} onClick={() => setCity(city === c ? "" : c)}
+                         className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${city === c ? "bg-green-600 text-white border-green-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"}`}>
                         {c}
                       </button>
                     ))}
@@ -503,17 +503,17 @@ export default function UserDashboard() {
                   placeholder="e.g. Kothrud"
                   value={subcity}
                   onChange={(e) => setSubcity(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                 />
+               </div>
 
-              {/* State */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">State</label>
-                <select
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+               {/* State */}
+               <div>
+                 <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">State</label>
+                 <select
+                   value={state}
+                   onChange={(e) => setState(e.target.value)}
+                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">All States</option>
                   {allStates.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -526,11 +526,11 @@ export default function UserDashboard() {
                 <div className="flex gap-2 items-center">
                   <input type="number" placeholder="Min" value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
                   <span className="text-gray-400 flex-shrink-0">–</span>
                   <input type="number" placeholder="Max" value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
                 </div>
               </div>
             </div>
@@ -539,12 +539,12 @@ export default function UserDashboard() {
             <div className="flex flex-wrap gap-4 mb-5">
               <label className="inline-flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={onlyAvail} onChange={(e) => setOnlyAvail(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm text-gray-700 font-medium">Available beds only</span>
-              </label>
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={onlyOnline} onChange={(e) => setOnlyOnline(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                  <span className="text-sm text-gray-700 font-medium">Available beds only</span>
+                </label>
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={onlyOnline} onChange={(e) => setOnlyOnline(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500" />
                 <span className="text-sm text-gray-700 font-medium">Online payment only</span>
               </label>
             </div>
@@ -556,7 +556,7 @@ export default function UserDashboard() {
                 {AMENITY_FILTERS.map((a) => (
                   <button key={a.key} onClick={() => toggleAmen(a.key)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      amenFilters.has(a.key) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                      amenFilters.has(a.key) ? "bg-green-600 text-white border-green-600" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                     }`}>
                     {a.icon} {a.label}
                   </button>
@@ -607,7 +607,7 @@ export default function UserDashboard() {
             <p className="text-gray-400 mt-1">Try adjusting your filters</p>
             {activeFilterCount > 0 && (
               <button onClick={clearAll}
-                className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                className="mt-4 px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
                 Clear all filters
               </button>
             )}
@@ -635,7 +635,7 @@ export default function UserDashboard() {
               /* Bouncing dots — visible only if sentinel is near but fetch hasn't triggered */
               <div className="flex gap-1">
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                  <div key={i} className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
                     style={{ animationDelay: `${i * 0.15}s` }} />
                 ))}
               </div>
@@ -652,9 +652,9 @@ export default function UserDashboard() {
 /* ─── Chip ───────────────────────────────────────────────────────────────── */
 function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">
+    <span className="inline-flex items-center gap-1 text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full">
       {label}
-      <button onClick={onRemove} className="ml-0.5 text-blue-400 hover:text-blue-700 leading-none">✕</button>
+      <button onClick={onRemove} className="ml-0.5 text-green-400 hover:text-green-700 leading-none">✕</button>
     </span>
   );
 }
