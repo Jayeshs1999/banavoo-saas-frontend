@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const publicRoutes = [
   '/about',
   '/contact',
-  '/'
+  '/',
+  '/review',   // review invite pages are token-protected, no auth needed
 ];
 
 // Auth routes (login/register)

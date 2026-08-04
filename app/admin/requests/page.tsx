@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageSpinner } from "@/components/Spinner";
-import { bookingAPI } from "../../../services/api";
+import { bookingAPI, reviewAPI } from "../../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, Calendar, BedDouble, User, CreditCard, Clock, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { MessageSquare, Calendar, BedDouble, User, CreditCard, Clock, ChevronDown, ChevronUp, AlertTriangle, Star } from "lucide-react";
 
 interface Booking {
   _id: string;
@@ -58,6 +58,8 @@ export default function AdminRequests() {
   const [filter, setFilter]                 = useState<"all" | "pending" | "approved" | "rejected">("pending");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [expandedId, setExpandedId]         = useState<string | null>(null);
+  const [inviteSending, setInviteSending]   = useState<string | null>(null);
+  const [inviteSent, setInviteSent]         = useState<Record<string, boolean>>({});
 
   useEffect(() => { fetchBookings(); }, []);
 
@@ -87,6 +89,23 @@ export default function AdminRequests() {
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : `Failed to ${status} booking`);
+    }
+  };
+
+  const handleSendReviewInvite = async (bookingId: string) => {
+    if (!confirm("Send a review invite email to this tenant?")) return;
+    setInviteSending(bookingId);
+    try {
+      const res = await reviewAPI.sendInvite(bookingId);
+      if (res.success) {
+        setInviteSent((prev) => ({ ...prev, [bookingId]: true }));
+      } else {
+        alert(res.message || "Failed to send review invite");
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to send review invite");
+    } finally {
+      setInviteSending(null);
     }
   };
 
@@ -274,6 +293,20 @@ export default function AdminRequests() {
                         <MessageSquare size={14} />
                         Chat
                       </Link>
+                      {booking.status === "approved" && (
+                        <button
+                          onClick={() => handleSendReviewInvite(booking._id)}
+                          disabled={inviteSending === booking._id || inviteSent[booking._id]}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Star size={13} />
+                          {inviteSent[booking._id]
+                            ? "Invite Sent ✓"
+                            : inviteSending === booking._id
+                            ? "Sending…"
+                            : "Review Invite"}
+                        </button>
+                      )}
                       <button
                         onClick={() => setExpandedId(isExpanded ? null : booking._id)}
                         className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium transition-colors"

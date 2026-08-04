@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthData, useAuth } from "../../context/AuthContext";
-import { pgAPI } from "../../../services/api";
+import { pgAPI, reviewAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -108,7 +108,9 @@ function SkeletonCard() {
 }
 
 /* ─── PG Card ────────────────────────────────────────────────────────────── */
-function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
+interface ReviewSummary { avgRating: number; total: number }
+
+function PGCard({ pg, onBook, reviewSummary }: { pg: PG; onBook: (id: string) => void; reviewSummary?: ReviewSummary }) {
   const router = useRouter();
   const availBeds = getAvailableBeds(pg);
   const minPrice  = getMinPrice(pg);
@@ -154,6 +156,13 @@ function PGCard({ pg, onBook }: { pg: PG; onBook: (id: string) => void }) {
         }`}>
           {availBeds > 0 ? `${availBeds} beds free` : "Full"}
         </span>
+        {/* Review badge top-left */}
+        {reviewSummary && reviewSummary.total > 0 && (
+          <span className="absolute top-2 left-2 inline-flex items-center gap-1 text-xs font-semibold bg-black/50 text-white backdrop-blur-sm px-2 py-0.5 rounded-full">
+            ★ {reviewSummary.avgRating.toFixed(1)}
+            <span className="font-normal opacity-80">({reviewSummary.total})</span>
+          </span>
+        )}
       </div>
 
       {/* ── Body ── */}
@@ -255,6 +264,9 @@ export default function UserDashboard() {
   const [loadingMore,setLoadingMore]= useState(false);           // sentinel load
   const [error,      setError]      = useState<string | null>(null);
 
+  /* ── Review summaries keyed by pgId ── */
+  const [reviewMap, setReviewMap] = useState<Record<string, ReviewSummary>>({});
+
   /* ── Quick-filter pills: collected from first page results ── */
   const [allCities, setAllCities]   = useState<string[]>([]);
   const [allStates, setAllStates]   = useState<string[]>([]);
@@ -287,6 +299,28 @@ export default function UserDashboard() {
   }, [search, city, subcity, state, minPrice, maxPrice, onlyAvail, onlyOnline, sortBy, amenFilters]);
 
   /* ──────────────────────────────────────────────────────────────────────── */
+  /*  Fetch review summaries for a batch of PGs (fire-and-forget)            */
+  /* ──────────────────────────────────────────────────────────────────────── */
+  const fetchReviewsForBatch = useCallback(async (pgList: PG[]) => {
+    const results = await Promise.allSettled(
+      pgList.map((p) => reviewAPI.getPGReviews(p._id || p.id!))
+    );
+    setReviewMap((prev) => {
+      const next = { ...prev };
+      pgList.forEach((p, i) => {
+        const r = results[i];
+        if (r.status === "fulfilled" && r.value?.success && r.value.data.total > 0) {
+          next[p._id || p.id!] = {
+            avgRating: r.value.data.avgRating,
+            total: r.value.data.total,
+          };
+        }
+      });
+      return next;
+    });
+  }, []);
+
+  /* ──────────────────────────────────────────────────────────────────────── */
   /*  Fetch page 1 — replaces the current list (called when filters change)  */
   /* ──────────────────────────────────────────────────────────────────────── */
   const fetchPage1 = useCallback(async () => {
@@ -308,6 +342,7 @@ export default function UserDashboard() {
           const merged = [...new Set([...prev, ...res.data.map((p: PG) => p.location?.state).filter(Boolean)])].sort();
           return merged;
         });
+        fetchReviewsForBatch(res.data);
       } else {
         setError("Failed to load PGs");
       }
@@ -316,7 +351,7 @@ export default function UserDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [buildParams]);
+  }, [buildParams, fetchReviewsForBatch]);
 
   /* ──────────────────────────────────────────────────────────────────────── */
   /*  Fetch next page — appends to the current list (called by sentinel)     */
@@ -331,13 +366,14 @@ export default function UserDashboard() {
         setTotal(res.pagination.total);
         setHasMore(res.pagination.hasMore);
         setPage((p) => p + 1);
+        fetchReviewsForBatch(res.data);
       }
     } catch {
       // silently ignore — user can scroll up and back down to retry
     } finally {
       setLoadingMore(false);
     }
-  }, [buildParams, page, hasMore, loadingMore]);
+  }, [buildParams, page, hasMore, loadingMore, fetchReviewsForBatch]);
 
   /* ──────────────────────────────────────────────────────────────────────── */
   /*  Debounce filter changes → fetch page 1                                 */
@@ -618,7 +654,7 @@ export default function UserDashboard() {
         {!loading && pgs.length > 0 && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {pgs.map((pg) => (
-              <PGCard key={pg._id || pg.id} pg={pg} onBook={handleBook} />
+              <PGCard key={pg._id || pg.id} pg={pg} onBook={handleBook} reviewSummary={reviewMap[pg._id || pg.id!]} />
             ))}
           </div>
         )}

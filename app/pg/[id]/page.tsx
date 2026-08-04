@@ -8,7 +8,7 @@ import { Button, ShareButton } from "@/components";
 import { PageSpinner } from "@/components/Spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import ImageViewer from "@/components/ImageViewer";
-import { pgAPI } from "../../../services/api";
+import { pgAPI, reviewAPI } from "../../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
@@ -78,11 +78,28 @@ export default function PGDetails() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Reviews
+  const [reviews, setReviews] = useState<{ reviewerName: string; rating: number; comment: string; submittedAt: string }[]>([]);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+
   useEffect(() => {
     if (pgId) {
       fetchPG();
+      fetchReviews();
     }
   }, [pgId]);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await reviewAPI.getPGReviews(pgId);
+      if (res.success) {
+        setReviews(res.data.reviews);
+        setAvgRating(res.data.avgRating);
+      }
+    } catch {
+      // reviews are non-critical — silently ignore
+    }
+  };
 
   const fetchPG = async () => {
     setLoading(true);
@@ -590,9 +607,48 @@ export default function PGDetails() {
         );
       })()}
 
+      {/* ── Reviews Section ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 mt-2">
+            <span>⭐</span>
+            <span>Guest Reviews</span>
+            {avgRating !== null && (
+              <span className="ml-2 text-sm font-normal text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
+                {avgRating.toFixed(1)} / 5 &nbsp;·&nbsp; {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {reviews.length === 0 ? (
+            <p className="text-gray-400 text-sm">No reviews yet for this PG.</p>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((r, idx) => (
+                <div key={idx} className="border border-gray-100 rounded-xl p-4 bg-gray-50">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-gray-800 text-sm">{r.reviewerName}</span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(r.submittedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
+                  </div>
+                  <div className="flex gap-0.5 mb-2">
+                    {[1,2,3,4,5].map((s) => (
+                      <span key={s} className={s <= r.rating ? "text-amber-400" : "text-gray-200"}>★</span>
+                    ))}
+                  </div>
+                  {r.comment && <p className="text-sm text-gray-600 italic">&ldquo;{r.comment}&rdquo;</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Admin Information */}
       {pg.adminId && (
-        <Card>
+        <Card className="mt-4">
           <CardHeader>
             <CardTitle>{t("pgDetails.adminInfo")}</CardTitle>
           </CardHeader>

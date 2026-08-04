@@ -595,3 +595,53 @@ export const chatAPI = {
   },
 };
 
+
+// Review API
+export const reviewAPI = {
+  // Admin: send a review invite for a booking
+  sendInvite: async (bookingId: string) => {
+    return apiRequest(`/reviews/invite/${bookingId}`, { method: 'POST' });
+  },
+
+  // Public: get review context by token (no auth)
+  getByToken: async (token: string) => {
+    const url = `${API_BASE}/reviews/invite/${token}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Public: submit a review by token (no auth)
+  submit: async (token: string, data: { rating: number; comment?: string }) => {
+    const url = `${API_BASE}/reviews/submit/${token}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Public: get submitted reviews for a PG
+  getPGReviews: async (pgId: string) => {
+    const url = `${API_BASE}/reviews/pg/${pgId}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Admin: get all review invites for this admin's PGs
+  getAdminReviews: async () => {
+    return apiRequest('/reviews/admin');
+  },
+};
