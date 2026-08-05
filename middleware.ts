@@ -5,7 +5,8 @@ const publicRoutes = [
   '/about',
   '/contact',
   '/',
-  '/review',   // review invite pages are token-protected, no auth needed
+  '/review',    // review invite pages are token-protected, no auth needed
+  '/gallery',   // PG owner visit gallery — public to all
 ];
 
 // Auth routes (login/register)

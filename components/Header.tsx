@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { LogOut, Menu, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { getAuthData, useAuth } from "@/app/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -66,12 +66,86 @@ function NavLink({
   );
 }
 
+/* ─── "More" dropdown (desktop, logged-in only) ───────────────────────────── */
+const MORE_ITEMS = [
+  { href: "/about",   label: "About",   icon: "ℹ️" },
+  { href: "/contact", label: "Contact", icon: "✉️" },
+  { href: "/gallery", label: "Gallery", icon: "📸" },
+] as const;
+
+function MoreDropdown() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  const anyActive = MORE_ITEMS.some(
+    (item) => pathname === item.href || pathname?.startsWith(item.href),
+  );
+
+  // close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // close on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`relative flex items-center gap-1 text-sm font-medium transition-colors pb-0.5 select-none ${
+          anyActive
+            ? "text-primary after:absolute after:bottom-[-18px] after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full"
+            : "text-gray-600 hover:text-primary"
+        }`}
+      >
+        More
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute top-[calc(100%+18px)] right-0 w-44 bg-white rounded-2xl border border-gray-200 shadow-xl py-1.5 z-50">
+          {/* arrow pointer */}
+          <div className="absolute -top-1.5 right-4 w-3 h-3 bg-white border-l border-t border-gray-200 rotate-45" />
+          {MORE_ITEMS.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-primary bg-primary/5"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-primary"
+                }`}
+              >
+                <span className="text-base leading-none">{item.icon}</span>
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN HEADER
 ═══════════════════════════════════════════════════════════════════════════ */
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadMsgs, setUnreadMsgs]         = useState(0);
+  const [unreadMsgs, setUnreadMsgs]           = useState(0);
   const [pendingRequests, setPendingRequests] = useState(0);
 
   const { logout } = useAuth();
@@ -82,7 +156,7 @@ export default function Header() {
 
   const toggleMenu = () => setIsOpen((v) => !v);
 
-  const handleLogout = () => { logout(); router.push("/admin/login"); };
+  const handleLogout     = () => { logout(); router.push("/admin/login"); };
   const handleUserLogout = () => { logout(); router.push("/user/login"); };
 
   /* ── poll unread messages ── */
@@ -107,13 +181,11 @@ export default function Header() {
         if (role === "admin") {
           const res = await bookingAPI.getAdminBookings();
           if (!alive) return;
-          const pending = (res.data ?? []).filter((b: { status: string }) => b.status === "pending").length;
-          setPendingRequests(pending);
+          setPendingRequests((res.data ?? []).filter((b: { status: string }) => b.status === "pending").length);
         } else {
           const res = await bookingAPI.getMyBookings();
           if (!alive) return;
-          const pending = (res.data ?? []).filter((b: { status: string }) => b.status === "pending").length;
-          setPendingRequests(pending);
+          setPendingRequests((res.data ?? []).filter((b: { status: string }) => b.status === "pending").length);
         }
       } catch { /* silent */ }
     };
@@ -162,7 +234,7 @@ export default function Header() {
           </div>
 
           {/* ── Desktop nav ── */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-5">
             <NavLink href="/">{t("header.home")}</NavLink>
 
             {role === "admin" && <>
@@ -189,8 +261,17 @@ export default function Header() {
               </NavLink>
             </>}
 
-            <NavLink href="/about">{t("header.about")}</NavLink>
-            <NavLink href="/contact">{t("header.contact")}</NavLink>
+            {/* When logged in → collapse About / Contact / Gallery into "More" dropdown.
+                When not logged in → show them flat (only 3 items, no congestion). */}
+            {role ? (
+              <MoreDropdown />
+            ) : (
+              <>
+                <NavLink href="/about">{t("header.about")}</NavLink>
+                <NavLink href="/contact">{t("header.contact")}</NavLink>
+                <NavLink href="/gallery">📸 Gallery</NavLink>
+              </>
+            )}
 
             {role === "admin" && (
               <NavLink href="/admin/profile">{t("header.viewProfile")}</NavLink>
@@ -214,7 +295,7 @@ export default function Header() {
                   <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0">
                     {avatarLabel}
                   </span>
-                  <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate">
+                  <span className="text-sm font-medium text-gray-700 max-w-[110px] truncate">
                     {displayName}
                   </span>
                 </div>
@@ -278,7 +359,7 @@ export default function Header() {
           </div>
         )}
 
-        {/* Nav links */}
+        {/* Nav links — always flat in the drawer (plenty of room) */}
         <nav className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
           <NavLink href="/" onClick={() => setIsOpen(false)} mobile>
             {t("header.home")}
@@ -312,11 +393,21 @@ export default function Header() {
             </NavLink>
           </>}
 
+          {/* Divider before secondary links */}
+          {role && (
+            <div className="pt-1 pb-0.5">
+              <div className="h-px bg-gray-100" />
+            </div>
+          )}
+
           <NavLink href="/about" onClick={() => setIsOpen(false)} mobile>
             {t("header.about")}
           </NavLink>
           <NavLink href="/contact" onClick={() => setIsOpen(false)} mobile>
             {t("header.contact")}
+          </NavLink>
+          <NavLink href="/gallery" onClick={() => setIsOpen(false)} mobile>
+            📸 Gallery
           </NavLink>
 
           {role === "admin" && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getAuthData, useAuth } from "../../context/AuthContext";
 import { pgAPI, reviewAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
@@ -443,6 +444,14 @@ export default function UserDashboard() {
           <p className="text-green-100 mt-2 text-base">
             {t("userDashboard.findYourPerfectPG")}
           </p>
+          <div className="mt-4">
+            <Link
+              href="/gallery"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white bg-white/15 hover:bg-white/25 border border-white/30 px-4 py-2 rounded-full transition-colors"
+            >
+              📸 View Our PG Owner Visits Gallery
+            </Link>
+          </div>
         </div>
         {/* Global search */}
         <div className="max-w-2xl mx-auto relative">

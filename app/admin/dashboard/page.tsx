@@ -23,6 +23,7 @@ import {
   Plus,
   MessageSquare,
   User,
+  Images,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -184,6 +185,34 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
+            {/* Gallery — view link for all admins */}
+            <Card
+              variant="elevated"
+              className="group hover:shadow-2xl transition-all duration-300"
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle icon={<Images className="w-8 h-8 text-indigo-500" />}>
+                    Gallery
+                  </CardTitle>
+                  <CardBadge variant="secondary">Visit Photos</CardBadge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-6">
+                  View photos from our PG owner field visits across India.
+                </p>
+                <Link href="/admin/gallery">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white shadow-lg group-hover:shadow-xl transition-all duration-300"
+                  >
+                    View Gallery
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             {/* Super Admin Portal */}
             {currentAdmin?.role === "super_admin" && (
               <Card
@@ -206,7 +235,7 @@ export default function AdminDashboard() {
                   <p className="text-gray-600 mb-6">
                     {t("dashboard.superAdminDesc")}
                   </p>
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-4 gap-4">
                     <Link href="/admin/superadmin-portal/admins">
                       <Button
                         variant="outline"
@@ -229,6 +258,14 @@ export default function AdminDashboard() {
                         className="w-full border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white transition-all duration-300"
                       >
                         {t("dashboard.locationStats")}
+                      </Button>
+                    </Link>
+                    <Link href="/admin/gallery">
+                      <Button
+                        variant="outline"
+                        className="w-full border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-500 hover:text-white transition-all duration-300"
+                      >
+                        Manage Gallery
                       </Button>
                     </Link>
                   </div>

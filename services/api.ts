@@ -645,3 +645,44 @@ export const reviewAPI = {
     return apiRequest('/reviews/admin');
   },
 };
+
+// Gallery API
+export const galleryAPI = {
+  // Public: list photos (paginated, optional city filter)
+  getPhotos: async (params: { page?: number; limit?: number; city?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page)  qs.set('page',  String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.city)  qs.set('city',  params.city);
+    const url = `${API_BASE}/gallery${qs.toString() ? '?' + qs : ''}`;
+    const res = await fetch(url);
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Failed to load gallery'); }
+    return res.json();
+  },
+
+  // Public: get distinct cities
+  getCities: async () => {
+    const res = await fetch(`${API_BASE}/gallery/cities`);
+    if (!res.ok) throw new Error('Failed to load cities');
+    return res.json();
+  },
+
+  // Admin: upload a gallery photo (multipart)
+  uploadPhoto: async (formData: FormData) => {
+    const token = typeof window !== 'undefined'
+      ? (localStorage.getItem('token') || sessionStorage.getItem('token'))
+      : null;
+    const res = await fetch(`${API_BASE}/gallery`, {
+      method: 'POST',
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+      body: formData,
+    });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Upload failed'); }
+    return res.json();
+  },
+
+  // Admin: delete a gallery photo
+  deletePhoto: async (id: string) => {
+    return apiRequest(`/gallery/${id}`, { method: 'DELETE' });
+  },
+};
