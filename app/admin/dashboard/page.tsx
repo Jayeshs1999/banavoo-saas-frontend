@@ -186,7 +186,7 @@ export default function AdminDashboard() {
             </Card>
 
             {/* Gallery — view link for all admins */}
-            <Card
+            {/* <Card
               variant="elevated"
               className="group hover:shadow-2xl transition-all duration-300"
             >
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
                   </Button>
                 </Link>
               </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Super Admin Portal */}
             {currentAdmin?.role === "super_admin" && (

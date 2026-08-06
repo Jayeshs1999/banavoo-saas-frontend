@@ -221,7 +221,7 @@ export default function Header() {
           {/* ── Logo ── */}
           <div
             className="flex items-center shrink-0 cursor-pointer"
-            onClick={() => { if (!role) router.push("/"); }}
+            onClick={() => { router.push("/"); }}
           >
             <Image
               src="/logo3.png"
