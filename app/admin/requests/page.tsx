@@ -9,6 +9,16 @@ import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { MessageSquare, Calendar, BedDouble, User, CreditCard, Clock, ChevronDown, ChevronUp, AlertTriangle, Star } from "lucide-react";
 
+interface BedItem {
+  roomId: string;
+  bedId: string;
+  roomName?: string;
+  bedNumber?: number | string;
+  bedPrice?: number;
+  pricingPeriod?: "day" | "month";
+  totalPrice?: number;
+}
+
 interface Booking {
   _id: string;
   pgId: {
@@ -23,8 +33,11 @@ interface Booking {
     email: string;
     mobile: string;
   };
-  roomId: string;
-  bedId: string;
+  /** Multi-bed array (new). Populated for all bookings by the API. */
+  beds?: BedItem[];
+  /** Legacy scalar fields — kept for backward compat */
+  roomId?: string;
+  bedId?: string;
   joinDate: string;
   stayDays: number;
   status: "pending" | "approved" | "rejected" | "cancelled";
@@ -241,8 +254,19 @@ export default function AdminRequests() {
                     <div className="flex flex-wrap gap-2 mb-4">
                       <InfoChip icon={<User size={12} />}
                         text={`${booking.userId?.firstName} ${booking.userId?.lastName}`} />
-                      <InfoChip icon={<BedDouble size={12} />}
-                        text={`${booking.roomName || "Room"} · Bed #${booking.bedNumber || booking.bedId}`} />
+                      {/* Beds: show all if multi-bed, else legacy single */}
+                      {booking.beds && booking.beds.length > 0 ? (
+                        booking.beds.map((b, i) => (
+                          <InfoChip
+                            key={i}
+                            icon={<BedDouble size={12} />}
+                            text={`${b.roomName || "Room"} · Bed #${b.bedNumber || b.bedId}`}
+                          />
+                        ))
+                      ) : (
+                        <InfoChip icon={<BedDouble size={12} />}
+                          text={`${booking.roomName || "Room"} · Bed #${booking.bedNumber || booking.bedId}`} />
+                      )}
                       <InfoChip icon={<Calendar size={12} />}
                         text={`Join ${fmt(booking.joinDate)}`} />
                       <InfoChip icon={<Clock size={12} />}
@@ -321,28 +345,41 @@ export default function AdminRequests() {
                   {isExpanded && (
                     <div className="border-t border-gray-100 bg-gray-50 px-4 sm:px-5 py-4">
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
-                        <DetailRow label="PG Name"       value={booking.pgId?.name} />
-                        <DetailRow label="Location"      value={[booking.pgId?.location?.subcity, booking.pgId?.location?.city].filter(Boolean).join(", ") || "—"} />
-                        <DetailRow label="Tenant"        value={`${booking.userId?.firstName} ${booking.userId?.lastName}`} />
-                        <DetailRow label="Email"         value={booking.userId?.email} small />
-                        <DetailRow label="Mobile"        value={booking.userId?.mobile} />
-                        <DetailRow label="Room"          value={booking.roomName || booking.roomId} />
-                        <DetailRow label="Bed"           value={`#${booking.bedNumber || booking.bedId}`} />
-                        <DetailRow label="Join Date"     value={fmt(booking.joinDate)} />
-                        <DetailRow label="Stay"          value={`${booking.stayDays} days`} />
-                        <DetailRow label="Payment"       value={booking.paymentMethod} capitalize />
-                        <DetailRow label="Requested on"  value={fmt(booking.createdAt)} />
-                        <DetailRow
-                          label="Total"
-                          value={`₹${booking.totalPrice.toLocaleString()}`}
-                          sub={booking.priceBreakdown
-                            ? booking.bedPrice
-                              ? `₹${booking.bedPrice} × ${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
-                              : `${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
-                            : undefined}
-                          highlight
-                        />
-                      </div>
+                          <DetailRow label="PG Name"       value={booking.pgId?.name} />
+                          <DetailRow label="Location"      value={[booking.pgId?.location?.subcity, booking.pgId?.location?.city].filter(Boolean).join(", ") || "—"} />
+                          <DetailRow label="Tenant"        value={`${booking.userId?.firstName} ${booking.userId?.lastName}`} />
+                          <DetailRow label="Email"         value={booking.userId?.email} small />
+                          <DetailRow label="Mobile"        value={booking.userId?.mobile} />
+                          {/* Multi-bed display */}
+                          {booking.beds && booking.beds.length > 0 ? (
+                            booking.beds.map((b, i) => (
+                              <DetailRow
+                                key={i}
+                                label={booking.beds!.length > 1 ? `Bed ${i + 1}` : "Bed"}
+                                value={`${b.roomName || b.roomId} · #${b.bedNumber || b.bedId}`}
+                              />
+                            ))
+                          ) : (
+                            <>
+                              <DetailRow label="Room" value={booking.roomName || booking.roomId} />
+                              <DetailRow label="Bed"  value={`#${booking.bedNumber || booking.bedId}`} />
+                            </>
+                          )}
+                          <DetailRow label="Join Date"     value={fmt(booking.joinDate)} />
+                          <DetailRow label="Stay"          value={`${booking.stayDays} days`} />
+                          <DetailRow label="Payment"       value={booking.paymentMethod} capitalize />
+                          <DetailRow label="Requested on"  value={fmt(booking.createdAt)} />
+                          <DetailRow
+                            label="Total"
+                            value={`₹${booking.totalPrice.toLocaleString()}`}
+                            sub={booking.priceBreakdown
+                              ? booking.bedPrice
+                                ? `₹${booking.bedPrice} × ${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
+                                : `${booking.priceBreakdown.unitCount} ${booking.priceBreakdown.unitLabel}`
+                              : undefined}
+                            highlight
+                          />
+                        </div>
                     </div>
                   )}
                 </div>
@@ -377,28 +414,41 @@ export default function AdminRequests() {
             </div>
             <div className="p-5 space-y-3">
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <DetailRow label="PG Name"      value={selectedBooking.pgId?.name} />
-                <DetailRow label="Status"       value={STATUS_CONFIG[selectedBooking.status].label} />
-                <DetailRow label="Room"         value={selectedBooking.roomName || selectedBooking.roomId} />
-                <DetailRow label="Bed"          value={`#${selectedBooking.bedNumber || selectedBooking.bedId}`} />
-                <DetailRow label="Tenant"       value={`${selectedBooking.userId?.firstName} ${selectedBooking.userId?.lastName}`} />
-                <DetailRow label="Email"        value={selectedBooking.userId?.email} small />
-                <DetailRow label="Mobile"       value={selectedBooking.userId?.mobile} />
-                <DetailRow label="Join Date"    value={fmt(selectedBooking.joinDate)} />
-                <DetailRow label="Stay"         value={`${selectedBooking.stayDays} days`} />
-                <DetailRow label="Payment"      value={selectedBooking.paymentMethod} capitalize />
-                <DetailRow label="Requested on" value={fmt(selectedBooking.createdAt)} />
-                <DetailRow
-                  label="Total"
-                  value={`₹${selectedBooking.totalPrice.toLocaleString()}`}
-                  sub={selectedBooking.priceBreakdown
-                    ? selectedBooking.bedPrice
-                      ? `₹${selectedBooking.bedPrice} × ${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
-                      : `${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
-                    : undefined}
-                  highlight
-                />
-              </div>
+                 <DetailRow label="PG Name"      value={selectedBooking.pgId?.name} />
+                 <DetailRow label="Status"       value={STATUS_CONFIG[selectedBooking.status].label} />
+                 {/* Multi-bed display */}
+                 {selectedBooking.beds && selectedBooking.beds.length > 0 ? (
+                   selectedBooking.beds.map((b, i) => (
+                     <DetailRow
+                       key={i}
+                       label={selectedBooking.beds!.length > 1 ? `Bed ${i + 1}` : "Bed"}
+                       value={`${b.roomName || b.roomId} · #${b.bedNumber || b.bedId}`}
+                     />
+                   ))
+                 ) : (
+                   <>
+                     <DetailRow label="Room" value={selectedBooking.roomName || selectedBooking.roomId} />
+                     <DetailRow label="Bed"  value={`#${selectedBooking.bedNumber || selectedBooking.bedId}`} />
+                   </>
+                 )}
+                 <DetailRow label="Tenant"       value={`${selectedBooking.userId?.firstName} ${selectedBooking.userId?.lastName}`} />
+                 <DetailRow label="Email"        value={selectedBooking.userId?.email} small />
+                 <DetailRow label="Mobile"       value={selectedBooking.userId?.mobile} />
+                 <DetailRow label="Join Date"    value={fmt(selectedBooking.joinDate)} />
+                 <DetailRow label="Stay"         value={`${selectedBooking.stayDays} days`} />
+                 <DetailRow label="Payment"      value={selectedBooking.paymentMethod} capitalize />
+                 <DetailRow label="Requested on" value={fmt(selectedBooking.createdAt)} />
+                 <DetailRow
+                   label="Total"
+                   value={`₹${selectedBooking.totalPrice.toLocaleString()}`}
+                   sub={selectedBooking.priceBreakdown
+                     ? selectedBooking.bedPrice
+                       ? `₹${selectedBooking.bedPrice} × ${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
+                       : `${selectedBooking.priceBreakdown.unitCount} ${selectedBooking.priceBreakdown.unitLabel}`
+                     : undefined}
+                   highlight
+                 />
+               </div>
 
               {selectedBooking.notes && (
                 <div className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-600">

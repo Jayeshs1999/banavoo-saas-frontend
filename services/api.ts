@@ -434,8 +434,11 @@ export const bookingAPI = {
 
   createBooking: async (data: {
     pgId: string;
-    roomId: string;
-    bedId: string;
+    /** Multi-bed: preferred. Pass an array of { roomId, bedId } pairs. */
+    beds?: Array<{ roomId: string; bedId: string }>;
+    /** Legacy single-bed fields — still accepted for backward compat. */
+    roomId?: string;
+    bedId?: string;
     joinDate: string;
     stayDays: number;
     notes?: string;

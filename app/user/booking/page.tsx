@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components";
 import { useAuth } from "../../context/AuthContext";
 import { pgAPI, bookingAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
-import { calculatePrice, calculateDays } from "../../../utils";
+import { calculatePrice } from "../../../utils";
 
 interface PG {
   _id: string;
@@ -34,6 +34,12 @@ interface PG {
     country: string;
     pin: string;
   };
+}
+
+/** A single selected bed entry */
+interface SelectedBed {
+  roomId: string;
+  bedId: string;
 }
 
 // Load Razorpay script dynamically
@@ -64,8 +70,9 @@ function BookingForm() {
   const [success, setSuccess] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const [selectedRoom, setSelectedRoom] = useState<string>(preselectedRoomId);
-  const [selectedBed, setSelectedBed] = useState<string>(preselectedBedId);
+  /** Multi-bed selection: array of { roomId, bedId } */
+  const [selectedBeds, setSelectedBeds] = useState<SelectedBed[]>([]);
+
   const [joinDate, setJoinDate] = useState<string>("");
   // stayDays is always stored in DAYS (what the API expects)
   const [stayDays, setStayDays] = useState<string>("30");
@@ -80,6 +87,7 @@ function BookingForm() {
     } else {
       router.push("/user/dashboard");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pgId]);
 
   const fetchPG = async () => {
@@ -89,18 +97,16 @@ function BookingForm() {
       const response = await pgAPI.getPGPublic(pgId!);
       if (response.success) {
         setPG(response.data);
+        // Pre-select bed if provided in query params
         if (preselectedRoomId && preselectedBedId) {
-          const pgData = response.data;
-          const room = pgData.structure.find(
-            (r: any) => r._id === preselectedRoomId
-          );
+          const pgData = response.data as PG;
+          const room = pgData.structure.find((r) => r._id === preselectedRoomId);
           if (room) {
             const bed = room.beds.find(
-              (b: any) => b._id === preselectedBedId && !b.allocated
+              (b) => b._id === preselectedBedId && !b.allocated,
             );
             if (bed) {
-              setSelectedRoom(preselectedRoomId);
-              setSelectedBed(preselectedBedId);
+              setSelectedBeds([{ roomId: preselectedRoomId, bedId: preselectedBedId }]);
             }
           }
         }
@@ -108,81 +114,102 @@ function BookingForm() {
         setError("Failed to load PG details");
       }
     } catch (err: any) {
-      console.error("Error fetching PG:", err);
       setError(err.message || "Failed to load PG details");
     } finally {
       setLoading(false);
     }
   };
 
-  const getSelectedBedPrice = () => {
-    if (!pg || !selectedRoom || !selectedBed) return 0;
-    const room = pg.structure.find((r) => r._id === selectedRoom);
-    if (!room) return 0;
-    const bed = room.beds.find((b) => b._id === selectedBed);
-    if (!bed) return 0;
-    return bed.price;
+  /** Toggle a bed in/out of the selection */
+  const toggleBed = (roomId: string, bedId: string) => {
+    setSelectedBeds((prev) => {
+      const exists = prev.some((b) => b.roomId === roomId && b.bedId === bedId);
+      if (exists) return prev.filter((b) => !(b.roomId === roomId && b.bedId === bedId));
+      return [...prev, { roomId, bedId }];
+    });
   };
 
-  const getSelectedRoomPricingPeriod = () => {
-    if (!pg || !selectedRoom) return "month";
-    const room = pg.structure.find((r) => r._id === selectedRoom);
-    return room?.pricingPeriod || "month";
+  const isBedSelected = (roomId: string, bedId: string) =>
+    selectedBeds.some((b) => b.roomId === roomId && b.bedId === bedId);
+
+  /** Derive the pricing period from the first selected bed's room (or first room) */
+  const getPricingPeriod = (): "day" | "month" => {
+    if (!pg) return "month";
+    if (selectedBeds.length > 0) {
+      const room = pg.structure.find((r) => r._id === selectedBeds[0].roomId);
+      return room?.pricingPeriod || "month";
+    }
+    return pg.structure[0]?.pricingPeriod || "month";
   };
 
-  // Convert the user-facing input (months or days) to days for the API
   const inputToDays = (value: string, period: "day" | "month"): number => {
     const n = parseInt(value) || 1;
     return period === "month" ? n * 30 : n;
   };
 
-  const pricingPeriod = getSelectedRoomPricingPeriod();
+  const pricingPeriod = getPricingPeriod();
   const isMonthly = pricingPeriod === "month";
-  // Clamp limits: monthly room → 1–12 months; daily room → 1–365 days
   const inputMin = 1;
   const inputMax = isMonthly ? 12 : 365;
   const inputUnit = isMonthly ? "months" : "days";
 
-  const calculateTotal = () => {
-    if (!joinDate || !selectedBed) return 0;
-    const price = getSelectedBedPrice();
+  /** Calculate total price across ALL selected beds */
+  const calculateTotal = (): number => {
+    if (!joinDate || selectedBeds.length === 0 || !pg) return 0;
+    let total = 0;
     const checkInDate = new Date(joinDate);
     const checkOutDate = new Date(checkInDate);
     checkOutDate.setDate(checkOutDate.getDate() + Number(stayDays));
 
-    const { totalPrice } = calculatePrice({
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      price,
-      pricingPeriod,
-    });
-    return totalPrice;
+    for (const sb of selectedBeds) {
+      const room = pg.structure.find((r) => r._id === sb.roomId);
+      const bed = room?.beds.find((b) => b._id === sb.bedId);
+      if (room && bed) {
+        const { totalPrice } = calculatePrice({
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          price: bed.price,
+          pricingPeriod: room.pricingPeriod || "month",
+        });
+        total += totalPrice;
+      }
+    }
+    return total;
   };
 
-  const getBookingBreakdown = () => {
-    if (!joinDate || !selectedBed) return null;
+  /** Build human-readable price breakdown per bed */
+  const getBreakdown = (): string | null => {
+    if (!joinDate || selectedBeds.length === 0 || !pg) return null;
     const checkInDate = new Date(joinDate);
     const checkOutDate = new Date(checkInDate);
     checkOutDate.setDate(checkOutDate.getDate() + Number(stayDays));
 
-    const { days, months } = calculatePrice({
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      price: getSelectedBedPrice(),
-      pricingPeriod,
-    });
-
-    if (pricingPeriod === "day") {
-      return `₹${getSelectedBedPrice()} × ${days} ${days === 1 ? t("common.day") : t("common.days")}`;
-    } else {
-      return `₹${getSelectedBedPrice()} × ${months} ${months === 1 ? t("common.month") : t("common.months")}`;
+    const lines: string[] = [];
+    for (const sb of selectedBeds) {
+      const room = pg.structure.find((r) => r._id === sb.roomId);
+      const bed = room?.beds.find((b) => b._id === sb.bedId);
+      const bedIdx = room ? room.beds.findIndex((b) => b._id === sb.bedId) + 1 : "?";
+      if (room && bed) {
+        const { totalPrice, days, months } = calculatePrice({
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          price: bed.price,
+          pricingPeriod: room.pricingPeriod || "month",
+        });
+        const unit =
+          room.pricingPeriod === "day"
+            ? `${days} ${days === 1 ? "day" : "days"}`
+            : `${months} ${months === 1 ? "month" : "months"}`;
+        lines.push(`${room.name} – Bed ${bedIdx}: ₹${bed.price} × ${unit} = ₹${totalPrice.toLocaleString()}`);
+      }
     }
+    return lines.join(" | ");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRoom || !selectedBed || !joinDate || !Number(stayDays)) {
-      setError("Please fill in all required fields");
+    if (selectedBeds.length === 0 || !joinDate || !Number(stayDays)) {
+      setError("Please select at least one bed, a join date, and stay duration");
       return;
     }
 
@@ -191,8 +218,7 @@ function BookingForm() {
     try {
       const bookingRes = await bookingAPI.createBooking({
         pgId: pgId!,
-        roomId: selectedRoom,
-        bedId: selectedBed,
+        beds: selectedBeds,
         joinDate: new Date(joinDate).toISOString(),
         stayDays: Number(stayDays),
         notes,
@@ -233,7 +259,7 @@ function BookingForm() {
         amount,
         currency,
         name: pg!.name,
-        description: `Booking for ${pg!.name}`,
+        description: `Booking for ${pg!.name} (${selectedBeds.length} bed${selectedBeds.length > 1 ? "s" : ""})`,
         order_id: orderId,
         prefill: {
           name: currentUser
@@ -267,7 +293,7 @@ function BookingForm() {
           ondismiss: () => {
             setSubmitting(false);
             setError(
-              "Payment was cancelled. Your booking request is saved. You can pay later from My Requests."
+              "Payment was cancelled. Your booking request is saved. You can pay later from My Requests.",
             );
           },
         },
@@ -275,16 +301,14 @@ function BookingForm() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-      // Don't setSubmitting(false) here — wait for handler/ondismiss
       return;
     } catch (err: any) {
-      console.error("Booking error:", err);
       setError(err.message || "Failed to create booking");
       setSubmitting(false);
     }
   };
 
-  /* ── Loading ─────────────────────────────────────────────────────────────── */
+  /* ── Loading ── */
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[400px]">
@@ -293,7 +317,7 @@ function BookingForm() {
     );
   }
 
-  /* ── PG not found ─────────────────────────────────────────────────────────── */
+  /* ── PG not found ── */
   if (!pg) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-lg">
@@ -307,26 +331,15 @@ function BookingForm() {
     );
   }
 
-  /* ── Success ──────────────────────────────────────────────────────────────── */
+  /* ── Success ── */
   if (success) {
     return (
       <div className="container mx-auto px-4 py-16 flex justify-center">
         <Card className="max-w-md w-full" hoverEffect={false}>
           <CardContent className="text-center py-12 px-8">
-            {/* Success icon */}
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M5 13l4 4L19 7"
-                />
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <h2 className="text-2xl font-bold mb-2 text-gray-900">
@@ -347,9 +360,9 @@ function BookingForm() {
     );
   }
 
-  /* ── Main Form ────────────────────────────────────────────────────────────── */
+  /* ── Main Form ── */
   const total = calculateTotal();
-  const breakdown = getBookingBreakdown();
+  const breakdown = getBreakdown();
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -367,10 +380,13 @@ function BookingForm() {
         <h1 className="text-2xl md:text-3xl font-bold mt-3 text-gray-900">
           {t("booking.bookPG")}
         </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          You can select <strong>one or more beds</strong> across any room in a single booking.
+        </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {/* ── Left: PG Info ────────────────────────────────────────────────── */}
+        {/* ── Left: PG Info + Price Summary ── */}
         <div className="md:col-span-1 space-y-4">
           <Card hoverEffect={false}>
             <CardHeader>
@@ -387,8 +403,7 @@ function BookingForm() {
               ) : (
                 <div className="w-full h-44 bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
                   <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
                   </svg>
                 </div>
               )}
@@ -398,42 +413,67 @@ function BookingForm() {
               </p>
               <div
                 className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-                  pg.onlinePayment
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-gray-600"
+                  pg.onlinePayment ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${pg.onlinePayment ? "bg-green-500" : "bg-gray-400"}`} />
-                {pg.onlinePayment
-                  ? t("booking.onlinePaymentAvailable")
-                  : t("booking.cashPaymentOnly")}
+                {pg.onlinePayment ? t("booking.onlinePaymentAvailable") : t("booking.cashPaymentOnly")}
               </div>
             </CardContent>
           </Card>
 
-          {/* Sticky Price Summary (visible once bed + date selected) */}
-          {selectedBed && joinDate && (
+          {/* Selected beds summary */}
+          {selectedBeds.length > 0 && (
             <Card hoverEffect={false} className="border-primary/20 bg-primary/5">
               <CardContent className="py-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary/70 mb-2">
-                  {t("booking.totalPrice")}
+                  Selected Beds ({selectedBeds.length})
                 </p>
-                <p className="text-3xl font-bold text-primary">
-                  ₹{total.toLocaleString()}
-                </p>
-                {breakdown && (
-                  <p className="text-sm text-gray-500 mt-1">{breakdown}</p>
+                <ul className="space-y-1 mb-3">
+                  {selectedBeds.map((sb) => {
+                    const room = pg.structure.find((r) => r._id === sb.roomId);
+                    const bedIdx = room
+                      ? room.beds.findIndex((b) => b._id === sb.bedId) + 1
+                      : "?";
+                    const bed = room?.beds.find((b) => b._id === sb.bedId);
+                    return (
+                      <li
+                        key={`${sb.roomId}-${sb.bedId}`}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-gray-700">
+                          {room?.name} – Bed {bedIdx}
+                        </span>
+                        <span className="text-primary font-medium">
+                          ₹{bed?.price.toLocaleString()}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {joinDate && (
+                  <>
+                    <div className="border-t border-primary/20 pt-2">
+                      <p className="text-xs text-gray-500 mb-0.5">{t("booking.totalPrice")}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        ₹{total.toLocaleString()}
+                      </p>
+                      {breakdown && (
+                        <p className="text-xs text-gray-400 mt-1 leading-relaxed">{breakdown}</p>
+                      )}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
           )}
         </div>
 
-        {/* ── Right: Booking Form ──────────────────────────────────────────── */}
+        {/* ── Right: Booking Form ── */}
         <div className="md:col-span-2">
           <Card hoverEffect={false}>
             <CardHeader>
-              <CardTitle>{t("booking.selectRoomAndBed")}</CardTitle>
+              <CardTitle>Select Beds, Dates &amp; Payment</CardTitle>
             </CardHeader>
             <CardContent>
               {/* Error banner */}
@@ -447,81 +487,92 @@ function BookingForm() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-7">
-                {/* Step 1 — Room Selection */}
+
+                {/* Step 1 — Bed Selection (multi-select across all rooms) */}
                 <section>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    1. {t("booking.selectRoom")}
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    1. Select Beds
                     <span className="text-primary ml-1">*</span>
                   </label>
-                  <div className="space-y-2.5">
-                    {pg.structure.map((room) => {
-                      const availableBeds = room.beds.filter(
-                        (bed) => !bed.allocated
-                      ).length;
-                      const isSelected = selectedRoom === room._id;
-                      const isDisabled = availableBeds === 0;
+                  <p className="text-xs text-gray-400 mb-3">
+                    Tap any available bed to add or remove it from your booking.
+                    You can mix beds from different rooms.
+                  </p>
 
+                  <div className="space-y-4">
+                    {pg.structure.map((room) => {
+                      const availableBeds = room.beds.filter((b) => !b.allocated).length;
                       return (
-                        <div
-                          key={room._id}
-                          role="button"
-                          tabIndex={isDisabled ? -1 : 0}
-                          aria-disabled={isDisabled}
-                          onKeyDown={(e) => {
-                            if (!isDisabled && (e.key === "Enter" || e.key === " ")) {
-                              setSelectedRoom(room._id);
-                              setSelectedBed("");
-                              // reset duration input to 1 unit for the new room's period
-                              setStayInput("1");
-                              setStayDays(String(room.pricingPeriod === "month" ? 30 : 1));
-                            }
-                          }}
-                          className={`flex justify-between items-center p-4 border-2 rounded-xl transition-all ${
-                            isDisabled
-                              ? "opacity-50 cursor-not-allowed border-gray-100 bg-gray-50"
-                              : isSelected
-                              ? "border-primary bg-primary/5 cursor-pointer"
-                              : "border-gray-200 hover:border-gray-300 bg-white cursor-pointer"
-                          }`}
-                          onClick={() => {
-                            if (!isDisabled) {
-                              setSelectedRoom(room._id);
-                              setSelectedBed("");
-                              // reset duration input to 1 unit for the new room's period
-                              setStayInput("1");
-                              setStayDays(String(room.pricingPeriod === "month" ? 30 : 1));
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            {/* Selection radio visual */}
-                            <div
-                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                                isSelected
-                                  ? "border-primary bg-primary"
-                                  : "border-gray-300"
-                              }`}
-                            >
-                              {isSelected && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                              )}
-                            </div>
+                        <div key={room._id} className="border border-gray-200 rounded-xl overflow-hidden">
+                          {/* Room header */}
+                          <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-200">
                             <div>
-                              <p className="font-semibold text-gray-800">{room.name}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <span className="font-semibold text-gray-800 text-sm">{room.name}</span>
+                              <span className="ml-2 text-xs text-gray-500">
                                 {availableBeds === 0
                                   ? "No beds available"
-                                  : `${availableBeds} ${t("booking.bedsAvailable")}`}
-                              </p>
+                                  : `${availableBeds} available`}
+                              </span>
                             </div>
+                            <span className="text-xs font-medium text-gray-600">
+                              ₹{room.price.toLocaleString()} / {room.pricingPeriod === "day" ? "day" : "month"}
+                            </span>
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-gray-900">
-                              ₹{room.price.toLocaleString()}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              per {room.pricingPeriod === "day" ? t("common.day") : t("common.month")}
-                            </p>
+
+                          {/* Beds grid */}
+                          <div className="p-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                            {room.beds.map((bed, index) => {
+                              const isAllocated = bed.allocated;
+                              const isSelected = isBedSelected(room._id, bed._id);
+
+                              return (
+                                <button
+                                  key={bed._id}
+                                  type="button"
+                                  disabled={isAllocated}
+                                  onClick={() => !isAllocated && toggleBed(room._id, bed._id)}
+                                  className={`relative p-2.5 border-2 rounded-xl text-center transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+                                    isAllocated
+                                      ? "bg-red-50 border-red-200 cursor-not-allowed opacity-60"
+                                      : isSelected
+                                      ? "border-primary bg-primary/10 cursor-pointer shadow-sm"
+                                      : "border-gray-200 hover:border-primary/40 bg-white cursor-pointer"
+                                  }`}
+                                  aria-pressed={isSelected}
+                                  aria-label={`${room.name} Bed ${index + 1} ${isAllocated ? "(allocated)" : isSelected ? "(selected)" : "(available)"}`}
+                                >
+                                  {/* Checkmark overlay */}
+                                  {isSelected && (
+                                    <span className="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    </span>
+                                  )}
+                                  <p className="font-semibold text-xs text-gray-700">
+                                    {t("booking.bed")} {index + 1}
+                                  </p>
+                                  <p className="text-xs font-medium text-gray-900 mt-0.5">
+                                    ₹{bed.price.toLocaleString()}
+                                  </p>
+                                  <span
+                                    className={`inline-block text-xs mt-0.5 font-medium ${
+                                      isAllocated
+                                        ? "text-red-500"
+                                        : isSelected
+                                        ? "text-primary"
+                                        : "text-green-600"
+                                    }`}
+                                  >
+                                    {isAllocated
+                                      ? t("booking.allocated")
+                                      : isSelected
+                                      ? "Selected"
+                                      : t("booking.available")}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       );
@@ -529,74 +580,10 @@ function BookingForm() {
                   </div>
                 </section>
 
-                {/* Step 2 — Bed Selection */}
-                {selectedRoom && (
-                  <section>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      2. {t("booking.selectBed")}
-                      <span className="text-primary ml-1">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                      {pg.structure
-                        .find((r) => r._id === selectedRoom)
-                        ?.beds.map((bed, index) => {
-                          const isAllocated = bed.allocated;
-                          const isSelected = selectedBed === bed._id;
-
-                          return (
-                            <div
-                              key={bed._id}
-                              role="button"
-                              tabIndex={isAllocated ? -1 : 0}
-                              aria-disabled={isAllocated}
-                              onKeyDown={(e) => {
-                                if (!isAllocated && (e.key === "Enter" || e.key === " ")) {
-                                  setSelectedBed(bed._id);
-                                }
-                              }}
-                              className={`relative p-3 border-2 rounded-xl text-center transition-all ${
-                                isAllocated
-                                  ? "bg-red-50 border-red-200 cursor-not-allowed opacity-60"
-                                  : isSelected
-                                  ? "border-green-500 bg-green-50 cursor-pointer"
-                                  : "border-gray-200 hover:border-gray-300 bg-white cursor-pointer"
-                              }`}
-                              onClick={() => {
-                                if (!isAllocated) setSelectedBed(bed._id);
-                              }}
-                            >
-                              {/* Selected checkmark */}
-                              {isSelected && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </span>
-                              )}
-                              <p className="font-semibold text-sm text-gray-700">
-                                {t("booking.bed")} {index + 1}
-                              </p>
-                              <p className="text-sm font-medium text-gray-900 mt-0.5">
-                                ₹{bed.price.toLocaleString()}
-                              </p>
-                              <span
-                                className={`inline-block text-xs mt-1 font-medium ${
-                                  isAllocated ? "text-red-500" : "text-green-600"
-                                }`}
-                              >
-                                {isAllocated ? t("booking.allocated") : t("booking.available")}
-                              </span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </section>
-                )}
-
-                {/* Step 3 — Dates */}
+                {/* Step 2 — Dates */}
                 <section>
                   <p className="block text-sm font-semibold text-gray-700 mb-3">
-                    {selectedRoom ? "3." : "2."} {t("booking.joinDate")} &amp; Duration
+                    2. {t("booking.joinDate")} &amp; Duration
                   </p>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
@@ -615,11 +602,7 @@ function BookingForm() {
                     <div>
                       <label className="block text-xs text-gray-500 mb-1.5">
                         Stay Duration
-                        {selectedRoom && (
-                          <span className="ml-1 text-primary font-semibold">
-                            ({inputUnit})
-                          </span>
-                        )}
+                        <span className="ml-1 text-primary font-semibold">({inputUnit})</span>
                         <span className="text-primary ml-1">*</span>
                       </label>
                       <input
@@ -632,9 +615,7 @@ function BookingForm() {
                         }}
                         onBlur={(e) => {
                           const n = parseInt(e.target.value);
-                          const clamped = !n || n < inputMin
-                            ? inputMin
-                            : n > inputMax ? inputMax : n;
+                          const clamped = !n || n < inputMin ? inputMin : n > inputMax ? inputMax : n;
                           setStayInput(String(clamped));
                           setStayDays(String(inputToDays(String(clamped), pricingPeriod as "day" | "month")));
                         }}
@@ -643,20 +624,17 @@ function BookingForm() {
                         className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
                         required
                       />
-                      {/* Contextual hint */}
                       <p className="text-xs text-gray-400 mt-1">
-                        {isMonthly
-                          ? `= ${Number(stayDays).toLocaleString()} days total`
-                          : `Max 365 days`}
+                        {isMonthly ? `= ${Number(stayDays).toLocaleString()} days total` : `Max 365 days`}
                       </p>
                     </div>
                   </div>
                 </section>
 
-                {/* Step 4 — Payment Method */}
+                {/* Step 3 — Payment Method */}
                 <section>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    {selectedRoom ? "4." : "3."} {t("booking.paymentMethod")}
+                    3. {t("booking.paymentMethod")}
                   </label>
                   <div className="flex flex-wrap gap-3">
                     {/* Cash */}
@@ -727,12 +705,14 @@ function BookingForm() {
                 </section>
 
                 {/* Inline Price Summary (shown inside form on mobile) */}
-                {selectedBed && joinDate && (
+                {selectedBeds.length > 0 && joinDate && (
                   <div className="bg-primary/5 border border-primary/15 rounded-xl px-4 py-3 flex justify-between items-center">
                     <div>
-                      <p className="text-xs text-gray-500">{t("booking.totalPrice")}</p>
+                      <p className="text-xs text-gray-500">
+                        {selectedBeds.length} bed{selectedBeds.length > 1 ? "s" : ""} · {t("booking.totalPrice")}
+                      </p>
                       {breakdown && (
-                        <p className="text-xs text-gray-400">{breakdown}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 max-w-xs truncate">{breakdown}</p>
                       )}
                     </div>
                     <p className="text-2xl font-bold text-primary">₹{total.toLocaleString()}</p>
@@ -743,17 +723,13 @@ function BookingForm() {
                 <div className="flex items-center gap-3 pt-1">
                   <Button
                     type="submit"
-                    disabled={
-                      submitting || !selectedRoom || !selectedBed || !joinDate
-                    }
+                    disabled={submitting || selectedBeds.length === 0 || !joinDate}
                     className="flex-1 h-11"
                   >
                     {submitting ? (
                       <span className="flex items-center justify-center gap-2">
                         <Spinner size="md" />
-                        {paymentMethod === "online"
-                          ? "Opening Payment…"
-                          : t("booking.submitting")}
+                        {paymentMethod === "online" ? "Opening Payment…" : t("booking.submitting")}
                       </span>
                     ) : paymentMethod === "online" ? (
                       `Pay Now ₹${total.toLocaleString()}`

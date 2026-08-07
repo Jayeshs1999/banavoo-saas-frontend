@@ -11,6 +11,16 @@ import { bookingAPI } from "../../../services/api";
 import { useTranslation } from "react-i18next";
 import { MessageSquare } from "lucide-react";
 
+interface BedItem {
+  roomId: string;
+  bedId: string;
+  roomName?: string;
+  bedNumber?: number | string;
+  bedPrice?: number;
+  pricingPeriod?: "day" | "month";
+  totalPrice?: number;
+}
+
 interface Booking {
   _id: string;
   pgId: {
@@ -23,8 +33,11 @@ interface Booking {
     };
     photos: string[];
   };
-  roomId: string;
-  bedId: string;
+  /** Multi-bed array (new). Populated for all bookings by the API. */
+  beds?: BedItem[];
+  /** Legacy scalar fields — kept for backward compat */
+  roomId?: string;
+  bedId?: string;
   joinDate: string;
   stayDays: number;
   status: "pending" | "approved" | "rejected" | "cancelled";
@@ -266,6 +279,20 @@ export default function UserRequests() {
                       {booking.pgId?.location?.city},{" "}
                       {booking.pgId?.location?.state}
                     </p>
+                    {/* Beds summary */}
+                    {booking.beds && booking.beds.length > 0 ? (
+                      <div className="mt-2 pl-7 space-y-0.5">
+                        {booking.beds.map((b, i) => (
+                          <p key={i} className="text-xs text-gray-500">
+                            🛏 {b.roomName || b.roomId} – Bed #{b.bedNumber || b.bedId}
+                          </p>
+                        ))}
+                      </div>
+                    ) : booking.bedId ? (
+                      <p className="mt-1 pl-7 text-xs text-gray-500">
+                        🛏 Bed #{booking.bedId}
+                      </p>
+                    ) : null}
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">

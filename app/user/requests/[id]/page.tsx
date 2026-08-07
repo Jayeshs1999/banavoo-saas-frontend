@@ -10,6 +10,16 @@ import { useAuth } from "../../../context/AuthContext";
 import { bookingAPI, pgAPI } from "../../../../services/api";
 import { useTranslation } from "react-i18next";
 
+interface BedItem {
+  roomId: string;
+  bedId: string;
+  roomName?: string;
+  bedNumber?: number | string;
+  bedPrice?: number;
+  pricingPeriod?: "day" | "month";
+  totalPrice?: number;
+}
+
 interface Booking {
   _id: string;
   pgId: {
@@ -35,8 +45,11 @@ interface Booking {
       pricingPeriod: "day" | "month";
     }>;
   };
-  roomId: string;
-  bedId: string;
+  /** Multi-bed array (new). Populated for all bookings by the API. */
+  beds?: BedItem[];
+  /** Legacy scalar fields */
+  roomId?: string;
+  bedId?: string;
   joinDate: string;
   stayDays: number;
   status: "pending" | "approved" | "rejected" | "cancelled";
@@ -107,26 +120,28 @@ export default function BookingDetails() {
     }
   };
 
-  const getRoomName = () => {
-    if (!booking) return "N/A";
+  /** Resolve beds — use new beds[] if available, else fall back to legacy roomId/bedId */
+  const getResolveBeds = (): BedItem[] => {
+    if (!booking) return [];
+    if (booking.beds && booking.beds.length > 0) return booking.beds;
+    if (!booking.roomId || !booking.bedId) return [];
+    // Legacy: derive from structure
     const room = booking.pgId.structure.find((r) => r._id === booking.roomId);
-    return room ? room.name : "N/A";
-  };
-
-  const getBedNumber = () => {
-    if (!booking) return "N/A";
-    const room = booking.pgId.structure.find((r) => r._id === booking.roomId);
-    if (!room) return "N/A";
-    const bedIndex = room.beds.findIndex((b) => b._id === booking.bedId);
-    return bedIndex >= 0 ? `Bed ${bedIndex + 1}` : "N/A";
-  };
-
-  const getBedPrice = () => {
-    if (!booking) return 0;
-    const room = booking.pgId.structure.find((r) => r._id === booking.roomId);
-    if (!room) return 0;
-    const bed = room.beds.find((b) => b._id === booking.bedId);
-    return bed ? bed.price : 0;
+    const bedIdx = room
+      ? room.beds.findIndex((b) => b._id === booking.bedId)
+      : -1;
+    const bed = room?.beds[bedIdx];
+    return [
+      {
+        roomId: booking.roomId,
+        bedId: booking.bedId,
+        roomName: room?.name || "Unknown",
+        bedNumber: bedIdx >= 0 ? bedIdx + 1 : "N/A",
+        bedPrice: bed?.price || 0,
+        pricingPeriod: room?.pricingPeriod || "month",
+        totalPrice: booking.totalPrice,
+      },
+    ];
   };
 
   const handleCancelBooking = async () => {
@@ -258,31 +273,46 @@ export default function BookingDetails() {
           {/* Room & Bed Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Room & Bed Details</CardTitle>
+              <CardTitle>
+                Room &amp; Bed Details
+                {getResolveBeds().length > 1 && (
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    ({getResolveBeds().length} beds)
+                  </span>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Room</p>
-                  <p className="font-semibold">{getRoomName()}</p>
+              {getResolveBeds().length === 0 ? (
+                <p className="text-sm text-gray-500">No bed details available</p>
+              ) : (
+                <div className="space-y-3">
+                  {getResolveBeds().map((b, i) => (
+                    <div
+                      key={i}
+                      className="grid md:grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                    >
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Room</p>
+                        <p className="font-semibold text-sm">{b.roomName || b.roomId}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Bed</p>
+                        <p className="font-semibold text-sm">Bed #{b.bedNumber || b.bedId}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Price</p>
+                        <p className="font-semibold text-sm">
+                          ₹{b.bedPrice?.toLocaleString() || "—"}{" "}
+                          <span className="text-xs text-gray-400 font-normal">
+                            / {b.pricingPeriod === "day" ? "day" : "month"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Bed</p>
-                  <p className="font-semibold">{getBedNumber()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Price per night</p>
-                  <p className="font-semibold">₹{getBedPrice()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Pricing Period</p>
-                  <p className="font-semibold">
-                    {booking.pgId.structure.find(
-                      (r) => r._id === booking.roomId,
-                    )?.pricingPeriod || "N/A"}
-                  </p>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
