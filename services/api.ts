@@ -1,10 +1,16 @@
 import axios from "axios";
+import type { User, RegisterPayload, RegisterData, ApiResponse } from "../types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+// Strip any trailing slash, then append /api so routes can be written as /auth/...
+// This handles both NEXT_PUBLIC_API_URL=http://localhost:5000
+//                 and NEXT_PUBLIC_API_URL=http://localhost:5000/api
+const rawBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const BASE_URL = rawBase.endsWith("/api") ? rawBase : `${rawBase}/api`;
 
 /**
  * Axios instance — all API calls go through this.
- * The Authorization header is injected automatically from localStorage.
+ * JWT is stored in an HTTP-only cookie set by the backend.
+ * withCredentials ensures the browser sends the cookie on every request.
  */
 const api = axios.create({
   baseURL: BASE_URL,
@@ -12,75 +18,82 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// ─── Request interceptor: attach JWT ──────────────────────────────────────
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
 // ─── Response interceptor: unwrap errors ──────────────────────────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message =
-      error.response?.data?.message || error.message || "Request failed";
-    return Promise.reject(new Error(message));
+    const data = error.response?.data;
+    const message = data?.message || error.message || "Request failed";
+    // Attach the full error payload so callers can inspect code/errors
+    const err: Error & { code?: string; errors?: Record<string, string>; status?: number } =
+      new Error(message);
+    err.code   = data?.code;
+    err.errors = data?.errors;
+    err.status = error.response?.status;
+    return Promise.reject(err);
   }
 );
 
 // ─── Auth API ──────────────────────────────────────────────────────────────
 export const authAPI = {
-  /**
-   * Log in with email + password.
-   * Returns the full response data (including token).
-   */
-  login: async (email: string, password: string) => {
-    const { data } = await api.post("/api/auth/login", { email, password });
-    return data;
-  },
-
   /** Register a new account */
-  register: async (payload: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    mobile?: string;
-  }) => {
-    const { data } = await api.post("/api/auth/register", payload);
+  register: async (payload: RegisterPayload): Promise<ApiResponse<RegisterData>> => {
+    const { data } = await api.post<ApiResponse<RegisterData>>("/auth/register", payload);
     return data;
   },
 
-  /** Logout (clears server-side cookie if used) */
-  logout: async () => {
+  /** Verify email with OTP — returns logged-in user on success */
+  verifyEmail: async (email: string, otp: string): Promise<ApiResponse<User>> => {
+    const { data } = await api.post<ApiResponse<User>>("/auth/verify-email", { email, otp });
+    return data;
+  },
+
+  /** Resend verification OTP */
+  resendOtp: async (email: string): Promise<ApiResponse> => {
+    const { data } = await api.post<ApiResponse>("/auth/resend-otp", { email });
+    return data;
+  },
+
+  /** Log in with email + password */
+  login: async (email: string, password: string): Promise<ApiResponse<User>> => {
+    const { data } = await api.post<ApiResponse<User>>("/auth/login", { email, password });
+    return data;
+  },
+
+  /** Logout — clears the HTTP-only cookie server-side */
+  logout: async (): Promise<void> => {
     try {
-      await api.post("/api/auth/logout");
+      await api.post("/auth/logout");
     } catch {
-      // Ignore — client-side cleanup still proceeds
+      // Ignore — client-side state cleanup still proceeds
     }
   },
-};
 
-// ─── Example: User profile API ────────────────────────────────────────────
-export const userAPI = {
-  getProfile: async () => {
-    const { data } = await api.get("/api/users/profile");
+  /** Get the currently authenticated user */
+  getMe: async (): Promise<ApiResponse<User>> => {
+    const { data } = await api.get<ApiResponse<User>>("/auth/me");
     return data;
   },
 
-  updateProfile: async (payload: Partial<{ firstName: string; lastName: string; mobile: string }>) => {
-    const { data } = await api.put("/api/users/profile", payload);
+  /** Request a password reset email */
+  forgotPassword: async (email: string): Promise<ApiResponse> => {
+    const { data } = await api.post<ApiResponse>("/auth/forgot-password", { email });
+    return data;
+  },
+
+  /** Reset password using the token from email */
+  resetPassword: async (
+    token: string,
+    password: string,
+    confirmPassword: string
+  ): Promise<ApiResponse> => {
+    const { data } = await api.post<ApiResponse>("/auth/reset-password", {
+      token,
+      password,
+      confirmPassword,
+    });
     return data;
   },
 };
-
-// ─── Add more resource APIs below ─────────────────────────────────────────
-// export const productAPI = { ... };
-// export const orderAPI   = { ... };
 
 export default api;

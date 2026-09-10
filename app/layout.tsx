@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "My App",
-    template: "%s | My App",
+    default: "Banavoo",
+    template: "%s | Banavoo",
   },
-  description: "My application description.",
+  description: "Banavoo — the marketplace for handmade product sellers.",
 };
 
 export default function RootLayout({

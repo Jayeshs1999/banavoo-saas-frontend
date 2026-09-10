@@ -1,19 +1,18 @@
-// ─── Global Types ──────────────────────────────────────────────────────────
-// Define your application-wide TypeScript types here.
+// ─── Global Types — Banavoo SaaS ───────────────────────────────────────────
 
 /**
- * Base authenticated user shape.
- * Extend or replace with your own fields.
+ * Authenticated user shape returned from /api/auth/me and login.
  */
 export interface User {
-  _id: string;
-  firstName: string;
-  lastName: string;
+  id: string;
+  fullName: string;
   email: string;
-  mobile?: string;
-  role: "user" | "admin" | "super_admin";
+  phone?: string | null;
+  emailVerified: boolean;
+  role: "buyer" | "seller" | "admin";
+  status: "active" | "suspended";
+  lastLoginAt?: string | null;
   createdAt?: string;
-  updatedAt?: string;
 }
 
 /**
@@ -22,6 +21,26 @@ export interface User {
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
+  code?: string;
   data?: T;
-  token?: string;
+  errors?: Record<string, string>;
+}
+
+/**
+ * Registration payload
+ */
+export interface RegisterPayload {
+  fullName: string;
+  email: string;
+  phone?: string;
+  password: string;
+  confirmPassword: string;
+}
+
+/**
+ * Registration response data
+ */
+export interface RegisterData {
+  email: string;
+  requiresEmailVerification: boolean;
 }

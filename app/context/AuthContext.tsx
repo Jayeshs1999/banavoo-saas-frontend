@@ -5,51 +5,32 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
-import { User } from "../../types";
+import type { User, RegisterPayload } from "../../types";
 import { authAPI } from "../../services/api";
 
-// ─── Storage helpers ──────────────────────────────────────────────────────
-
-const STORAGE_KEY = "authData";
-
-const persistAuth = (user: User, token: string) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token }));
-  localStorage.setItem("token", token);
-};
-
-const clearAuth = () => {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem("token");
-};
-
-const loadAuth = (): { user: User; token: string } | null => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-// ─── Context type ─────────────────────────────────────────────────────────
+// ─── Context type ─────────────────────────────────────────────────────────────
 
 interface AuthContextType {
   currentUser: User | null;
-  token: string | null;
+  /** True while an auth request is in flight */
   loading: boolean;
+  /** True on first mount while we validate the existing session */
+  initializing: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (payload: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    mobile?: string;
-  }) => Promise<boolean>;
-  logout: () => void;
+  /**
+   * Returns { success, email } where email is needed to redirect to /verify-email
+   */
+  register: (payload: RegisterPayload) => Promise<{ success: boolean; email?: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; code?: string }>;
+  logout: () => Promise<void>;
   clearError: () => void;
+  setCurrentUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,83 +41,97 @@ export const useAuth = () => {
   return ctx;
 };
 
-// ─── Provider ─────────────────────────────────────────────────────────────
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]         = useState(false);
+  const [initializing, setInitializing] = useState(true);
+  const [error, setError]             = useState<string | null>(null);
 
-  // Rehydrate from localStorage on mount
+  const clearError = useCallback(() => setError(null), []);
+
+  // On mount: try to restore session from the HTTP-only cookie
   useEffect(() => {
-    const saved = loadAuth();
-    if (saved) {
-      setCurrentUser(saved.user);
-      setToken(saved.token);
-    }
+    (async () => {
+      try {
+        const res = await authAPI.getMe();
+        if (res.success && res.data) {
+          setCurrentUser(res.data);
+        }
+      } catch {
+        // Cookie absent or expired — that's fine
+      } finally {
+        setInitializing(false);
+      }
+    })();
   }, []);
 
-  const clearError = () => setError(null);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authAPI.login(email, password);
-      setCurrentUser(res.user ?? res);
-      setToken(res.token);
-      persistAuth(res.user ?? res, res.token);
-      return true;
-    } catch (err: any) {
-      setError(err.message || "Login failed");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (payload: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    mobile?: string;
-  }): Promise<boolean> => {
+  // ── Register ───────────────────────────────────────────────────────────────
+  const register = async (
+    payload: RegisterPayload
+  ): Promise<{ success: boolean; email?: string }> => {
     setLoading(true);
     setError(null);
     try {
       const res = await authAPI.register(payload);
-      setCurrentUser(res.user ?? res);
-      setToken(res.token);
-      persistAuth(res.user ?? res, res.token);
-      return true;
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
-      return false;
+      if (res.success) {
+        return { success: true, email: res.data?.email };
+      }
+      setError(res.message || "Registration failed.");
+      return { success: false };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Registration failed.";
+      setError(message);
+      return { success: false };
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    authAPI.logout();
+  // ── Login ──────────────────────────────────────────────────────────────────
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; code?: string }> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await authAPI.login(email, password);
+      if (res.success && res.data) {
+        setCurrentUser(res.data);
+        return { success: true };
+      }
+      setError(res.message || "Login failed.");
+      return { success: false };
+    } catch (err: unknown) {
+      const apiErr = err as Error & { code?: string };
+      const message = apiErr.message || "Login failed.";
+      setError(message);
+      return { success: false, code: apiErr.code };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Logout ─────────────────────────────────────────────────────────────────
+  const logout = async () => {
+    await authAPI.logout();
     setCurrentUser(null);
-    setToken(null);
-    clearAuth();
   };
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
-        token,
         loading,
+        initializing,
         error,
-        login,
         register,
+        login,
         logout,
         clearError,
+        setCurrentUser,
       }}
     >
       {children}
