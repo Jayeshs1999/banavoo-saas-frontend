@@ -282,10 +282,34 @@ export default function SellerDashboardPage() {
         </div>
 
         {/* Quick links */}
-        <div className="flex gap-3 text-sm">
+        <div className="flex flex-wrap gap-3 text-sm items-center">
           <Link href="/dashboard" className="text-blue-600 hover:underline">
-            ← Back to Dashboard
+            ← Dashboard
           </Link>
+          <Link href="/seller/products"
+            className="inline-flex items-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors px-4 py-2 rounded-lg">
+            Products
+          </Link>
+          <Link href="/seller/categories"
+            className="inline-flex items-center text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors px-4 py-2 rounded-lg">
+            Categories
+          </Link>
+          <Link
+            href="/seller/store/customize"
+            className="inline-flex items-center gap-1 text-sm font-medium text-white bg-gray-900 hover:bg-gray-700 transition-colors px-4 py-2 rounded-lg"
+          >
+            ✦ Customize Store
+          </Link>
+          {currentStore && (
+            <a
+              href={`/store/${currentStore.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              View Storefront ↗
+            </a>
+          )}
         </div>
       </div>
     </div>

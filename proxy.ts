@@ -15,6 +15,10 @@ const PUBLIC_ROUTES = [
   "/reset-password",
   "/about",
   "/contact",
+  // Public storefront pages — viewable by anyone
+  "/store",
+  // Public API (Next.js server components call the backend directly)
+  "/api/public",
   // NOTE: /become-seller and /seller are intentionally NOT listed here — they are private.
 ];
 
