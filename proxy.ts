@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Public routes — accessible without authentication.
+ *
+ * Private routes (protected by JWT cookie check):
+ *   /dashboard, /become-seller, /seller — handled here + client-side by SellerRoute
  */
 const PUBLIC_ROUTES = [
   "/",
@@ -12,6 +15,7 @@ const PUBLIC_ROUTES = [
   "/reset-password",
   "/about",
   "/contact",
+  // NOTE: /become-seller and /seller are intentionally NOT listed here — they are private.
 ];
 
 export function proxy(request: NextRequest) {

@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { User, RegisterPayload, RegisterData, ApiResponse } from "../types";
+import type { User, Store, RegisterPayload, RegisterData, ApiResponse } from "../types";
 
 // Strip any trailing slash, then append /api so routes can be written as /auth/...
 // This handles both NEXT_PUBLIC_API_URL=http://localhost:5000
@@ -92,6 +92,59 @@ export const authAPI = {
       password,
       confirmPassword,
     });
+    return data;
+  },
+};
+
+// ─── Store API ─────────────────────────────────────────────────────────────
+
+export interface CreateStorePayload {
+  name: string;
+  description: string;
+  city: string;
+  state: string;
+  pickupPincode: string;
+  slug?: string;
+}
+
+export interface UpdateStorePayload {
+  name?: string;
+  description?: string;
+  city?: string;
+  state?: string;
+  pickupPincode?: string;
+}
+
+export const storeAPI = {
+  /** Create a new store (promotes user to seller) */
+  createStore: async (payload: CreateStorePayload): Promise<ApiResponse<Store>> => {
+    const { data } = await api.post<ApiResponse<Store>>("/stores", payload);
+    return data;
+  },
+
+  /** Get the authenticated seller's own store */
+  getMyStore: async (): Promise<ApiResponse<Store>> => {
+    const { data } = await api.get<ApiResponse<Store>>("/stores/me");
+    return data;
+  },
+
+  /** Get a store by its public slug */
+  getStoreBySlug: async (slug: string): Promise<ApiResponse<Store>> => {
+    const { data } = await api.get<ApiResponse<Store>>(`/stores/${slug}`);
+    return data;
+  },
+
+  /** Update the authenticated seller's own store */
+  updateMyStore: async (payload: UpdateStorePayload): Promise<ApiResponse<Store>> => {
+    const { data } = await api.patch<ApiResponse<Store>>("/stores/me", payload);
+    return data;
+  },
+
+  /** Check if a slug is available */
+  checkSlug: async (slug: string): Promise<{ slug: string; available: boolean; reason?: string }> => {
+    const { data } = await api.get<{ slug: string; available: boolean; reason?: string }>(
+      `/stores/check-slug/${encodeURIComponent(slug)}`
+    );
     return data;
   },
 };

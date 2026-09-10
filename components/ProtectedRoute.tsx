@@ -21,7 +21,7 @@ import Spinner from "./Spinner";
  *   }
  */
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading, initializing } = useAuth();
+  const { currentUser, initializing } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

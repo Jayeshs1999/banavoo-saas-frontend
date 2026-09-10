@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useAuth } from "../app/context/AuthContext";
 
 /**
- * Header — minimal navigation bar.
- * Customise with your own brand/links.
+ * Header — navigation bar.
+ * Shows "Start Selling" for buyers and "Seller Dashboard" for sellers.
  */
 export default function Header() {
   const { currentUser, logout } = useAuth();
@@ -15,7 +15,7 @@ export default function Header() {
       <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
         {/* Brand */}
         <Link href="/" className="text-xl font-bold text-primary">
-          MyApp {/* TODO: Replace with your brand name */}
+          Banavoo
         </Link>
 
         {/* Nav links */}
@@ -23,13 +23,32 @@ export default function Header() {
           <Link href="/" className="text-foreground hover:text-primary transition-colors">
             Home
           </Link>
-          {/* TODO: Add your navigation links here */}
 
           {currentUser ? (
             <>
-              <Link href="/dashboard" className="text-foreground hover:text-primary transition-colors">
+              <Link
+                href="/dashboard"
+                className="text-foreground hover:text-primary transition-colors"
+              >
                 Dashboard
               </Link>
+
+              {currentUser.role === "seller" ? (
+                <Link
+                  href="/seller"
+                  className="text-foreground hover:text-primary transition-colors"
+                >
+                  Seller Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/become-seller"
+                  className="text-foreground hover:text-primary transition-colors"
+                >
+                  Start Selling
+                </Link>
+              )}
+
               <button
                 onClick={logout}
                 className="text-muted-foreground hover:text-foreground transition-colors"
