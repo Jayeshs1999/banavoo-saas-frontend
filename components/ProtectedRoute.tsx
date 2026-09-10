@@ -1,42 +1,33 @@
 "use client";
 
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "../../app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Spinner from "../Spinner";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: "admin" | "user";
-}
-
-export const ProtectedRoute = ({
-  children,
-  requiredRole,
-}: ProtectedRouteProps) => {
-  const { currentAdmin, currentUser } = useAuth();
+/**
+ * ProtectedRoute — wraps pages that require authentication.
+ *
+ * Usage:
+ *   export default function Page() {
+ *     return (
+ *       <ProtectedRoute>
+ *         <MyProtectedContent />
+ *       </ProtectedRoute>
+ *     );
+ *   }
+ */
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { currentUser, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const isAuthorized =
-      (requiredRole === "admin" && currentAdmin) ||
-      (requiredRole === "user" && currentUser) ||
-      (!requiredRole && (currentAdmin || currentUser));
-
-    if (!isAuthorized) {
-      const redirectPath =
-        requiredRole === "admin" ? "/admin/login" : "/user/login";
-      router.push(redirectPath);
+    if (!loading && !currentUser) {
+      router.replace("/login");
     }
-  }, [currentAdmin, currentUser, requiredRole, router]);
+  }, [currentUser, loading, router]);
 
-  const hasAccess =
-    (requiredRole === "admin" && currentAdmin) ||
-    (requiredRole === "user" && currentUser) ||
-    (!requiredRole && (currentAdmin || currentUser));
-
-  if (!hasAccess) {
-    return <div>Loading...</div>;
-  }
-
+  if (loading) return <Spinner size="lg" />;
+  if (!currentUser) return null;
   return <>{children}</>;
-};
+}
